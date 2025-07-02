@@ -1,0 +1,32 @@
+.dashboard-page {
+  .page-header {
+    margin-bottom: 2rem;
+
+    .header-content {
+      h1 {
+        font-size: 1.75rem;
+        color: #1e293b;
+        margin: 0;
+      }
+    }
+  }
+
+  .dashboard-content {
+    .placeholder-card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #64748b;
+      }
+    }
+  }
+}

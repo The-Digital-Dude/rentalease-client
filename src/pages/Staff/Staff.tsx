@@ -29,11 +29,11 @@ const Staff = () => {
   const [activeTab, setActiveTab] = useState("directory");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  // const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  // const [showAddForm, setShowAddForm] = useState(false);
 
   // Mock data - in real app, this would come from an API
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([
+  const [staffMembers] = useState<StaffMember[]>([
     {
       id: "1",
       name: "John Smith",

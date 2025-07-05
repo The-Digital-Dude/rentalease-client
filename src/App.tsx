@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Sidebar, TopNavbar } from "./components";
-import { Dashboard, Agencies, JobManagement, Staff } from "./pages";
+import { Dashboard, Agencies, JobManagement, Staff, RegionManagement } from "./pages";
 import "./App.css";
 
 function App() {
@@ -33,6 +33,7 @@ function App() {
           <Route path="/agencies" element={<Agencies />} />
           <Route path="/jobs" element={<JobManagement />} />
           <Route path="/staff" element={<Staff />} />
+          <Route path="/regions" element={<RegionManagement />} />
           <Route
             path="/invoices"
             element={

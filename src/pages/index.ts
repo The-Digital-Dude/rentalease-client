@@ -3,3 +3,4 @@ export { default as Agencies } from "./Agencies";
 export { default as JobManagement } from "./JobManagement";
 export { default as Staff } from './Staff';
 export { default as RegionManagement } from './RegionManagement';
+export { default as ReportsAnalytics } from './ReportsAnalytics';

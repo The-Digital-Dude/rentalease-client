@@ -1,14 +1,11 @@
 import { useState } from "react";
+import { RiAddLine } from "react-icons/ri";
 import {
-  RiAddLine,
-  RiSearchLine,
-  RiCloseLine,
-  RiAlertLine,
-  RiCalendarLine,
-  RiUserLine,
-  RiDragDropLine,
-  RiMoreLine,
-} from "react-icons/ri";
+  JobFormModal,
+  UrgentJobsSection,
+  JobAllocationTool,
+  JobsOverview,
+} from "../../components";
 import "./JobManagement.scss";
 
 interface Job {
@@ -234,9 +231,7 @@ const JobManagement = () => {
     }
   };
 
-  const handleCreateJob = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleCreateJob = (formData: JobFormData) => {
     const newJob: Job = {
       id: `J${String(jobs.length + 1).padStart(3, "0")}`,
       ...formData,
@@ -339,403 +334,49 @@ const JobManagement = () => {
       </div>
 
       {/* Urgent Jobs Section */}
-      {urgentJobs.length > 0 && (
-        <div className="content-card urgent-jobs-section">
-          <div className="section-header">
-            <h2>
-              <RiAlertLine className="urgent-icon" />
-              Urgent & Overdue Jobs ({urgentJobs.length})
-            </h2>
-          </div>
-          <div className="urgent-jobs-grid">
-            {urgentJobs.map((job) => (
-              <div key={job.id} className="urgent-job-card">
-                <div className="job-info">
-                  <span className="job-id">{job.id}</span>
-                  <h4>{job.propertyAddress}</h4>
-                  <div className="job-meta">
-                    <span
-                      className={`job-type type-${job.jobType.toLowerCase()}`}
-                    >
-                      {job.jobType}
-                    </span>
-                    <span
-                      className={`job-priority ${getPriorityColor(
-                        job.priority
-                      )}`}
-                    >
-                      {job.priority}
-                    </span>
-                  </div>
-                  <p className="due-date">
-                    <RiCalendarLine />
-                    Due: {new Date(job.dueDate).toLocaleDateString()}
-                    {isOverdue(job.dueDate) && (
-                      <span className="overdue-label">OVERDUE</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <UrgentJobsSection
+        urgentJobs={urgentJobs}
+        getPriorityColor={getPriorityColor}
+        isOverdue={isOverdue}
+      />
 
       {/* Job Allocation Tool */}
-      <div className="content-card allocation-section">
-        <div className="section-header">
-          <h2>
-            <RiDragDropLine />
-            Job Allocation Tool
-          </h2>
-          <p>Drag jobs to assign them to available technicians</p>
-        </div>
-        <div className="allocation-grid">
-          <div className="unassigned-jobs">
-            <h3>Unassigned Jobs</h3>
-            <div className="job-list">
-              {jobs
-                .filter((job) => job.status === "Pending")
-                .map((job) => (
-                  <div
-                    key={job.id}
-                    className="draggable-job"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, job)}
-                  >
-                    <div className="job-header">
-                      <span className="job-id">{job.id}</span>
-                      <span
-                        className={`job-type type-${job.jobType.toLowerCase()}`}
-                      >
-                        {job.jobType}
-                      </span>
-                    </div>
-                    <p className="job-address">{job.propertyAddress}</p>
-                    <div className="job-footer">
-                      <span className="due-date">
-                        Due: {new Date(job.dueDate).toLocaleDateString()}
-                      </span>
-                      <span
-                        className={`priority ${getPriorityColor(job.priority)}`}
-                      >
-                        {job.priority}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          <div className="technicians-grid">
-            {technicians.map((technician) => (
-              <div
-                key={technician.id}
-                className={`technician-card ${technician.availability
-                  .toLowerCase()
-                  .replace(" ", "-")}`}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, technician.id)}
-              >
-                <div className="technician-header">
-                  <h4>{technician.name}</h4>
-                  <span
-                    className={`availability ${technician.availability
-                      .toLowerCase()
-                      .replace(" ", "-")}`}
-                  >
-                    {technician.availability}
-                  </span>
-                </div>
-                <div className="technician-info">
-                  <div className="specialties">
-                    {technician.specialties.map((specialty) => (
-                      <span key={specialty} className="specialty-tag">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="workload">
-                    <RiUserLine />
-                    {technician.currentJobs} active jobs
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <JobAllocationTool
+        jobs={jobs}
+        technicians={technicians}
+        getPriorityColor={getPriorityColor}
+        handleDragStart={handleDragStart}
+        handleDragOver={handleDragOver}
+        handleDrop={handleDrop}
+      />
 
       {/* Jobs Overview */}
-      <div className="content-card">
-        <div className="section-header">
-          <h2>Jobs Overview</h2>
-          <div className="filters-section">
-            <div className="search-box">
-              <RiSearchLine className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search jobs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Scheduled">Scheduled</option>
-              <option value="Completed">Completed</option>
-              <option value="Overdue">Overdue</option>
-            </select>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              <option value="Gas">Gas</option>
-              <option value="Electrical">Electrical</option>
-              <option value="Smoke">Smoke</option>
-              <option value="Repairs">Repairs</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="jobs-table-container">
-          <table className="jobs-table">
-            <thead>
-              <tr>
-                <th>Job ID</th>
-                <th>Property Address</th>
-                <th>Job Type</th>
-                <th>Due Date</th>
-                <th>Assigned Technician</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredJobs.map((job) => (
-                <tr
-                  key={job.id}
-                  className={
-                    isOverdue(job.dueDate) && job.status !== "Completed"
-                      ? "overdue-row"
-                      : ""
-                  }
-                >
-                  <td className="job-id-cell">{job.id}</td>
-                  <td className="address-cell">{job.propertyAddress}</td>
-                  <td>
-                    <span
-                      className={`job-type type-${job.jobType.toLowerCase()}`}
-                    >
-                      {job.jobType}
-                    </span>
-                  </td>
-                  <td className="date-cell">
-                    <div className="date-cell-items">
-                      <RiCalendarLine />
-                      {new Date(job.dueDate).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="technician-cell">
-                    <div className="technician-cell-items">
-                      <RiUserLine />
-                      {job.assignedTechnician || "Unassigned"}
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      className={`job-status ${getStatusColor(job.status)}`}
-                    >
-                      {job.status}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`job-priority ${getPriorityColor(
-                        job.priority
-                      )}`}
-                    >
-                      {job.priority}
-                    </span>
-                  </td>
-                  <td className="actions-cell">
-                    <button
-                      className="action-btn"
-                      onClick={() =>
-                        setShowActionMenu(
-                          showActionMenu === job.id ? null : job.id
-                        )
-                      }
-                    >
-                      <RiMoreLine />
-                    </button>
-                    {showActionMenu === job.id && (
-                      <div className="action-menu">
-                        <button onClick={() => handleEditJob(job)}>
-                          Edit Job
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateJobStatus(job.id, "Completed")
-                          }
-                        >
-                          Mark as Completed
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateJobStatus(job.id, "Scheduled")
-                          }
-                        >
-                          Mark as Scheduled
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateJobStatus(job.id, "Pending")
-                          }
-                        >
-                          Mark as Pending
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <JobsOverview
+        filteredJobs={filteredJobs}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        getStatusColor={getStatusColor}
+        getPriorityColor={getPriorityColor}
+        isOverdue={isOverdue}
+        handleEditJob={handleEditJob}
+        handleUpdateJobStatus={handleUpdateJobStatus}
+        showActionMenu={showActionMenu}
+        setShowActionMenu={setShowActionMenu}
+      />
 
       {/* Create Job Form Modal */}
-      {showCreateForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Create New Job</h3>
-              <button
-                className="close-btn"
-                onClick={() => setShowCreateForm(false)}
-              >
-                <RiCloseLine />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateJob} className="job-form">
-              <div className="form-group">
-                <label htmlFor="propertyAddress">Property Address *</label>
-                <input
-                  type="text"
-                  id="propertyAddress"
-                  name="propertyAddress"
-                  value={formData.propertyAddress}
-                  onChange={handleInputChange}
-                  placeholder="Enter property address"
-                  required
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="jobType">Job Type *</label>
-                  <select
-                    id="jobType"
-                    name="jobType"
-                    value={formData.jobType}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="Gas">Gas</option>
-                    <option value="Electrical">Electrical</option>
-                    <option value="Smoke">Smoke</option>
-                    <option value="Repairs">Repairs</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="priority">Priority *</label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    value={formData.priority}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="dueDate">Due Date *</label>
-                  <input
-                    type="date"
-                    id="dueDate"
-                    name="dueDate"
-                    value={formData.dueDate}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="assignedTechnician">
-                    Assigned Technician
-                  </label>
-                  <select
-                    id="assignedTechnician"
-                    name="assignedTechnician"
-                    value={formData.assignedTechnician}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Select Technician</option>
-                    {technicians
-                      .filter((tech) => tech.availability === "Available")
-                      .map((technician) => (
-                        <option key={technician.id} value={technician.name}>
-                          {technician.name} ({technician.currentJobs} jobs)
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Enter job description or special instructions"
-                  rows={3}
-                />
-              </div>
-
-              <div className="form-actions">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setShowCreateForm(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary">
-                  Create Job
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <JobFormModal
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSubmit={handleCreateJob}
+        formData={formData}
+        onInputChange={handleInputChange}
+        technicians={technicians}
+      />
     </div>
   );
 };

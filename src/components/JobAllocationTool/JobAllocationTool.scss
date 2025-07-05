@@ -1,0 +1,286 @@
+// Job Allocation Tool
+.allocation-section {
+  .section-header {
+    margin-bottom: 24px;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #111827;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  .allocation-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+
+    .unassigned-jobs {
+      h3 {
+        margin-bottom: 16px;
+        color: #111827;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .job-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .draggable-job {
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 16px;
+          cursor: grab;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          }
+
+          &:active {
+            cursor: grabbing;
+          }
+
+          .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+
+            .job-id {
+              font-weight: 600;
+              color: #374151;
+              font-size: 0.875rem;
+            }
+
+            .job-type {
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 0.75rem;
+              font-weight: 500;
+
+              &.type-gas {
+                background: #dbeafe;
+                color: #1e40af;
+              }
+
+              &.type-electrical {
+                background: #fef3c7;
+                color: #92400e;
+              }
+
+              &.type-smoke {
+                background: #e5e7eb;
+                color: #374151;
+              }
+
+              &.type-repairs {
+                background: #dcfce7;
+                color: #166534;
+              }
+            }
+          }
+
+          .job-address {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+          }
+
+          .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+
+            .due-date {
+              color: #6b7280;
+            }
+
+            .priority {
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-weight: 500;
+
+              &.priority-urgent {
+                background: #fecaca;
+                color: #991b1b;
+              }
+
+              &.priority-high {
+                background: #fed7aa;
+                color: #c2410c;
+              }
+
+              &.priority-medium {
+                background: #fef3c7;
+                color: #a16207;
+              }
+
+              &.priority-low {
+                background: #dcfce7;
+                color: #166534;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .technicians-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+
+      .technician-card {
+        background: #f9fafb;
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 16px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f3f4f6;
+          border-color: #9ca3af;
+        }
+
+        &.available {
+          border-color: #10b981;
+          background: #f0fdf4;
+
+          &:hover {
+            border-color: #059669;
+            background: #dcfce7;
+          }
+        }
+
+        &.busy {
+          border-color: #f59e0b;
+          background: #fffbeb;
+
+          &:hover {
+            border-color: #d97706;
+            background: #fef3c7;
+          }
+        }
+
+        &.off-duty {
+          border-color: #6b7280;
+          background: #f9fafb;
+          opacity: 0.7;
+
+          &:hover {
+            border-color: #4b5563;
+            background: #f3f4f6;
+          }
+        }
+
+        .technician-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+
+          h4 {
+            margin: 0;
+            color: #111827;
+            font-size: 1rem;
+            font-weight: 600;
+          }
+
+          .availability {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+
+            &.available {
+              background: #dcfce7;
+              color: #166534;
+            }
+
+            &.busy {
+              background: #fef3c7;
+              color: #92400e;
+            }
+
+            &.off-duty {
+              background: #f3f4f6;
+              color: #6b7280;
+            }
+          }
+        }
+
+        .technician-info {
+          .specialties {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+
+            .specialty-tag {
+              background: #e5e7eb;
+              color: #374151;
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 0.75rem;
+              font-weight: 500;
+            }
+          }
+
+          .workload {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #6b7280;
+            font-size: 0.875rem;
+
+            svg {
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Drag and drop feedback
+.technician-card {
+  &.drag-over {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    transform: scale(1.02);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .allocation-section {
+    .technicians-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,0 +1,74 @@
+.confirmation-modal {
+  .confirmation-message {
+    margin-bottom: 1.5rem;
+
+    p {
+      margin: 0;
+      color: #374151;
+      line-height: 1.6;
+      font-size: 0.875rem;
+    }
+  }
+
+  .confirmation-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.btn-primary {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+
+        &:hover {
+          background: #1d4ed8;
+          border-color: #1d4ed8;
+        }
+      }
+
+      &.btn-secondary {
+        background: white;
+        color: #64748b;
+        border-color: #e2e8f0;
+
+        &:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #475569;
+        }
+      }
+
+      &.btn-danger {
+        background: #dc2626;
+        color: white;
+        border-color: #dc2626;
+
+        &:hover {
+          background: #b91c1c;
+          border-color: #b91c1c;
+        }
+      }
+    }
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}

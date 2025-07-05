@@ -1,0 +1,151 @@
+// Urgent Jobs Section
+.urgent-jobs-section {
+  .section-header {
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #dc2626;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+
+      .urgent-icon {
+        color: #dc2626;
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+
+  .urgent-jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+
+    .urgent-job-card {
+      background: #fffafa;
+      border: 1px solid #ffdada;
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s;
+
+      .job-info {
+        .job-id {
+          font-weight: 600;
+          color: #dc2626;
+          font-size: 0.875rem;
+        }
+
+        h4 {
+          margin: 8px 0 12px 0;
+          color: #111827;
+          font-size: 0.875rem;
+          line-height: 1.4;
+        }
+
+        .job-meta {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 12px;
+
+          .job-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+
+            &.type-gas {
+              background: #dbeafe;
+              color: #1e40af;
+            }
+
+            &.type-electrical {
+              background: #fef3c7;
+              color: #92400e;
+            }
+
+            &.type-smoke {
+              background: #e5e7eb;
+              color: #374151;
+            }
+
+            &.type-repairs {
+              background: #dcfce7;
+              color: #166534;
+            }
+          }
+
+          .job-priority {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+
+            &.priority-urgent {
+              background: #fecaca;
+              color: #991b1b;
+            }
+
+            &.priority-high {
+              background: #fed7aa;
+              color: #c2410c;
+            }
+
+            &.priority-medium {
+              background: #fef3c7;
+              color: #a16207;
+            }
+
+            &.priority-low {
+              background: #dcfce7;
+              color: #166534;
+            }
+          }
+        }
+
+        .due-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin: 0;
+
+          svg {
+            width: 14px;
+            height: 14px;
+          }
+
+          .overdue-label {
+            background: #dc2626;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .urgent-jobs-section {
+    .urgent-jobs-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

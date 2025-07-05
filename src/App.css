@@ -121,7 +121,8 @@ body {
 
 /* Button styles */
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-danger {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -156,6 +157,17 @@ body {
     background: #f8fafc;
     border-color: #cbd5e1;
     color: #475569;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
 }
 
 /* Placeholder page styles */

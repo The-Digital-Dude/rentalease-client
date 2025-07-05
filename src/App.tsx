@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Sidebar, TopNavbar } from "./components";
-import { Dashboard, Agencies, JobManagement } from "./pages";
+import { Dashboard, Agencies, JobManagement, Staff } from "./pages";
 import "./App.css";
 
 function App() {
@@ -32,21 +32,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/agencies" element={<Agencies />} />
           <Route path="/jobs" element={<JobManagement />} />
-          <Route
-            path="/staff"
-            element={
-              <div className="page-container">
-                <div className="page-header">
-                  <h1>Staff</h1>
-                  <p>Manage your team and personnel</p>
-                </div>
-                <div className="content-card">
-                  <h3>Staff Management</h3>
-                  <p>Staff management features coming soon.</p>
-                </div>
-              </div>
-            }
-          />
+          <Route path="/staff" element={<Staff />} />
           <Route
             path="/invoices"
             element={

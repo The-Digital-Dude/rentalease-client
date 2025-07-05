@@ -5,6 +5,8 @@ import {
   RiBriefcaseLine,
   RiTeamLine,
   RiFileListLine,
+  RiMapPin2Line,
+  RiBarChartBoxLine,
 } from "react-icons/ri";
 import "./Sidebar.scss";
 
@@ -25,6 +27,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { path: "/agencies", icon: RiBuilding4Line, label: "Agencies" },
     { path: "/jobs", icon: RiBriefcaseLine, label: "Jobs" },
     { path: "/staff", icon: RiTeamLine, label: "Staff" },
+    { path: "/regions", icon: RiMapPin2Line, label: "Region Management" },
+    { path: "/reports", icon: RiBarChartBoxLine, label: "Reports & Analytics" },
     { path: "/invoices", icon: RiFileListLine, label: "Invoices" },
   ];
 

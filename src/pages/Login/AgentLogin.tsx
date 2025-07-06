@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { RiUser3Line, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
+import { useAppDispatch } from "../../store";
+import { login } from "../../store/userSlice";
+import { authService } from "../../services";
+import { getFullRoute } from "../../config/roleBasedRoutes";
 import "./Login.scss";
 
 interface LoginFormData {
@@ -14,6 +19,10 @@ const AgentLogin = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+  
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,24 +30,39 @@ const AgentLogin = () => {
       ...prev,
       [name]: value,
     }));
+    // Clear error when user starts typing
+    if (error) {
+      setError("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
-      console.log("Agent login:", formData);
-      // Here you would typically make an API call to authenticate
-      // await authService.login(formData.email, formData.password, "agent");
+      const response = await authService.login(formData.email, formData.password, "agent");
+      
+      if (response.success && response.data) {
+        // Map API response to Redux store structure
+        const userType = response.data.user.userType as any; // Cast to handle different user types
+        
+        dispatch(login({
+          email: response.data.user.email,
+          userType: userType,
+          name: response.data.user.name,
+          id: response.data.user.id,
+        }));
 
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Handle successful login
-      console.log("Agent login successful");
-    } catch (error) {
-      console.error("Agent login failed:", error);
+        // Navigate to user's dashboard
+        const dashboardPath = getFullRoute(userType, 'dashboard');
+        navigate(dashboardPath);
+      } else {
+        setError(response.message || "Login failed");
+      }
+    } catch (error: any) {
+      setError(error.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +92,12 @@ const AgentLogin = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input

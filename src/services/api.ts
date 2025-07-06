@@ -7,10 +7,10 @@ const getBaseURL = (): string => {
   
   switch (env) {
     case 'production':
-      return import.meta.env.VITE_API_BASE_URL_PROD || 'https://api.rentalease.com/api';
+      return import.meta.env.VITE_API_BASE_URL_PROD || 'https://api.rentalease.com';
     case 'development':
     default:
-      return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:6969/api';
+      return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:3000';
   }
 };
 

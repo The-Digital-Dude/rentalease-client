@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Sidebar, TopNavbar } from "./components";
 import {
   Dashboard,
@@ -9,11 +9,18 @@ import {
   RegionManagement,
   ReportsAnalytics,
   ContactsCommunication,
+  Login,
+  AgentLogin,
+  AdminLogin,
 } from "./pages";
 import "./App.css";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Check if current route is any login page
+  const isLoginPage = location.pathname.startsWith("/login");
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -31,6 +38,18 @@ function App() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Render login pages without sidebar/navbar
+  if (isLoginPage) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/login/agent" element={<AgentLogin />} />
+        <Route path="/login/admin" element={<AdminLogin />} />
+      </Routes>
+    );
+  }
+
+  // Render main app layout for other routes
   return (
     <div className="app-layout">
       <TopNavbar onMobileMenuClick={handleMobileMenuClick} />

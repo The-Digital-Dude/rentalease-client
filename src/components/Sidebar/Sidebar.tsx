@@ -9,6 +9,8 @@ import {
   RiBarChartBoxLine,
   RiContactsLine,
 } from "react-icons/ri";
+import { useAppSelector } from "../../store";
+import { baseRoutes, getFullRoute } from "../../config/roleBasedRoutes";
 import "./Sidebar.scss";
 
 interface SidebarProps {
@@ -17,26 +19,46 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+  const { userType } = useAppSelector((state) => state.user);
+
   const handleBackdropClick = () => {
     if (window.innerWidth < 768) {
       onClose();
     }
   };
 
-  const navItems = [
-    { path: "/", icon: RiDashboardLine, label: "Dashboard" },
-    { path: "/agencies", icon: RiBuilding4Line, label: "Property Managers" },
-    { path: "/jobs", icon: RiBriefcaseLine, label: "Jobs" },
-    { path: "/staff", icon: RiTeamLine, label: "Staff" },
-    { path: "/regions", icon: RiMapPin2Line, label: "Region Management" },
-    { path: "/reports", icon: RiBarChartBoxLine, label: "Reports & Analytics" },
-    {
-      path: "/contacts",
-      icon: RiContactsLine,
-      label: "Contacts & Communication",
-    },
-    { path: "/invoices", icon: RiFileListLine, label: "Invoices" },
-  ];
+  // Define icon mapping for each base route
+  const iconMap: Record<string, typeof RiDashboardLine> = {
+    dashboard: RiDashboardLine,
+    agencies: RiBuilding4Line,
+    jobs: RiBriefcaseLine,
+    staff: RiTeamLine,
+    regions: RiMapPin2Line,
+    reports: RiBarChartBoxLine,
+    contacts: RiContactsLine,
+    invoices: RiFileListLine,
+  };
+
+  // Define label mapping for each base route
+  const labelMap: Record<string, string> = {
+    dashboard: "Dashboard",
+    agencies: "Property Managers",
+    jobs: "Jobs",
+    staff: "Staff",
+    regions: "Region Management",
+    reports: "Reports & Analytics",
+    contacts: "Contacts & Communication",
+    invoices: "Invoices",
+  };
+
+  // Generate navigation items based on user's role
+  const navItems = userType && userType in baseRoutes 
+    ? baseRoutes[userType as keyof typeof baseRoutes].map((baseRoute: string) => ({
+        path: getFullRoute(userType, baseRoute),
+        icon: iconMap[baseRoute],
+        label: labelMap[baseRoute],
+      }))
+    : [];
 
   return (
     <>
@@ -53,7 +75,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <nav className="sidebar-nav">
-          {navItems.map((item) => {
+          {navItems.map((item: { path: string; icon: any; label: string }) => {
             const Icon = item.icon;
             return (
               <NavLink

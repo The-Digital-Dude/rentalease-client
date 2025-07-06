@@ -1,0 +1,72 @@
+.role-display {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  
+  h3 {
+    margin-top: 0;
+    color: #495057;
+  }
+  
+  .user-info {
+    margin-bottom: 20px;
+    
+    p {
+      margin: 8px 0;
+      color: #6c757d;
+    }
+    
+    .role-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: 600;
+      text-transform: uppercase;
+      
+      &.super_user {
+        background: #dc3545;
+        color: white;
+      }
+      
+      &.property_manager {
+        background: #007bff;
+        color: white;
+      }
+      
+      &.staff {
+        background: #28a745;
+        color: white;
+      }
+      
+      &.tenant {
+        background: #ffc107;
+        color: #212529;
+      }
+    }
+  }
+  
+  .accessible-routes {
+    h4 {
+      margin-bottom: 10px;
+      color: #495057;
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        background: #e9ecef;
+        padding: 8px 12px;
+        margin: 4px 0;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+        color: #495057;
+      }
+    }
+  }
+} 

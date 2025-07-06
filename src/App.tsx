@@ -37,6 +37,7 @@ function App() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+
   // Render login pages without sidebar/navbar
   if (isLoginPage) {
     return (

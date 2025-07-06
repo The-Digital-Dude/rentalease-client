@@ -96,13 +96,13 @@ const AgencyFormModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={editingAgency ? "Edit Agency" : "Add New Agency"}
+      title={editingAgency ? "Edit Property Manager" : "Add New Property Manager"}
       size="large"
     >
       <form onSubmit={handleFormSubmit}>
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="name">Agency Name</label>
+            <label htmlFor="name">Property Manager Name</label>
             <input
               type="text"
               id="name"

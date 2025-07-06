@@ -150,13 +150,13 @@ const ContactsCommunication = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Contacts & Communication</h1>
-        <p>Manage agency contacts and automated notifications</p>
+        <p>Manage property manager contacts and automated notifications</p>
       </div>
 
-      {/* Agency Contacts Section */}
+      {/* Property Manager Contacts Section */}
       <div className="content-card contacts-section">
         <div className="section-header">
-          <h2>Agency Contacts</h2>
+          <h2>Property Manager Contacts</h2>
           <button className="btn-primary" onClick={handleAddContact}>
             <RiAddLine />
             Add Contact

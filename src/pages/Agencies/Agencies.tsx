@@ -165,7 +165,7 @@ const Agencies = () => {
     status: "active" | "inactive";
   }) => {
     if (editingAgency) {
-      // Update existing agency
+      // Update existing property manager
       setAgencies((prevAgencies) =>
         prevAgencies.map((agency) =>
           agency.id === editingAgency.id
@@ -178,11 +178,11 @@ const Agencies = () => {
         )
       );
     } else {
-      // Add new agency
+      // Add new property manager
       const newAgency: Agency = {
         id: generateId(),
         ...formData,
-        outstandingAmount: 0, // Default outstanding amount for new agencies
+        outstandingAmount: 0, // Default outstanding amount for new property managers
       };
       setAgencies((prevAgencies) => [...prevAgencies, newAgency]);
     }
@@ -212,11 +212,11 @@ const Agencies = () => {
           }}
         >
           <div>
-            <h1>Agency Management</h1>
-            <p>Manage your property agencies and compliance</p>
+            <h1>Property Manager Management</h1>
+            <p>Manage your property managers and compliance</p>
           </div>
           <button className="btn-primary" onClick={() => setShowForm(true)}>
-            <RiAddLine /> Add New Agency
+            <RiAddLine /> Add New Property Manager
           </button>
         </div>
       </div>
@@ -226,7 +226,7 @@ const Agencies = () => {
           <RiSearchLine />
           <input
             type="text"
-            placeholder="Search agencies..."
+            placeholder="Search property managers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

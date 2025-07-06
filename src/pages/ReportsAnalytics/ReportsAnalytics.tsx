@@ -258,7 +258,7 @@ const ReportsAnalytics = () => {
               onChange={(e) => setComplianceFilter(e.target.value)}
             >
               <option value="all">All Types</option>
-              <option value="agency">Agencies</option>
+              <option value="agency">Property Managers</option>
               <option value="region">Regions</option>
               <option value="property">Properties</option>
             </select>
@@ -394,7 +394,7 @@ const ReportsAnalytics = () => {
               value={revenueBreakdown} 
               onChange={(e) => setRevenueBreakdown(e.target.value)}
             >
-              <option value="agency">By Agency</option>
+              <option value="agency">By Property Manager</option>
               <option value="region">By Region</option>
               <option value="jobType">By Job Type</option>
             </select>

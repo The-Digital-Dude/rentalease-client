@@ -25,7 +25,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const navItems = [
     { path: "/", icon: RiDashboardLine, label: "Dashboard" },
-    { path: "/agencies", icon: RiBuilding4Line, label: "Agencies" },
+    { path: "/agencies", icon: RiBuilding4Line, label: "Property Managers" },
     { path: "/jobs", icon: RiBriefcaseLine, label: "Jobs" },
     { path: "/staff", icon: RiTeamLine, label: "Staff" },
     { path: "/regions", icon: RiMapPin2Line, label: "Region Management" },

@@ -111,6 +111,11 @@
         background: #fee2e2;
         color: #991b1b;
       }
+
+      &.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
     }
   }
 
@@ -289,4 +294,10 @@
       margin-top: 2rem;
     }
   }
+}
+
+// Loading spinner animation
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

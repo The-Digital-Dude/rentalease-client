@@ -11,7 +11,7 @@ interface Agency {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "pending";
   outstandingAmount: number;
 }
 
@@ -23,7 +23,7 @@ interface AgencyFormData {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "pending";
 }
 
 interface AgencyFormModalProps {
@@ -195,6 +195,7 @@ const AgencyFormModal = ({
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
+              <option value="pending">Pending</option>
             </select>
           </div>
         </div>

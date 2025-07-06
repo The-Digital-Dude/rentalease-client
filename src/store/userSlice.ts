@@ -50,6 +50,29 @@ const userSlice = createSlice({
       state.userType = null;
       state.name = null;
       state.id = null;
+      // Clear localStorage when logging out
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+    },
+    // Action to restore user state from localStorage
+    restoreAuthState: (state) => {
+      const token = localStorage.getItem('authToken');
+      const userData = localStorage.getItem('userData');
+      
+      if (token && userData) {
+        try {
+          const parsedUserData = JSON.parse(userData);
+          state.isLoggedIn = true;
+          state.email = parsedUserData.email;
+          state.userType = parsedUserData.userType;
+          state.name = parsedUserData.name;
+          state.id = parsedUserData.id;
+        } catch (error) {
+          // If parsing fails, clear invalid data
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userData');
+        }
+      }
     },
     // Action to update user info
     updateUser: (state, action: PayloadAction<Partial<LoginPayload>>) => {
@@ -62,7 +85,7 @@ const userSlice = createSlice({
 });
 
 // Export actions
-export const { login, logout, updateUser } = userSlice.actions;
+export const { login, logout, restoreAuthState, updateUser } = userSlice.actions;
 
 // Export reducer
 export default userSlice.reducer; 

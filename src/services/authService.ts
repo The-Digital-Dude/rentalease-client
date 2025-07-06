@@ -157,6 +157,7 @@ class AuthService {
    * Logout user
    */
   logout(): void {
+    // Just clear localStorage - Redux state will be cleared by the logout action
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
   }

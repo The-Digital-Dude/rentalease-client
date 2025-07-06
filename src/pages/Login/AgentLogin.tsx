@@ -75,6 +75,14 @@ const AgentLogin = () => {
   return (
     <div className="login-container">
       <div className="login-card">
+        {true && (
+          <div className="loading-overlay">
+            <div className="overlay-content">
+              <div className="loading-spinner"></div>
+              <div className="loading-text">Authenticating...</div>
+            </div>
+          </div>
+        )}
         <div className="login-header">
           <div className="logo-container">
             <img
@@ -134,7 +142,14 @@ const AgentLogin = () => {
           </div>
 
           <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in as Agent"}
+            {isLoading ? (
+              <>
+                <div className="loading-spinner"></div>
+                Signing in...
+              </>
+            ) : (
+              "Sign in as Agent"
+            )}
           </button>
         </form>
 

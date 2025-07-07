@@ -5,6 +5,7 @@ import {
   Login,
   AgentLogin,
   AdminLogin,
+  Dashboard,
 } from "./pages";
 import { useAppSelector, useAppDispatch } from "./store";
 import { restoreAuthState } from "./store/userSlice";
@@ -26,9 +27,30 @@ function App() {
 
   // Restore authentication state from localStorage on app load
   useEffect(() => {
-    dispatch(restoreAuthState());
+    // Only restore auth state if we're not already logged in (to avoid conflicts with fresh logins)
+    if (!isLoggedIn) {
+      console.log('Restoring auth state from localStorage'); // Debug log
+      dispatch(restoreAuthState());
+    }
     setIsAuthRestored(true);
-  }, [dispatch]);
+  }, [dispatch, isLoggedIn]);
+
+  // Debug: Log authentication state changes
+  useEffect(() => {
+    console.log('Auth state changed:', { isLoggedIn, userType, currentPath: location.pathname });
+  }, [isLoggedIn, userType, location.pathname]);
+
+  // Handle navigation only immediately after restoring auth state (not during normal navigation)
+  useEffect(() => {
+    if (isLoggedIn && userType && isAuthRestored && !isLoginPage && location.pathname === '/') {
+      const dashboardPath = getFullRoute(userType, 'dashboard');
+      console.log('Auto-navigating from root to dashboard:', dashboardPath);
+      // Use a small delay to ensure React Router is ready
+      setTimeout(() => {
+        window.location.href = dashboardPath;
+      }, 100);
+    }
+  }, [isLoggedIn, userType, isAuthRestored, isLoginPage]); // Removed location.pathname dependency to prevent constant redirects
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -72,6 +94,13 @@ function App() {
 
   // Render login pages without sidebar/navbar
   if (isLoginPage) {
+    // If user is already logged in, redirect them to their dashboard
+    if (isLoggedIn && userType) {
+      const dashboardPath = getFullRoute(userType, 'dashboard');
+      console.log('User already logged in, redirecting from login page to dashboard:', dashboardPath);
+      return <Navigate to={dashboardPath} replace />;
+    }
+    
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -82,7 +111,8 @@ function App() {
   }
 
   // If user is not logged in, redirect to login
-  if (!isLoggedIn) {
+  if (!isLoggedIn && isAuthRestored) {
+    console.log('User not logged in, redirecting to login'); // Debug log
     return <Navigate to="/login" replace />;
   }
 
@@ -93,6 +123,9 @@ function App() {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <main className="main-content">
         <Routes>
+          {/* Simple test dashboard route without protection */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          
           {/* Dynamic routes generated based on user roles */}
           {generateAllRoutes()}
           

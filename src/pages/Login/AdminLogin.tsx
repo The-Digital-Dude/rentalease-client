@@ -48,6 +48,8 @@ const AdminLogin = () => {
         // Map API response to Redux store structure
         const userType = response.data.user.userType as any; // Cast to handle different user types
         
+        console.log('Login successful, userType:', userType); // Debug log
+        
         dispatch(login({
           email: response.data.user.email,
           userType: userType,
@@ -55,9 +57,12 @@ const AdminLogin = () => {
           id: response.data.user.id,
         }));
 
-        // Navigate to user's dashboard
+        console.log('Login dispatch completed, userType:', userType); // Debug log
+        
+        // Navigate to dashboard after successful login
         const dashboardPath = getFullRoute(userType, 'dashboard');
-        navigate(dashboardPath);
+        console.log('Navigating to dashboard:', dashboardPath);
+        navigate(dashboardPath, { replace: true });
       } else {
         setError(response.message || "Login failed");
       }

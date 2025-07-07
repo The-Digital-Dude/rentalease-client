@@ -13,7 +13,7 @@ export interface PropertyManager {
   outstandingAmount: number;
 }
 
-// Server response format
+// Server response format for property manager
 export interface ServerPropertyManager {
   id: string;
   companyName: string;
@@ -26,9 +26,9 @@ export interface ServerPropertyManager {
   status: string;
   outstandingAmount: number;
   totalProperties: number;
-  lastLogin: string | null;
-  joinedDate: string;
-  createdAt: string;
+  lastLogin?: string | null;
+  joinedDate?: string;
+  createdAt?: string;
 }
 
 export interface ServerResponse {
@@ -42,6 +42,16 @@ export interface ServerResponse {
       hasNext: boolean;
       hasPrev: boolean;
     };
+  };
+}
+
+// Response format for create property manager
+export interface CreatePropertyManagerResponse {
+  status: string;
+  message: string;
+  data: {
+    propertyManager: ServerPropertyManager;
+    createdBy: string;
   };
 }
 
@@ -94,7 +104,7 @@ export const propertyManagerService = {
   },
 
   // Create new property manager
-  createPropertyManager: async (propertyManager: Omit<PropertyManager, 'id'>): Promise<PropertyManagerResponse> => {
+  createPropertyManager: async (propertyManager: Omit<PropertyManager, 'id'> & { password?: string }): Promise<PropertyManagerResponse> => {
     try {
       // Map client data to server format
       const serverData = {
@@ -105,17 +115,17 @@ export const propertyManagerService = {
         phone: propertyManager.contactPhone,
         region: propertyManager.region,
         compliance: propertyManager.complianceLevel,
-        status: propertyManager.status,
-        outstandingAmount: propertyManager.outstandingAmount,
+        password: propertyManager.password, // Required for new property managers
       };
       
-      const response = await api.post('/v1/property-manager/auth/create', serverData);
+      const response = await api.post<CreatePropertyManagerResponse>('/v1/property-manager/auth/register', serverData);
       
-      if (response.data.status === 'success' && response.data.data) {
-        const mappedData = mapServerToClient(response.data.data);
+      if (response.data.status === 'success' && response.data.data?.propertyManager) {
+        const mappedData = mapServerToClient(response.data.data.propertyManager);
         return {
           success: true,
           data: [mappedData],
+          message: response.data.message,
         };
       } else {
         return {

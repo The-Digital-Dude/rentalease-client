@@ -44,7 +44,8 @@ export const baseRoutes: Record<UserType, string[]> = {
 export const getFullRoute = (userType: UserType, baseRoute: string): string => {
   const prefix = roleBasedPrefixes[userType];
   if (baseRoute === 'dashboard') {
-    return prefix === '' ? '/' : `${prefix}/dashboard`;
+    // For super_user, use /dashboard instead of / to avoid routing conflicts
+    return prefix === '' ? '/dashboard' : `${prefix}/dashboard`;
   }
   return prefix === '' ? `/${baseRoute}` : `${prefix}/${baseRoute}`;
 };
@@ -57,8 +58,12 @@ export const getAccessibleRoutes = (userType: UserType | null): string[] => {
 
 // Function to check if user has access to a route
 export const hasAccessToRoute = (userType: UserType | null, route: string): boolean => {
-  if (!userType) return false;
+  if (!userType) {
+    console.log('hasAccessToRoute: No userType provided'); // Debug log
+    return false;
+  }
   const accessibleRoutes = getAccessibleRoutes(userType);
+  console.log('hasAccessToRoute:', { userType, route, accessibleRoutes }); // Debug log
   return accessibleRoutes.includes(route);
 };
 

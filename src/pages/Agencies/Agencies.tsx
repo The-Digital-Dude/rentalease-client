@@ -23,7 +23,18 @@ const Agencies = () => {
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Auto-clear success message after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   // Fetch property managers from API
   useEffect(() => {
@@ -60,8 +71,6 @@ const Agencies = () => {
     return matchesSearch && matchesStatus;
   });
 
-
-
   const handleFormSubmit = async (formData: {
     name: string;
     abn: string;
@@ -71,16 +80,30 @@ const Agencies = () => {
     region: string;
     complianceLevel: string;
     status: "active" | "inactive" | "pending";
+    password?: string;
   }) => {
     try {
       setSubmitLoading(true);
       setError("");
+      setSuccessMessage("");
 
       if (editingAgency) {
-        // Update existing property manager
+        // Update existing property manager (exclude password)
+        const updateData = {
+          name: formData.name,
+          abn: formData.abn,
+          contactPerson: formData.contactPerson,
+          contactEmail: formData.contactEmail,
+          contactPhone: formData.contactPhone,
+          region: formData.region,
+          complianceLevel: formData.complianceLevel,
+          status: formData.status,
+          outstandingAmount: editingAgency.outstandingAmount, // Preserve existing amount
+        };
+        
         const response = await propertyManagerService.updatePropertyManager(
           editingAgency.id,
-          formData
+          updateData
         );
         
         if (response.success) {
@@ -89,27 +112,41 @@ const Agencies = () => {
               agency.id === editingAgency.id
                 ? {
                     ...agency,
-                    ...formData,
-                    outstandingAmount: agency.outstandingAmount,
+                    ...updateData,
                   }
                 : agency
             )
           );
+          setSuccessMessage("Property manager updated successfully!");
         } else {
           setError(response.message || "Failed to update property manager");
           return;
         }
       } else {
-        // Add new property manager
+        // Add new property manager (include password)
+        if (!formData.password) {
+          setError("Password is required for new property managers");
+          return;
+        }
+        
         const newAgencyData = {
-          ...formData,
+          name: formData.name,
+          abn: formData.abn,
+          contactPerson: formData.contactPerson,
+          contactEmail: formData.contactEmail,
+          contactPhone: formData.contactPhone,
+          region: formData.region,
+          complianceLevel: formData.complianceLevel,
+          status: formData.status,
           outstandingAmount: 0, // Default outstanding amount for new property managers
+          password: formData.password,
         };
         
         const response = await propertyManagerService.createPropertyManager(newAgencyData);
         
         if (response.success && Array.isArray(response.data) && response.data.length > 0) {
           setAgencies((prevAgencies) => [...prevAgencies, response.data[0]]);
+          setSuccessMessage(response.message || "Property manager created successfully!");
         } else {
           setError(response.message || "Failed to create property manager");
           return;
@@ -126,6 +163,8 @@ const Agencies = () => {
   };
 
   const handleEdit = (agency: Agency) => {
+    setError("");
+    setSuccessMessage("");
     setEditingAgency(agency);
     setShowForm(true);
   };
@@ -133,6 +172,8 @@ const Agencies = () => {
   const handleCloseModal = () => {
     setShowForm(false);
     setEditingAgency(null);
+    setError("");
+    setSuccessMessage("");
   };
 
   return (
@@ -149,7 +190,11 @@ const Agencies = () => {
             <h1>Property Manager Management</h1>
             <p>Manage your property managers and compliance</p>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
+          <button className="btn-primary" onClick={() => {
+            setError("");
+            setSuccessMessage("");
+            setShowForm(true);
+          }}>
             <RiAddLine /> Add New Property Manager
           </button>
         </div>
@@ -165,6 +210,19 @@ const Agencies = () => {
           marginBottom: '1rem' 
         }}>
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="success-message" style={{ 
+          background: '#dcfce7', 
+          border: '1px solid #bbf7d0', 
+          color: '#166534', 
+          padding: '1rem', 
+          borderRadius: '8px', 
+          marginBottom: '1rem' 
+        }}>
+          {successMessage}
         </div>
       )}
 

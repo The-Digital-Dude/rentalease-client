@@ -42,6 +42,17 @@ const userSlice = createSlice({
       state.userType = action.payload.userType;
       state.name = action.payload.name;
       state.id = action.payload.id;
+      
+      // Also update localStorage to ensure consistency
+      if (typeof window !== 'undefined') {
+        const userData = {
+          email: action.payload.email,
+          userType: action.payload.userType,
+          name: action.payload.name,
+          id: action.payload.id,
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+      }
     },
     // Action to log out a user
     logout: (state) => {

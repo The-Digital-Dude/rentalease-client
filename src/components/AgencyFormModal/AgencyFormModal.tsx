@@ -24,6 +24,7 @@ interface AgencyFormData {
   region: string;
   complianceLevel: string;
   status: "active" | "inactive" | "pending";
+  password?: string;
 }
 
 interface AgencyFormModalProps {
@@ -43,6 +44,7 @@ const initialFormData: AgencyFormData = {
   region: "",
   complianceLevel: "",
   status: "active",
+  password: "",
 };
 
 const AgencyFormModal = ({
@@ -198,6 +200,21 @@ const AgencyFormModal = ({
               <option value="pending">Pending</option>
             </select>
           </div>
+          {/* Password field only for new property managers */}
+          {!editingAgency && (
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password || ""}
+                onChange={handleInputChange}
+                placeholder="Enter a secure password"
+                required
+              />
+            </div>
+          )}
         </div>
         <div className="form-actions">
           <button type="button" className="btn-secondary" onClick={handleClose}>

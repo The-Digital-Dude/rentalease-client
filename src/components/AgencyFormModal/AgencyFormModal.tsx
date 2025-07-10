@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
+import { VALID_REGIONS } from "../../constants";
 import "./AgencyFormModal.scss";
 
 interface Agency {
@@ -11,7 +12,7 @@ interface Agency {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive" | "pending";
+  status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
 }
 
@@ -23,7 +24,7 @@ interface AgencyFormData {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive" | "pending";
+  status: "active" | "inactive" | "pending" | "suspended";
   password?: string;
 }
 
@@ -33,6 +34,7 @@ interface AgencyFormModalProps {
   onSubmit: (formData: AgencyFormData) => void;
   editingAgency?: Agency | null;
   complianceLevels: string[];
+  regions: readonly string[];
 }
 
 const initialFormData: AgencyFormData = {
@@ -53,6 +55,7 @@ const AgencyFormModal = ({
   onSubmit,
   editingAgency,
   complianceLevels,
+  regions,
 }: AgencyFormModalProps) => {
   const [formData, setFormData] = useState<AgencyFormData>(initialFormData);
 
@@ -160,14 +163,20 @@ const AgencyFormModal = ({
           </div>
           <div className="form-group">
             <label htmlFor="region">Region</label>
-            <input
-              type="text"
+            <select
               id="region"
               name="region"
               value={formData.region}
               onChange={handleInputChange}
               required
-            />
+            >
+              <option value="">Select Region</option>
+              {regions.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label htmlFor="complianceLevel">Compliance Level</label>
@@ -198,6 +207,7 @@ const AgencyFormModal = ({
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
           {/* Password field only for new property managers */}

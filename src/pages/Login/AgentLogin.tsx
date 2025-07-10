@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { RiUser3Line, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 import { useAppDispatch } from "../../store";
 import { login } from "../../store/userSlice";
@@ -159,6 +159,9 @@ const AgentLogin = () => {
         </form>
 
         <div className="login-footer">
+          <p>
+            <Link to="/password-reset?type=agent">Forgot your password?</Link>
+          </p>
           <p>
             Having trouble signing in? <a href="#contact">Contact support</a>
           </p>

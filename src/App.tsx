@@ -5,6 +5,7 @@ import {
   Login,
   AgentLogin,
   AdminLogin,
+  PasswordReset,
   Dashboard,
 } from "./pages";
 import { useAppSelector, useAppDispatch } from "./store";
@@ -22,8 +23,9 @@ function App() {
   // Get user state from Redux
   const { isLoggedIn, userType } = useAppSelector((state) => state.user);
 
-  // Check if current route is any login page
-  const isLoginPage = location.pathname.startsWith("/login");
+  // Check if current route is any authentication page (login, password reset)
+  const isAuthPage = location.pathname.startsWith("/login") || 
+                     location.pathname === "/password-reset";
 
   // Restore authentication state from localStorage on app load
   useEffect(() => {
@@ -42,7 +44,7 @@ function App() {
 
   // Handle navigation only immediately after restoring auth state (not during normal navigation)
   useEffect(() => {
-    if (isLoggedIn && userType && isAuthRestored && !isLoginPage && location.pathname === '/') {
+    if (isLoggedIn && userType && isAuthRestored && !isAuthPage && location.pathname === '/') {
       const dashboardPath = getFullRoute(userType, 'dashboard');
       console.log('Auto-navigating from root to dashboard:', dashboardPath);
       // Use a small delay to ensure React Router is ready
@@ -50,7 +52,7 @@ function App() {
         window.location.href = dashboardPath;
       }, 100);
     }
-  }, [isLoggedIn, userType, isAuthRestored, isLoginPage]); // Removed location.pathname dependency to prevent constant redirects
+  }, [isLoggedIn, userType, isAuthRestored, isAuthPage]); // Removed location.pathname dependency to prevent constant redirects
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -92,12 +94,12 @@ function App() {
     );
   }
 
-  // Render login pages without sidebar/navbar
-  if (isLoginPage) {
-    // If user is already logged in, redirect them to their dashboard
-    if (isLoggedIn && userType) {
+  // Render authentication pages without sidebar/navbar
+  if (isAuthPage) {
+    // If user is already logged in, redirect them to their dashboard (except for password reset page)
+    if (isLoggedIn && userType && !location.pathname.startsWith("/password-reset")) {
       const dashboardPath = getFullRoute(userType, 'dashboard');
-      console.log('User already logged in, redirecting from login page to dashboard:', dashboardPath);
+      console.log('User already logged in, redirecting from auth page to dashboard:', dashboardPath);
       return <Navigate to={dashboardPath} replace />;
     }
     
@@ -106,6 +108,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/agent" element={<AgentLogin />} />
         <Route path="/login/admin" element={<AdminLogin />} />
+        <Route path="/password-reset" element={<PasswordReset />} />
       </Routes>
     );
   }

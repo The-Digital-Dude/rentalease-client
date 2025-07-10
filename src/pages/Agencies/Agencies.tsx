@@ -3,16 +3,17 @@ import { RiAddLine, RiSearchLine, RiFilterLine } from "react-icons/ri";
 import { AgencyFormModal } from "../../components";
 import { propertyManagerService } from "../../services/propertyManagerService";
 import type { PropertyManager } from "../../services/propertyManagerService";
+import { VALID_REGIONS } from "../../constants";
 import "./Agencies.scss";
 
 // Using PropertyManager interface from service  
 type Agency = PropertyManager;
 
 const complianceLevels = [
+  "Basic Package",
+  "Standard Package", 
+  "Premium Package",
   "Full Package",
-  "Gas & Electrical",
-  "Smoke Alarm Only",
-  "Basic Compliance",
 ];
 
 const Agencies = () => {
@@ -79,7 +80,7 @@ const Agencies = () => {
     contactPhone: string;
     region: string;
     complianceLevel: string;
-    status: "active" | "inactive" | "pending";
+    status: "active" | "inactive" | "pending" | "suspended";
     password?: string;
   }) => {
     try {
@@ -246,6 +247,7 @@ const Agencies = () => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
       </div>
@@ -345,6 +347,7 @@ const Agencies = () => {
         onSubmit={handleFormSubmit}
         editingAgency={editingAgency}
         complianceLevels={complianceLevels}
+        regions={VALID_REGIONS}
       />
     </div>
   );

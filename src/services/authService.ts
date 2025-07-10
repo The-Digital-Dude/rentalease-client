@@ -183,6 +183,78 @@ class AuthService {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  /**
+   * Send forgot password OTP to email
+   */
+  async forgotPassword(email: string, userType: 'admin' | 'agent' = 'admin'): Promise<{ success: boolean; message: string }> {
+    try {
+      // Determine endpoint based on user type
+      const endpoint = userType === 'admin' 
+        ? '/v1/auth/forgot-password' 
+        : '/v1/property-manager/auth/forgot-password';
+
+      const response = await api.post(endpoint, { email });
+
+      if (response.data.status === 'success') {
+        return {
+          success: true,
+          message: response.data.message || 'OTP sent successfully'
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || 'Failed to send OTP'
+        };
+      }
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to send OTP');
+      } else if (error.request) {
+        throw new Error('Network error. Please check your connection.');
+      } else {
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  }
+
+  /**
+   * Reset password using OTP
+   */
+  async resetPasswordWithOTP(email: string, otp: string, newPassword: string, userType: 'admin' | 'agent' = 'admin'): Promise<{ success: boolean; message: string }> {
+    try {
+      // Determine endpoint based on user type
+      const endpoint = userType === 'admin' 
+        ? '/v1/auth/reset-password' 
+        : '/v1/property-manager/auth/reset-password';
+
+      const response = await api.post(endpoint, {
+        email,
+        otp,
+        newPassword
+      });
+
+      if (response.data.status === 'success') {
+        return {
+          success: true,
+          message: response.data.message || 'Password reset successfully'
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || 'Failed to reset password'
+        };
+      }
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'Failed to reset password');
+      } else if (error.request) {
+        throw new Error('Network error. Please check your connection.');
+      } else {
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  }
 }
 
 export default new AuthService(); 

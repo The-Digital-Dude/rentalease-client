@@ -1,4 +1,5 @@
 import api from './api';
+import type { Region } from '../constants';
 
 export interface PropertyManager {
   id: string;
@@ -9,7 +10,7 @@ export interface PropertyManager {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive" | "pending";
+  status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
 }
 
@@ -155,16 +156,17 @@ export const propertyManagerService = {
       if (propertyManager.contactPhone) serverData.phone = propertyManager.contactPhone;
       if (propertyManager.region) serverData.region = propertyManager.region;
       if (propertyManager.complianceLevel) serverData.compliance = propertyManager.complianceLevel;
-      if (propertyManager.status) serverData.status = propertyManager.status;
+      if (propertyManager.status) serverData.status = propertyManager.status.charAt(0).toUpperCase() + propertyManager.status.slice(1);
       if (propertyManager.outstandingAmount !== undefined) serverData.outstandingAmount = propertyManager.outstandingAmount;
       
-      const response = await api.put(`/v1/property-manager/auth/${id}`, serverData);
+      const response = await api.patch(`/v1/property-manager/auth/${id}`, serverData);
       
-      if (response.data.status === 'success' && response.data.data) {
-        const mappedData = mapServerToClient(response.data.data);
+      if (response.data.status === 'success' && response.data.data?.propertyManager) {
+        const mappedData = mapServerToClient(response.data.data.propertyManager);
         return {
           success: true,
           data: [mappedData],
+          message: response.data.message,
         };
       } else {
         return {

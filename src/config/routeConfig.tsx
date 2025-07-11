@@ -1,6 +1,6 @@
-import React from 'react';
-import { Route } from 'react-router-dom';
-import { ProtectedRoute } from '../components';
+import React from "react";
+import { Route } from "react-router-dom";
+import { ProtectedRoute } from "../components";
 import {
   Dashboard,
   Agencies,
@@ -9,9 +9,11 @@ import {
   RegionManagement,
   ReportsAnalytics,
   ContactsCommunication,
-} from '../pages';
-import { getFullRoute, baseRoutes } from './roleBasedRoutes';
-import type { UserType } from '../store';
+  PropertyCompliance,
+  PaymentProperty,
+} from "../pages";
+import { getFullRoute, baseRoutes } from "./roleBasedRoutes";
+import type { UserType } from "../store";
 
 // Define component mapping for each base route
 const componentMap: Record<string, React.ComponentType> = {
@@ -22,6 +24,8 @@ const componentMap: Record<string, React.ComponentType> = {
   regions: RegionManagement,
   reports: ReportsAnalytics,
   contacts: ContactsCommunication,
+  compliance: PropertyCompliance,
+  "payment-property": PaymentProperty,
   invoices: () => (
     <div className="page-container">
       <div className="page-header">
@@ -37,13 +41,15 @@ const componentMap: Record<string, React.ComponentType> = {
 };
 
 // Function to generate dynamic routes for a user type
-export const generateUserRoutes = (userType: UserType): React.ReactElement[] => {
+export const generateUserRoutes = (
+  userType: UserType
+): React.ReactElement[] => {
   const userRoutes = baseRoutes[userType];
-  
+
   return userRoutes.map((baseRoute) => {
     const fullPath = getFullRoute(userType, baseRoute);
     const Component = componentMap[baseRoute];
-    
+
     return (
       <Route
         key={fullPath}
@@ -61,12 +67,12 @@ export const generateUserRoutes = (userType: UserType): React.ReactElement[] => 
 // Function to generate all possible routes for all user types
 export const generateAllRoutes = (): React.ReactElement[] => {
   const allRoutes: React.ReactElement[] = [];
-  
+
   // Generate routes for each user type
   Object.keys(baseRoutes).forEach((userType) => {
     const routes = generateUserRoutes(userType as UserType);
     allRoutes.push(...routes);
   });
-  
+
   return allRoutes;
-}; 
+};

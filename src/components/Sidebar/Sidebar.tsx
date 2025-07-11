@@ -8,6 +8,8 @@ import {
   RiMapPin2Line,
   RiBarChartBoxLine,
   RiContactsLine,
+  RiShieldCheckLine,
+  RiMoneyDollarCircleLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { baseRoutes, getFullRoute } from "../../config/roleBasedRoutes";
@@ -37,6 +39,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     reports: RiBarChartBoxLine,
     contacts: RiContactsLine,
     invoices: RiFileListLine,
+    compliance: RiShieldCheckLine,
+    "payment-property": RiMoneyDollarCircleLine,
   };
 
   // Define label mapping for each base route
@@ -49,16 +53,21 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     reports: "Reports & Analytics",
     contacts: "Contacts & Communication",
     invoices: "Invoices",
+    compliance: "Property Compliance",
+    "payment-property": "Payment & Property",
   };
 
   // Generate navigation items based on user's role
-  const navItems = userType && userType in baseRoutes 
-    ? baseRoutes[userType as keyof typeof baseRoutes].map((baseRoute: string) => ({
-        path: getFullRoute(userType, baseRoute),
-        icon: iconMap[baseRoute],
-        label: labelMap[baseRoute],
-      }))
-    : [];
+  const navItems =
+    userType && userType in baseRoutes
+      ? baseRoutes[userType as keyof typeof baseRoutes].map(
+          (baseRoute: string) => ({
+            path: getFullRoute(userType, baseRoute),
+            icon: iconMap[baseRoute],
+            label: labelMap[baseRoute],
+          })
+        )
+      : [];
 
   return (
     <>
@@ -75,26 +84,32 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <nav className="sidebar-nav">
-          {navItems.map((item: { path: string; icon: any; label: string }) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `nav-item ${isActive ? "active" : ""}`
-                }
-                onClick={() => {
-                  if (window.innerWidth < 768) {
-                    onClose();
+          {navItems.map(
+            (item: {
+              path: string;
+              icon: React.ComponentType<{ className?: string }>;
+              label: string;
+            }) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `nav-item ${isActive ? "active" : ""}`
                   }
-                }}
-              >
-                <Icon className="nav-icon" />
-                <span className="nav-label">{item.label}</span>
-              </NavLink>
-            );
-          })}
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      onClose();
+                    }
+                  }}
+                >
+                  <Icon className="nav-icon" />
+                  <span className="nav-label">{item.label}</span>
+                </NavLink>
+              );
+            }
+          )}
         </nav>
       </aside>
     </>

@@ -13,3 +13,5 @@ export { default as JobsOverview } from "./JobsOverview";
 export { default as ProtectedRoute } from "./ProtectedRoute";
 export { default as RoleDisplay } from "./RoleDisplay";
 export { default as RoleTestButtons } from "./RoleTestButtons";
+export { default as PropertyDetailsModal } from "./PropertyDetailsModal";
+export { default as PropertyFormModal } from "./PropertyFormModal";

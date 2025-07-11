@@ -5,4 +5,6 @@ export { default as Staff } from "./Staff";
 export { default as RegionManagement } from "./RegionManagement";
 export { default as ReportsAnalytics } from "./ReportsAnalytics";
 export { default as ContactsCommunication } from "./ContactsCommunication";
+export { default as PropertyCompliance } from "./PropertyCompliance";
+export { default as PaymentProperty } from "./PaymentProperty";
 export { Login, AgentLogin, AdminLogin, PasswordReset } from "./Login";

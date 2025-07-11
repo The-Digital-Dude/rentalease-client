@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // Get base URL from environment variables
 const getBaseURL = (): string => {
@@ -77,5 +77,69 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export types
+export type { AxiosResponse, AxiosError };
+
+// Staff API methods
+export const staffAPI = {
+  // Get all staff members for the authenticated user
+  getStaff: async (params?: {
+    page?: number;
+    limit?: number;
+    tradeType?: string;
+    availabilityStatus?: string;
+    serviceRegion?: string;
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const url = `/v1/staff${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return api.get(url);
+  },
+
+  // Get single staff member
+  getStaffById: async (id: string) => {
+    return api.get(`/v1/staff/${id}`);
+  },
+
+  // Create new staff member
+  createStaff: async (formData: FormData) => {
+    return api.post('/v1/staff', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  // Update staff member
+  updateStaff: async (id: string, data: any) => {
+    return api.put(`/v1/staff/${id}`, data);
+  },
+
+  // Delete staff member
+  deleteStaff: async (id: string) => {
+    return api.delete(`/v1/staff/${id}`);
+  },
+
+  // Upload documents for staff member
+  uploadDocuments: async (id: string, formData: FormData) => {
+    return api.post(`/v1/staff/${id}/documents`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
 
 export default api; 

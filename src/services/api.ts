@@ -10,7 +10,7 @@ const getBaseURL = (): string => {
       return import.meta.env.VITE_API_BASE_URL_PROD || 'https://api.rentalease.com';
     case 'development':
     default:
-      return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:3000';
+      return import.meta.env.VITE_API_BASE_URL_DEV || 'http://localhost:4000/api';
   }
 };
 

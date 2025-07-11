@@ -115,7 +115,7 @@ const PasswordReset = () => {
     }
   };
 
-  const handleStep2Submit = () => {
+  const handleStep2Submit = async () => {
     if (!formData.otp) {
       setError("OTP is required.");
       return;
@@ -126,11 +126,35 @@ const PasswordReset = () => {
       return;
     }
 
-    setSuccess("OTP verified! Now create your new password.");
-    setTimeout(() => {
-      setCurrentStep(3);
-      setSuccess("");
-    }, 1000);
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await authService.verifyOTP(formData.email, formData.otp, userConfig.apiUserType);
+      
+      if (response.success) {
+        setSuccess("OTP verified! Now create your new password.");
+        setTimeout(() => {
+          setCurrentStep(3);
+          setSuccess("");
+        }, 1500);
+      } else {
+        setError(response.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error: any) {
+      if (error.message?.includes("expired")) {
+        setError("OTP has expired. Please start over.");
+      } else if (error.message?.includes("invalid")) {
+        setError("Invalid OTP. Please check and try again.");
+      } else if (error.message?.includes("attempts")) {
+        setError(error.message);
+      } else {
+        setError(error.message || "Failed to verify OTP. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStep3Submit = async () => {
@@ -359,23 +383,7 @@ const PasswordReset = () => {
     }
   };
 
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return "Enter Your Email";
-      case 2: return "Verify Code";
-      case 3: return "Create New Password";
-      default: return "Reset Password";
-    }
-  };
 
-  const getStepDescription = () => {
-    switch (currentStep) {
-      case 1: return "We'll send a verification code to your email";
-      case 2: return "Enter the 6-digit code we sent you";
-      case 3: return "Choose a strong password for your account";
-      default: return "Reset your password securely";
-    }
-  };
 
   return (
     <div className="login-container">
@@ -405,12 +413,9 @@ const PasswordReset = () => {
             <RiLockPasswordLine />
             <span>{userConfig.displayName} Password Reset</span>
           </div>
-          <h1>{getStepTitle()}</h1>
-          <p>{getStepDescription()}</p>
         </div>
 
-        {/* Step Progress - Simple version */}
-  
+
 
         <form className="login-form" onSubmit={(e) => { e.preventDefault(); handleNextStep(); }}>
           {error && (

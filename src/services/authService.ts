@@ -20,6 +20,20 @@ export interface LoginResponse {
   };
 }
 
+// Generic API response format
+export interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+// Backend API response format (for non-login endpoints)
+export interface BackendApiResponse {
+  status: string;
+  message: string;
+  data?: any;
+}
+
 // Backend response format
 export interface BackendLoginResponse {
   status: string;
@@ -185,16 +199,20 @@ class AuthService {
   }
 
   /**
-   * Send forgot password OTP to email
+   * Forgot password - Send OTP to email
    */
-  async forgotPassword(email: string, userType: 'admin' | 'agent' = 'admin'): Promise<{ success: boolean; message: string }> {
+  async forgotPassword(email: string, userType: string): Promise<ApiResponse> {
     try {
-      // Determine endpoint based on user type
-      const endpoint = userType === 'admin' 
-        ? '/v1/auth/forgot-password' 
-        : '/v1/property-manager/auth/forgot-password';
+      let endpoint = '/v1/auth/forgot-password';
+      
+      // Use different endpoint for property managers
+      if (userType === 'propertyManager' || userType === 'agent') {
+        endpoint = '/v1/property-manager/auth/forgot-password';
+      }
 
-      const response = await api.post(endpoint, { email });
+      const response = await api.post<BackendApiResponse>(endpoint, {
+        email
+      });
 
       if (response.data.status === 'success') {
         return {
@@ -208,6 +226,7 @@ class AuthService {
         };
       }
     } catch (error: any) {
+      // Handle API errors
       if (error.response?.data) {
         throw new Error(error.response.data.message || 'Failed to send OTP');
       } else if (error.request) {
@@ -219,16 +238,58 @@ class AuthService {
   }
 
   /**
-   * Reset password using OTP
+   * Verify OTP without resetting password
    */
-  async resetPasswordWithOTP(email: string, otp: string, newPassword: string, userType: 'admin' | 'agent' = 'admin'): Promise<{ success: boolean; message: string }> {
+  async verifyOTP(email: string, otp: string, userType: string): Promise<ApiResponse> {
     try {
-      // Determine endpoint based on user type
-      const endpoint = userType === 'admin' 
-        ? '/v1/auth/reset-password' 
-        : '/v1/property-manager/auth/reset-password';
+      let endpoint = '/v1/auth/verify-otp';
+      
+      // Use different endpoint for property managers
+      if (userType === 'propertyManager' || userType === 'agent') {
+        endpoint = '/v1/property-manager/auth/verify-otp';
+      }
 
-      const response = await api.post(endpoint, {
+      const response = await api.post<BackendApiResponse>(endpoint, {
+        email,
+        otp
+      });
+
+      if (response.data.status === 'success') {
+        return {
+          success: true,
+          message: response.data.message || 'OTP verified successfully'
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || 'Invalid OTP'
+        };
+      }
+    } catch (error: any) {
+      // Handle API errors
+      if (error.response?.data) {
+        throw new Error(error.response.data.message || 'OTP verification failed');
+      } else if (error.request) {
+        throw new Error('Network error. Please check your connection.');
+      } else {
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  }
+
+  /**
+   * Reset password with OTP
+   */
+  async resetPasswordWithOTP(email: string, otp: string, newPassword: string, userType: string): Promise<ApiResponse> {
+    try {
+      let endpoint = '/v1/auth/reset-password';
+      
+      // Use different endpoint for property managers
+      if (userType === 'propertyManager' || userType === 'agent') {
+        endpoint = '/v1/property-manager/auth/reset-password';
+      }
+
+      const response = await api.post<BackendApiResponse>(endpoint, {
         email,
         otp,
         newPassword
@@ -246,8 +307,9 @@ class AuthService {
         };
       }
     } catch (error: any) {
+      // Handle API errors
       if (error.response?.data) {
-        throw new Error(error.response.data.message || 'Failed to reset password');
+        throw new Error(error.response.data.message || 'Password reset failed');
       } else if (error.request) {
         throw new Error('Network error. Please check your connection.');
       } else {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { Sidebar, TopNavbar } from "./components";
 import {
   Login,
@@ -128,12 +129,60 @@ function App() {
     }
 
     return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/login/agent" element={<AgentLogin />} />
-        <Route path="/login/admin" element={<AdminLogin />} />
-        <Route path="/password-reset" element={<PasswordReset />} />
-      </Routes>
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/agent" element={<AgentLogin />} />
+          <Route path="/login/admin" element={<AdminLogin />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
+        </Routes>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#ffffff',
+              color: '#333333',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            },
+            success: {
+              style: {
+                border: '1px solid #22c55e',
+                color: '#15803d',
+              },
+              iconTheme: {
+                primary: '#22c55e',
+                secondary: '#ffffff',
+              },
+            },
+            error: {
+              style: {
+                border: '1px solid #ef4444',
+                color: '#dc2626',
+              },
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#ffffff',
+              },
+            },
+            loading: {
+              style: {
+                border: '1px solid #3b82f6',
+                color: '#1d4ed8',
+              },
+              iconTheme: {
+                primary: '#3b82f6',
+                secondary: '#ffffff',
+              },
+            },
+          }}
+        />
+      </>
     );
   }
 
@@ -145,50 +194,98 @@ function App() {
 
   // Render main app layout for other routes with role-based access
   return (
-    <div className="app-layout">
-      <TopNavbar onMobileMenuClick={handleMobileMenuClick} />
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className="main-content">
-        <Routes>
-          {/* Simple test dashboard route without protection */}
-          <Route path="/dashboard" element={<Dashboard />} />
+    <>
+      <div className="app-layout">
+        <TopNavbar onMobileMenuClick={handleMobileMenuClick} />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <main className="main-content">
+          <Routes>
+            {/* Simple test dashboard route without protection */}
+            <Route path="/dashboard" element={<Dashboard />} />
 
-          {/* Dynamic routes generated based on user roles */}
-          {generateAllRoutes()}
+            {/* Dynamic routes generated based on user roles */}
+            {generateAllRoutes()}
 
-          {/* Redirect root path to user's dashboard */}
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={userType ? getFullRoute(userType, "dashboard") : "/login"}
-                replace
-              />
-            }
-          />
+            {/* Redirect root path to user's dashboard */}
+            <Route
+              path="/"
+              element={
+                <Navigate
+                  to={userType ? getFullRoute(userType, "dashboard") : "/login"}
+                  replace
+                />
+              }
+            />
 
-          {/* Catch-all route for access denied */}
-          <Route
-            path="*"
-            element={
-              <div className="page-container">
-                <div className="page-header">
-                  <h1>Access Denied</h1>
-                  <p>You don't have permission to access this page</p>
+            {/* Catch-all route for access denied */}
+            <Route
+              path="*"
+              element={
+                <div className="page-container">
+                  <div className="page-header">
+                    <h1>Access Denied</h1>
+                    <p>You don't have permission to access this page</p>
+                  </div>
+                  <div className="content-card">
+                    <h3>Insufficient Permissions</h3>
+                    <p>
+                      Your current role ({userType}) doesn't allow access to this
+                      resource.
+                    </p>
+                  </div>
                 </div>
-                <div className="content-card">
-                  <h3>Insufficient Permissions</h3>
-                  <p>
-                    Your current role ({userType}) doesn't allow access to this
-                    resource.
-                  </p>
-                </div>
-              </div>
-            }
-          />
-        </Routes>
-      </main>
-    </div>
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#ffffff',
+            color: '#333333',
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          },
+          success: {
+            style: {
+              border: '1px solid #22c55e',
+              color: '#15803d',
+            },
+            iconTheme: {
+              primary: '#22c55e',
+              secondary: '#ffffff',
+            },
+          },
+          error: {
+            style: {
+              border: '1px solid #ef4444',
+              color: '#dc2626',
+            },
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff',
+            },
+          },
+          loading: {
+            style: {
+              border: '1px solid #3b82f6',
+              color: '#1d4ed8',
+            },
+            iconTheme: {
+              primary: '#3b82f6',
+              secondary: '#ffffff',
+            },
+          },
+        }}
+      />
+    </>
   );
 }
 

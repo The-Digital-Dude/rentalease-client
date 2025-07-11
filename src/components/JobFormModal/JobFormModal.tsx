@@ -125,7 +125,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               {technicians
                 .filter((tech) => tech.availability === "Available")
                 .map((technician) => (
-                  <option key={technician.id} value={technician.name}>
+                  <option key={technician.id} value={technician.id}>
                     {technician.name} ({technician.currentJobs} jobs)
                   </option>
                 ))}

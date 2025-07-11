@@ -23,6 +23,12 @@
   }
 }
 
+.header-actions{
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
 /* Urgent Jobs Section */
 .urgent-jobs-section {
   margin-bottom: 2rem;
@@ -634,6 +640,40 @@
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid #e5e7eb;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+
+  p {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.btn-primary {
+      background: #3b82f6;
+      color: white;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
   }
 }
 

@@ -49,9 +49,19 @@ api.interceptors.response.use(
   (error) => {
     // Handle common error cases
     if (error.response?.status === 401) {
-      // Token expired or invalid, redirect to login
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      // Check if we're currently on a login page - if so, don't redirect
+      // This allows login forms to handle authentication errors properly
+      const isOnLoginPage = window.location.pathname.startsWith('/login') || 
+                          window.location.pathname === '/password-reset';
+      
+      if (!isOnLoginPage) {
+        // Token expired or invalid for protected routes, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        window.location.href = '/login';
+      }
+      
+      // For login pages, just let the error propagate to be handled by the form
     }
     
     if (error.response?.status === 403) {

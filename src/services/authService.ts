@@ -52,6 +52,8 @@ export interface BackendLoginResponse {
       id: string;
       name: string;
       email: string;
+      contactPerson?: string; // Added for property manager
+      companyName?: string; // Added for property manager
     };
     staff?: {
       id: string;
@@ -94,59 +96,71 @@ class AuthService {
    */
   async login(email: string, password: string, userType = 'admin'): Promise<LoginResponse> {
     try {
-      const response = await api.post<BackendLoginResponse>('/v1/auth/login', {
+      // Determine the correct endpoint based on user type
+      let endpoint = '/v1/auth/login'; // Default for admin/superUser
+      
+      if (userType === 'agent' || userType === 'propertyManager') {
+        endpoint = '/v1/property-manager/auth/login';
+      }
+
+      const response = await api.post<BackendLoginResponse>(endpoint, {
         email,
-        password,
-        userType,
+        password
+        // Note: Don't send userType for property manager endpoint
       });
 
-             // Check if login was successful
-       if (response.data.status === 'success' && response.data.data?.token) {
-         // Extract user data based on what's present in the response
-         let user: { id: string; email: string; name: string; } | null = null;
-         let userType = 'staff'; // default
-         
-         const responseData = response.data.data;
-         
-         if (responseData.superUser) {
-           user = responseData.superUser;
-           userType = this.mapUserType('superUser');
-         } else if (responseData.agent) {
-           user = responseData.agent;
-           userType = this.mapUserType('agent');
-         } else if (responseData.propertyManager) {
-           user = responseData.propertyManager;
-           userType = this.mapUserType('propertyManager');
-         } else if (responseData.staff) {
-           user = responseData.staff;
-           userType = this.mapUserType('staff');
-         } else if (responseData.tenant) {
-           user = responseData.tenant;
-           userType = this.mapUserType('tenant');
-         }
-         
-         if (!user) {
-           throw new Error('Invalid user data received from server');
-         }
+      // Check if login was successful
+      if (response.data.status === 'success' && response.data.data?.token) {
+        // Extract user data based on what's present in the response
+        let user: { id: string; email: string; name: string; } | null = null;
+        let mappedUserType = 'staff'; // default
+        
+        const responseData = response.data.data;
+        
+        if (responseData.superUser) {
+          user = responseData.superUser;
+          mappedUserType = this.mapUserType('superUser');
+        } else if (responseData.agent) {
+          user = responseData.agent;
+          mappedUserType = this.mapUserType('agent');
+        } else if (responseData.propertyManager) {
+          // For property manager, map the response fields correctly
+          user = {
+            id: responseData.propertyManager.id,
+            email: responseData.propertyManager.email,
+            name: responseData.propertyManager.contactPerson || responseData.propertyManager.companyName || 'Property Manager'
+          };
+          mappedUserType = this.mapUserType('propertyManager');
+        } else if (responseData.staff) {
+          user = responseData.staff;
+          mappedUserType = this.mapUserType('staff');
+        } else if (responseData.tenant) {
+          user = responseData.tenant;
+          mappedUserType = this.mapUserType('tenant');
+        }
+        
+        if (!user) {
+          throw new Error('Invalid user data received from server');
+        }
 
-         // Transform backend response to frontend format
-         const transformedResponse: LoginResponse = {
-           success: true,
-           message: 'Login successful',
-           data: {
-             user: {
-               id: user.id,
-               email: user.email,
-               name: user.name,
-               userType: userType
-             },
-             token: response.data.data.token
-           }
-         };
+        // Transform backend response to frontend format
+        const transformedResponse: LoginResponse = {
+          success: true,
+          message: 'Login successful',
+          data: {
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              userType: mappedUserType
+            },
+            token: response.data.data.token
+          }
+        };
 
-                 // Store token in localStorage
-         localStorage.setItem('authToken', response.data.data.token);
-         localStorage.setItem('userData', JSON.stringify(transformedResponse.data!.user));
+        // Store token in localStorage
+        localStorage.setItem('authToken', response.data.data.token);
+        localStorage.setItem('userData', JSON.stringify(transformedResponse.data!.user));
 
         return transformedResponse;
       } else {

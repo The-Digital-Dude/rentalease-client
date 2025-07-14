@@ -1,21 +1,10 @@
 import React from "react";
 import { RiAlertLine, RiCalendarLine } from "react-icons/ri";
 import "./UrgentJobsSection.scss";
-
-interface Job {
-  id: string;
-  propertyAddress: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
-  dueDate: string;
-  assignedTechnician: string;
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue";
-  priority: "Low" | "Medium" | "High" | "Urgent";
-  description?: string;
-  createdDate: string;
-}
+import type { ComponentJob } from "../../utils/jobAdapter";
 
 interface UrgentJobsSectionProps {
-  urgentJobs: Job[];
+  urgentJobs: ComponentJob[];
   getPriorityColor: (priority: string) => string;
   isOverdue: (dueDate: string) => boolean;
 }

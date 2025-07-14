@@ -65,24 +65,28 @@ const JobManagement = () => {
       console.log('Jobs Response:', jobsResponse);
       console.log('Tech Response:', techResponse);
 
+      let componentTechnicians: ComponentTechnician[] = [];
+      
+      if (techResponse.success && techResponse.data) {
+        const staffData = techResponse.data as ServiceStaff[];
+        componentTechnicians = staffData.map(adaptServiceStaffToComponentTechnician);
+        setTechnicians(componentTechnicians);
+      } else {
+        const errorMessage = techResponse.message || 'Failed to fetch technicians';
+        console.error('Technicians fetch error:', errorMessage);
+        setError(errorMessage);
+      }
+
       if (jobsResponse.success && jobsResponse.data) {
-        const componentJobs = (jobsResponse.data as ServiceJob[]).map(adaptServiceJobToComponentJob);
+        const componentJobs = (jobsResponse.data as ServiceJob[]).map(job => 
+          adaptServiceJobToComponentJob(job, componentTechnicians)
+        );
         setJobs(componentJobs);
       } else {
         const errorMessage = jobsResponse.message || 'Failed to fetch jobs';
         console.error('Jobs fetch error:', errorMessage);
         setError(errorMessage);
         return; // Exit early if jobs fetch fails
-      }
-
-      if (techResponse.success && techResponse.data) {
-        const staffData = techResponse.data as ServiceStaff[];
-        const componentTechnicians = staffData.map(adaptServiceStaffToComponentTechnician);
-        setTechnicians(componentTechnicians);
-      } else {
-        const errorMessage = techResponse.message || 'Failed to fetch technicians';
-        console.error('Technicians fetch error:', errorMessage);
-        setError(errorMessage);
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -259,18 +263,34 @@ const JobManagement = () => {
     setShowActionMenu(null);
   };
 
+  const handleUpdateJob = async (updatedJob: ComponentJob) => {
+    try {
+      setError(null);
+      const response = await jobService.updateJob(updatedJob.id, {
+        propertyAddress: updatedJob.propertyAddress,
+        jobType: updatedJob.jobType,
+        dueDate: updatedJob.dueDate,
+        assignedTechnician: updatedJob.assignedTechnicianId || null as any,
+        status: updatedJob.status,
+        priority: updatedJob.priority,
+        description: updatedJob.description || "",
+      });
+      
+      if (response.success) {
+        await fetchInitialData(); // Refresh all data
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      setError('Failed to update job');
+    }
+  };
+
   if (isLoading) {
     return <div className="page-container">Loading jobs...</div>;
   }
 
-  if (error) {
-    return (
-      <div className="page-container">
-        <div className="error-message">{error}</div>
-        <button onClick={fetchInitialData}>Retry</button>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="page-container job-management">
@@ -329,16 +349,19 @@ const JobManagement = () => {
         handleUpdateJobStatus={handleUpdateJobStatus}
         showActionMenu={showActionMenu}
         setShowActionMenu={setShowActionMenu}
+        technicians={technicians}
+        onJobUpdate={handleUpdateJob}
       />
 
       {/* Create Job Form Modal */}
       <JobFormModal
         isOpen={showCreateForm}
         onClose={() => setShowCreateForm(false)}
-        onSubmit={handleCreateJob}
+        onSubmit={handleCreateJob as any}
         formData={formData}
         onInputChange={handleInputChange}
         technicians={technicians}
+        mode="create"
       />
     </div>
   );

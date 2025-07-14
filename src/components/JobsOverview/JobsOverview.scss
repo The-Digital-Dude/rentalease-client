@@ -94,13 +94,16 @@
 // Jobs Table
 .jobs-table-container {
   overflow-x: auto;
+  overflow-y: visible;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  position: relative;
 
   .jobs-table {
     width: 100%;
     border-collapse: collapse;
     background: white;
+    position: relative;
 
     thead {
       background: #f9fafb;
@@ -173,24 +176,62 @@
 
           &.actions-cell {
             position: relative;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            padding-right: 16px;
+            overflow: visible;
 
             .action-btn {
               background: none;
-              border: none;
-              padding: 8px;
-              border-radius: 4px;
+              border: 1px solid transparent;
               cursor: pointer;
+              padding: 6px;
+              border-radius: 4px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
               color: #6b7280;
-              transition: all 0.2s;
-
-              &:hover {
-                background: #f3f4f6;
-                color: #374151;
-              }
+              transition: all 0.2s ease;
+              min-width: 32px;
+              min-height: 32px;
 
               svg {
                 width: 16px;
                 height: 16px;
+              }
+
+              &:hover {
+                background-color: #f3f4f6;
+                border-color: #d1d5db;
+                color: #374151;
+              }
+
+              &.edit-btn {
+                color: #4a90e2;
+                
+                &:hover {
+                  background-color: #e8f1fc;
+                  border-color: #4a90e2;
+                  color: #2171d0;
+                }
+              }
+
+              // Special styling for the three-dot menu button
+              &:not(.edit-btn) {
+                color: #9ca3af;
+                border: 1px solid #e5e7eb;
+                background-color: #ffffff;
+                
+                &:hover {
+                  background-color: #f9fafb;
+                  border-color: #d1d5db;
+                  color: #6b7280;
+                }
+
+                &:active {
+                  background-color: #f3f4f6;
+                }
               }
             }
 
@@ -201,25 +242,24 @@
               background: white;
               border: 1px solid #e5e7eb;
               border-radius: 6px;
-              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-              z-index: 10;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+              z-index: 1000;
               min-width: 160px;
+              margin-top: 4px;
+              overflow: visible;
 
               button {
                 display: block;
                 width: 100%;
-                padding: 8px 12px;
+                padding: 10px 12px;
                 text-align: left;
-                background: none;
                 border: none;
+                background: none;
                 cursor: pointer;
                 font-size: 0.875rem;
                 color: #374151;
                 transition: background-color 0.2s;
-
-                &:hover {
-                  background: #f3f4f6;
-                }
+                white-space: nowrap;
 
                 &:first-child {
                   border-radius: 6px 6px 0 0;
@@ -227,6 +267,10 @@
 
                 &:last-child {
                   border-radius: 0 0 6px 6px;
+                }
+
+                &:hover {
+                  background-color: #f3f4f6;
                 }
               }
             }

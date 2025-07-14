@@ -1,1 +1,2 @@
-export { default } from "./JobFormModal";
+export { default } from './JobFormModal';
+export type { JobFormData } from './JobFormModal';

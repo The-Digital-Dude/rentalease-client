@@ -1,33 +1,14 @@
 import React from "react";
 import { RiDragDropLine, RiUserLine } from "react-icons/ri";
 import "./JobAllocationTool.scss";
-
-interface Job {
-  id: string;
-  job_id: string;
-  propertyAddress: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
-  dueDate: string;
-  assignedTechnician: string;
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue";
-  priority: "Low" | "Medium" | "High" | "Urgent";
-  description?: string;
-  createdDate: string;
-}
-
-interface Technician {
-  id: string;
-  name: string;
-  specialties: string[];
-  availability: "Available" | "Busy" | "Off Duty";
-  currentJobs: number;
-}
+import type { ComponentJob } from "../../utils/jobAdapter";
+import type { ComponentTechnician } from "../../utils/staffAdapter";
 
 interface JobAllocationToolProps {
-  jobs: Job[];
-  technicians: Technician[];
+  jobs: ComponentJob[];
+  technicians: ComponentTechnician[];
   getPriorityColor: (priority: string) => string;
-  handleDragStart: (e: React.DragEvent, job: Job) => void;
+  handleDragStart: (e: React.DragEvent, job: ComponentJob) => void;
   handleDragOver: (e: React.DragEvent) => void;
   handleDrop: (e: React.DragEvent, technicianId: string) => void;
 }

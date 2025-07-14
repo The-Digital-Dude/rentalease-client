@@ -1,27 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   RiSearchLine,
   RiCalendarLine,
   RiUserLine,
   RiMoreLine,
+  RiEdit2Line,
 } from "react-icons/ri";
 import "./JobsOverview.scss";
-
-interface Job {
-  id: string;
-  job_id: string;
-  propertyAddress: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
-  dueDate: string;
-  assignedTechnician: string;
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue";
-  priority: "Low" | "Medium" | "High" | "Urgent";
-  description?: string;
-  createdDate: string;
-}
+import JobFormModal, { type JobFormData } from "../JobFormModal";
+import type { ComponentJob } from "../../utils/jobAdapter";
+import type { ComponentTechnician } from "../../utils/staffAdapter";
 
 interface JobsOverviewProps {
-  filteredJobs: Job[];
+  filteredJobs: ComponentJob[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   statusFilter: string;
@@ -31,10 +22,12 @@ interface JobsOverviewProps {
   getStatusColor: (status: string) => string;
   getPriorityColor: (priority: string) => string;
   isOverdue: (dueDate: string) => boolean;
-  handleEditJob: (job: Job) => void;
-  handleUpdateJobStatus: (jobId: string, newStatus: Job["status"]) => void;
+  handleEditJob: (job: ComponentJob) => void;
+  handleUpdateJobStatus: (jobId: string, newStatus: ComponentJob["status"]) => void;
   showActionMenu: string | null;
   setShowActionMenu: (jobId: string | null) => void;
+  technicians: ComponentTechnician[];
+  onJobUpdate: (updatedJob: ComponentJob) => void;
 }
 
 const JobsOverview: React.FC<JobsOverviewProps> = ({
@@ -52,7 +45,73 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   handleUpdateJobStatus,
   showActionMenu,
   setShowActionMenu,
+  technicians,
+  onJobUpdate,
 }) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<ComponentJob | null>(null);
+
+  // Helper function to format date for HTML input (YYYY-MM-DD)
+  const formatDateForInput = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
+  const handleEditClick = (job: ComponentJob) => {
+    // Find the technician ID by name if we only have the name
+    let technicianId = job.assignedTechnicianId;
+    if (!technicianId && job.assignedTechnician) {
+      const technician = technicians.find(tech => tech.name === job.assignedTechnician);
+      technicianId = technician?.id || '';
+    }
+    
+    setEditingJob({
+      ...job,
+      assignedTechnicianId: technicianId
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingJob(null);
+  };
+
+  const handleEditModalSubmit = (formData: JobFormData) => {
+    if (editingJob) {
+      const updatedJob = {
+        ...editingJob,
+        ...formData,
+        assignedTechnician: formData.assignedTechnician 
+          ? technicians.find(tech => tech.id === formData.assignedTechnician)?.name || formData.assignedTechnician
+          : '',
+        assignedTechnicianId: formData.assignedTechnician || '',
+        description: formData.description ?? editingJob.description ?? '',
+        createdDate: editingJob.createdDate,
+      };
+      onJobUpdate(updatedJob);
+      handleEditModalClose();
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    if (editingJob) {
+      setEditingJob({
+        ...editingJob,
+        [e.target.name]: e.target.value,
+      });
+    }
+  };
+
   return (
     <div className="content-card">
       <div className="section-header">
@@ -149,6 +208,13 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                 </td>
                 <td className="actions-cell">
                   <button
+                    className="action-btn edit-btn"
+                    onClick={() => handleEditClick(job)}
+                    title="Edit Job"
+                  >
+                    <RiEdit2Line />
+                  </button>
+                  <button
                     className="action-btn"
                     onClick={() =>
                       setShowActionMenu(
@@ -160,7 +226,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                   </button>
                   {showActionMenu === job.id && (
                     <div className="action-menu">
-                      <button onClick={() => handleEditJob(job)}>
+                      <button onClick={() => handleEditClick(job)}>
                         Edit Job
                       </button>
                       <button
@@ -190,6 +256,23 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
           </tbody>
         </table>
       </div>
+
+      {isEditModalOpen && editingJob && (
+        <JobFormModal
+          isOpen={isEditModalOpen}
+          onClose={handleEditModalClose}
+          onSubmit={handleEditModalSubmit}
+          formData={{
+            ...editingJob,
+            assignedTechnician: editingJob.assignedTechnicianId,
+            dueDate: formatDateForInput(editingJob.dueDate),
+            description: editingJob.description || '',
+          }}
+          onInputChange={handleInputChange}
+          technicians={technicians}
+          mode="edit"
+        />
+      )}
     </div>
   );
 };

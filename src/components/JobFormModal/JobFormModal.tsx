@@ -118,10 +118,10 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
             <select
               id="assignedTechnician"
               name="assignedTechnician"
-              value={formData.assignedTechnician}
+              value={formData.assignedTechnician || "null"}
               onChange={onInputChange}
             >
-              <option value="">Select Technician</option>
+              <option value="null">Select Technician</option>
               {technicians
                 .filter((tech) => tech.availability === "Available")
                 .map((technician) => (

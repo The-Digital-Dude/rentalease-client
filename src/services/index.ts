@@ -1,10 +1,8 @@
-// Export existing services
-export { default as authService } from './authService';
-export { propertyManagerService } from './propertyManagerService';
-export { default as jobService } from './jobService';
-
-// Export API and staff API
 export { default as api, staffAPI } from './api';
+export { default as authService } from './authService';
+export { default as jobService } from './jobService';
+export { propertyManagerService } from './propertyManagerService';
+export { default as staffService } from './staffService';
 
 // Staff-related types
 export interface StaffMember {

@@ -4,6 +4,7 @@ import "./JobAllocationTool.scss";
 
 interface Job {
   id: string;
+  job_id: string;
   propertyAddress: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate: string;
@@ -62,7 +63,7 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                 onDragStart={(e) => handleDragStart(e, job)}
               >
                 <div className="job-header">
-                  <span className="job-id">{job.id}</span>
+                  <span className="job-id">{job.job_id}</span>
                   <span
                     className={`job-type type-${job.jobType.toLowerCase()}`}
                   >

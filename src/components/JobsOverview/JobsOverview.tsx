@@ -9,6 +9,7 @@ import "./JobsOverview.scss";
 
 interface Job {
   id: string;
+  job_id: string;
   propertyAddress: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate: string;
@@ -113,7 +114,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                     : ""
                 }
               >
-                <td className="job-id-cell">{job.id}</td>
+                <td className="job-id-cell">{job.job_id}</td>
                 <td className="address-cell">{job.propertyAddress}</td>
                 <td>
                   <span

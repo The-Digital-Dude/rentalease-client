@@ -4,51 +4,22 @@ import type { AxiosResponse } from 'axios';
 // Job interfaces
 export interface Job {
   id: string;
+  job_id: string;
   propertyAddress: string;
   jobType: 'Gas' | 'Electrical' | 'Smoke' | 'Repairs';
   dueDate: string;
-  assignedTechnician: {
-    _id: string;
-    fullName: string;
-    tradeType: string;
-    phone: string;
-    email: string;
-    availabilityStatus: string;
-  } | string;
+  assignedTechnician: string | { fullName: string } | null;
   status: 'Pending' | 'Scheduled' | 'Completed' | 'Overdue';
-  description?: string;
   priority: 'Low' | 'Medium' | 'High' | 'Urgent';
-  completedAt?: string;
-  estimatedDuration?: number;
-  actualDuration?: number;
-  cost: {
-    materialCost: number;
-    laborCost: number;
-    totalCost: number;
-  };
-  notes?: string;
-  isOverdue: boolean;
+  description?: string;
   createdAt: string;
-  updatedAt: string;
-  owner: {
-    ownerType: string;
-    ownerId: string;
-  };
-  createdBy: {
-    userType: string;
-    userId: string;
-  };
-  lastUpdatedBy?: {
-    userType: string;
-    userId: string;
-  };
 }
 
 export interface CreateJobData {
   propertyAddress: string;
   jobType: 'Gas' | 'Electrical' | 'Smoke' | 'Repairs';
   dueDate: string;
-  assignedTechnician: string;
+  assignedTechnician: string | null;
   description?: string;
   priority?: 'Low' | 'Medium' | 'High' | 'Urgent';
   estimatedDuration?: number;
@@ -117,7 +88,15 @@ export interface JobFilters {
 export interface JobApiResponse {
   success: boolean;
   message: string;
-  data?: Job[] | Job | null;
+  data?: Job[] | Job | {
+    job: Job;
+    technician: {
+      id: string;
+      fullName: string;
+      currentJobs: number;
+      availabilityStatus: string;
+    };
+  } | null;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -381,6 +360,45 @@ class JobService {
         success: false,
         message: 'Failed to fetch urgent jobs',
         data: []
+      };
+    }
+  }
+
+  /**
+   * Assign a job to a technician (super users only)
+   */
+  async assignJob(jobId: string, technicianId: string): Promise<JobApiResponse> {
+    try {
+      const response: AxiosResponse<{
+        status: string;
+        message: string;
+        data: {
+          job: Job;
+          technician: {
+            id: string;
+            fullName: string;
+            currentJobs: number;
+            availabilityStatus: string;
+          };
+        };
+      }> = await api.patch(`/v1/jobs/${jobId}/assign`, { technicianId });
+
+      if (response.data.status === 'success') {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data // Return both job and technician data
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || 'Failed to assign job',
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to assign job',
       };
     }
   }

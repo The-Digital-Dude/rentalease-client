@@ -16,6 +16,12 @@ export interface PropertyTenant {
   phone: string;
 }
 
+export interface PropertyLandlord {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export interface ComplianceItem {
   nextInspection?: string;
   required?: boolean;
@@ -42,10 +48,6 @@ export interface Property {
   address: PropertyAddress;
   fullAddress: string;
   propertyType: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
-  bedrooms: number;
-  bathrooms: number;
-  rentAmount: number;
-  status: 'Available' | 'Occupied' | 'Maintenance' | 'Pending';
   region: string;
   propertyManager: {
     id: string;
@@ -55,6 +57,7 @@ export interface Property {
     phone: string;
   };
   currentTenant: PropertyTenant;
+  currentLandlord: PropertyLandlord;
   complianceSchedule?: ComplianceSchedule;
   notes?: string;
   hasOverdueCompliance?: boolean;
@@ -66,13 +69,10 @@ export interface Property {
 export interface CreatePropertyData {
   address: PropertyAddress;
   propertyType?: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
-  bedrooms?: number;
-  bathrooms?: number;
-  rentAmount?: number;
   propertyManager?: string; // Only for super users
   region?: string;
-  status?: 'Available' | 'Occupied' | 'Maintenance' | 'Pending';
   currentTenant: PropertyTenant;
+  currentLandlord: PropertyLandlord;
   complianceSchedule?: ComplianceSchedule;
   notes?: string;
 }
@@ -225,20 +225,7 @@ class PropertyService {
     }
   }
 
-  getPropertyStatusColor(status: string): string {
-    switch (status) {
-      case 'Available':
-        return 'success';
-      case 'Occupied':
-        return 'info';
-      case 'Maintenance':
-        return 'warning';
-      case 'Pending':
-        return 'secondary';
-      default:
-        return 'secondary';
-    }
-  }
+
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-AU', {
@@ -279,4 +266,4 @@ export const VALID_STATES = ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'
 
 export const PROPERTY_TYPES = ['House', 'Apartment', 'Townhouse', 'Commercial', 'Other'] as const;
 
-export const PROPERTY_STATUSES = ['Available', 'Occupied', 'Maintenance', 'Pending'] as const; 
+ 

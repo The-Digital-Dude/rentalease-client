@@ -5,7 +5,8 @@ import type {
   Property, 
   CreatePropertyData, 
   PropertyAddress,
-  PropertyTenant
+  PropertyTenant,
+  PropertyLandlord
 } from "../../services/propertyService";
 import { 
   VALID_STATES
@@ -32,6 +33,11 @@ interface PropertyFormData {
   tenantEmail: string;
   tenantPhone: string;
   
+  // Landlord Information (all required)
+  landlordName: string;
+  landlordEmail: string;
+  landlordPhone: string;
+  
   // Inspection Dates (optional)
   gasInspectionDate: string;
   electricalInspectionDate: string;
@@ -53,6 +59,11 @@ const initialFormData: PropertyFormData = {
   tenantName: "",
   tenantEmail: "",
   tenantPhone: "",
+  
+  // Landlord Information
+  landlordName: "",
+  landlordEmail: "",
+  landlordPhone: "",
   
   // Inspection Dates
   gasInspectionDate: "",
@@ -89,6 +100,11 @@ const PropertyFormModal = ({
         tenantName: editingProperty.currentTenant?.name || "",
         tenantEmail: editingProperty.currentTenant?.email || "",
         tenantPhone: editingProperty.currentTenant?.phone || "",
+        
+        // Landlord Information
+        landlordName: editingProperty.currentLandlord?.name || "",
+        landlordEmail: editingProperty.currentLandlord?.email || "",
+        landlordPhone: editingProperty.currentLandlord?.phone || "",
         
         // Inspection Dates
         gasInspectionDate: editingProperty.complianceSchedule?.gasCompliance?.nextInspection || "",
@@ -135,7 +151,8 @@ const PropertyFormModal = ({
     
     // Validate required fields
     if (!formData.street || !formData.suburb || !formData.postcode || 
-        !formData.tenantName || !formData.tenantEmail || !formData.tenantPhone) {
+        !formData.tenantName || !formData.tenantEmail || !formData.tenantPhone ||
+        !formData.landlordName || !formData.landlordEmail || !formData.landlordPhone) {
       alert("Please fill in all required fields");
       return;
     }
@@ -149,15 +166,16 @@ const PropertyFormModal = ({
         postcode: formData.postcode,
       },
       propertyType: "House" as any,
-      bedrooms: 2,
-      bathrooms: 1,
-      rentAmount: 0,
       region: "",
-      status: "Occupied" as any,
       currentTenant: {
         name: formData.tenantName,
         email: formData.tenantEmail,
         phone: formData.tenantPhone,
+      },
+      currentLandlord: {
+        name: formData.landlordName,
+        email: formData.landlordEmail,
+        phone: formData.landlordPhone,
       },
       complianceSchedule: {
         gasCompliance: formData.gasInspectionDate ? {
@@ -385,6 +403,66 @@ const PropertyFormModal = ({
                         value={formData.tenantPhone}
                         onChange={(e) => handleInputChange('tenantPhone', e.target.value)}
                         placeholder="0412 345 678"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Landlord Information Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <div className="section-icon">
+                      <RiUser3Line />
+                    </div>
+                    <div className="section-title">
+                      <h3>Landlord Information</h3>
+                      <p>Property owner contact details</p>
+                    </div>
+                  </div>
+                  
+                  <div className="form-grid">
+                    <div className="form-field full-width">
+                      <label>
+                        <RiUserLine />
+                        Full Name
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.landlordName}
+                        onChange={(e) => handleInputChange('landlordName', e.target.value)}
+                        placeholder="Jane Doe"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        <RiMailLine />
+                        Email Address
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.landlordEmail}
+                        onChange={(e) => handleInputChange('landlordEmail', e.target.value)}
+                        placeholder="jane@example.com"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        <RiPhoneLine />
+                        Phone Number
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.landlordPhone}
+                        onChange={(e) => handleInputChange('landlordPhone', e.target.value)}
+                        placeholder="0423 456 789"
                         required
                       />
                     </div>

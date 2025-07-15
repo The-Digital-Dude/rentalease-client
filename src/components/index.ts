@@ -15,4 +15,18 @@ export { default as RoleDisplay } from "./RoleDisplay";
 export { default as RoleTestButtons } from "./RoleTestButtons";
 export { default as PropertyDetailsModal } from "./PropertyDetailsModal";
 export { default as PropertyFormModal } from "./PropertyFormModal";
+export { default as TenantInfo } from "./TenantInfo";
+export { default as LandlordInfo } from "./LandlordInfo";
+export { default as StatsGrid } from "./StatsGrid";
+export { default as TabNavigation } from "./TabNavigation";
+export { default as SearchFilterBar } from "./SearchFilterBar";
+export { default as PaymentCard } from "./PaymentCard";
+export { default as BillingCard } from "./BillingCard";
+export { default as EmptyState } from "./EmptyState";
 export { AgencyCard } from "./AgencyCard";
+
+// Export types
+export type { TabItem } from "./TabNavigation";
+export type { FilterOption, FilterConfig } from "./SearchFilterBar";
+export type { Payment } from "./PaymentCard";
+export type { PropertyBilling } from "./BillingCard";

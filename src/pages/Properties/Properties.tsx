@@ -19,13 +19,14 @@ import { useAppSelector } from "../../store";
 import { getFullRoute } from "../../config/roleBasedRoutes";
 import PropertyFormModal from "../../components/PropertyFormModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import TenantInfo from "../../components/TenantInfo";
+import LandlordInfo from "../../components/LandlordInfo";
 import propertyService, { 
   type Property, 
   type CreatePropertyData,
   VALID_REGIONS, 
   VALID_STATES, 
-  PROPERTY_TYPES, 
-  PROPERTY_STATUSES 
+  PROPERTY_TYPES
 } from "../../services/propertyService";
 import "./Properties.scss";
 
@@ -45,7 +46,6 @@ const Properties = () => {
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [stateFilter, setStateFilter] = useState("");
@@ -66,7 +66,6 @@ const Properties = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm || undefined,
-        status: statusFilter || undefined,
         propertyType: typeFilter || undefined,
         region: regionFilter || undefined,
         state: stateFilter || undefined,
@@ -91,7 +90,7 @@ const Properties = () => {
   // Effects
   useEffect(() => {
     loadProperties();
-  }, [currentPage, searchTerm, statusFilter, typeFilter, regionFilter, stateFilter]);
+  }, [currentPage, searchTerm, typeFilter, regionFilter, stateFilter]);
 
   // Debounced search
   useEffect(() => {
@@ -168,7 +167,6 @@ const Properties = () => {
 
   const handleClearFilters = () => {
     setSearchTerm("");
-    setStatusFilter("");
     setTypeFilter("");
     setRegionFilter("");
     setStateFilter("");
@@ -180,10 +178,6 @@ const Properties = () => {
   };
 
   // Helper functions
-  const getStatusColor = (status: string) => {
-    return propertyService.getPropertyStatusColor(status);
-  };
-
   const getComplianceColor = (score: number) => {
     if (score >= 85) return 'success';
     if (score >= 60) return 'warning';
@@ -201,9 +195,6 @@ const Properties = () => {
   // Statistics
   const stats = {
     total: totalCount,
-    available: properties.filter(p => p.status === 'Available').length,
-    occupied: properties.filter(p => p.status === 'Occupied').length,
-    maintenance: properties.filter(p => p.status === 'Maintenance').length,
     overdue: properties.filter(p => p.hasOverdueCompliance).length,
   };
 
@@ -271,36 +262,6 @@ const Properties = () => {
           </div>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-value">{stats.available}</div>
-            <div className="stat-label">Available</div>
-          </div>
-          <div className="stat-icon available">
-            <RiShieldCheckLine />
-          </div>
-        </div>
-        
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-value">{stats.occupied}</div>
-            <div className="stat-label">Occupied</div>
-          </div>
-          <div className="stat-icon occupied">
-            <RiUser3Line />
-          </div>
-        </div>
-        
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-value">{stats.maintenance}</div>
-            <div className="stat-label">Maintenance</div>
-          </div>
-          <div className="stat-icon maintenance">
-            <RiAlertLine />
-          </div>
-        </div>
-        
         {stats.overdue > 0 && (
           <div className="stat-card urgent">
             <div className="stat-content">
@@ -327,16 +288,6 @@ const Properties = () => {
         </div>
 
         <div className="filters-grid">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            {PROPERTY_STATUSES.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -388,12 +339,12 @@ const Properties = () => {
           <RiHomeLine className="empty-icon" />
           <h3>No Properties Found</h3>
           <p>
-            {searchTerm || statusFilter || typeFilter || regionFilter || stateFilter
+            {searchTerm || typeFilter || regionFilter || stateFilter
               ? "Try adjusting your search criteria or filters."
               : "Get started by adding your first property."
             }
           </p>
-          {!searchTerm && !statusFilter && !typeFilter && !regionFilter && !stateFilter && (
+          {!searchTerm && !typeFilter && !regionFilter && !stateFilter && (
             <button className="btn btn-primary" onClick={handleAddProperty}>
               <RiAddLine />
               Add Property
@@ -409,9 +360,6 @@ const Properties = () => {
                 <div className="property-header">
                   <div className="property-title">
                     <h3>{property.fullAddress}</h3>
-                    <span className={`status-badge ${getStatusColor(property.status)}`}>
-                      {property.status}
-                    </span>
                   </div>
                   <div className="property-actions">
                     <button
@@ -443,7 +391,7 @@ const Properties = () => {
                   <div className="detail-row">
                     <RiHomeLine className="detail-icon" />
                     <span className="detail-text">
-                      {property.propertyType} • {property.bedrooms} bed • {property.bathrooms} bath
+                      {property.propertyType}
                     </span>
                   </div>
 
@@ -452,20 +400,12 @@ const Properties = () => {
                     <span className="detail-text">{property.region}</span>
                   </div>
 
-                  {property.rentAmount > 0 && (
-                    <div className="detail-row">
-                      <RiMoneyDollarCircleLine className="detail-icon" />
-                      <span className="detail-text">
-                        {formatCurrency(property.rentAmount)}/week
-                      </span>
-                    </div>
+                  {property.currentTenant?.name && (
+                    <TenantInfo tenant={property.currentTenant} />
                   )}
 
-                  {property.currentTenant?.name && (
-                    <div className="detail-row">
-                      <RiUser3Line className="detail-icon" />
-                      <span className="detail-text">{property.currentTenant.name}</span>
-                    </div>
+                  {property.currentLandlord?.name && (
+                    <LandlordInfo landlord={property.currentLandlord} />
                   )}
                 </div>
 

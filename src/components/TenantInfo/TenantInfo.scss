@@ -1,0 +1,131 @@
+.tenant-info-card {
+  background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+  border: 1px solid #81d4fa;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(3, 155, 229, 0.15);
+  }
+
+  .tenant-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(3, 155, 229, 0.2);
+
+    .tenant-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: #0288d1;
+      color: white;
+      border-radius: 50%;
+      font-size: 1.25rem;
+    }
+
+    .tenant-title {
+      h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #01579b;
+        letter-spacing: 0.025em;
+      }
+    }
+  }
+
+  .tenant-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .detail-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        background: rgba(2, 136, 209, 0.1);
+        color: #0288d1;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+      }
+
+      .detail-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        min-width: 0;
+        flex: 1;
+
+        .detail-label {
+          font-size: 0.75rem;
+          font-weight: 500;
+          color: #0277bd;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #01579b;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.875rem;
+    margin: 0.5rem 0;
+
+    .tenant-header {
+      .tenant-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 1.125rem;
+      }
+
+      .tenant-title h4 {
+        font-size: 0.9375rem;
+      }
+    }
+
+    .tenant-details {
+      gap: 0.625rem;
+
+      .detail-item {
+        .detail-icon {
+          width: 1.75rem;
+          height: 1.75rem;
+          font-size: 0.8125rem;
+        }
+
+        .detail-content {
+          .detail-label {
+            font-size: 0.6875rem;
+          }
+
+          .detail-value {
+            font-size: 0.8125rem;
+          }
+        }
+      }
+    }
+  }
+} 

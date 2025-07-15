@@ -10,6 +10,7 @@ import {
   RiContactsLine,
   RiShieldCheckLine,
   RiMoneyDollarCircleLine,
+  RiHome2Line,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { baseRoutes, getFullRoute } from "../../config/roleBasedRoutes";
@@ -34,6 +35,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     dashboard: RiDashboardLine,
     agencies: RiBuilding4Line,
     jobs: RiBriefcaseLine,
+    properties: RiHome2Line,
     staff: RiTeamLine,
     regions: RiMapPin2Line,
     reports: RiBarChartBoxLine,
@@ -48,6 +50,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     dashboard: "Dashboard",
     agencies: "Property Managers",
     jobs: "Jobs",
+    properties: "Properties",
     staff: "Staff",
     regions: "Region Management",
     reports: "Reports & Analytics",

@@ -50,6 +50,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<ComponentJob | null>(null);
+  const [editFormData, setEditFormData] = useState<JobFormData | null>(null);
 
   // Helper function to format date for HTML input (YYYY-MM-DD)
   const formatDateForInput = (dateString: string): string => {
@@ -72,16 +73,33 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
       technicianId = technician?.id || '';
     }
     
-    setEditingJob({
+    const updatedJob = {
       ...job,
       assignedTechnicianId: technicianId
+    };
+
+    setEditingJob(updatedJob);
+    
+    // Set the form data separately
+    setEditFormData({
+      id: updatedJob.id,
+      job_id: updatedJob.job_id,
+      propertyAddress: updatedJob.propertyAddress,
+      jobType: updatedJob.jobType,
+      dueDate: formatDateForInput(updatedJob.dueDate),
+      assignedTechnician: technicianId,
+      status: updatedJob.status,
+      priority: updatedJob.priority,
+      description: updatedJob.description || '',
     });
+    
     setIsEditModalOpen(true);
   };
 
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
     setEditingJob(null);
+    setEditFormData(null);
   };
 
   const handleEditModalSubmit = (formData: JobFormData) => {
@@ -104,9 +122,9 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    if (editingJob) {
-      setEditingJob({
-        ...editingJob,
+    if (editFormData) {
+      setEditFormData({
+        ...editFormData,
         [e.target.name]: e.target.value,
       });
     }
@@ -257,17 +275,12 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
         </table>
       </div>
 
-      {isEditModalOpen && editingJob && (
+      {isEditModalOpen && editingJob && editFormData && (
         <JobFormModal
           isOpen={isEditModalOpen}
           onClose={handleEditModalClose}
           onSubmit={handleEditModalSubmit}
-          formData={{
-            ...editingJob,
-            assignedTechnician: editingJob.assignedTechnicianId,
-            dueDate: formatDateForInput(editingJob.dueDate),
-            description: editingJob.description || '',
-          }}
+          formData={editFormData}
           onInputChange={handleInputChange}
           technicians={technicians}
           mode="edit"

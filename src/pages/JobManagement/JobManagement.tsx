@@ -251,11 +251,43 @@ const JobManagement = () => {
 
   const handleUpdateJobStatus = async (jobId: string, newStatus: ComponentJob["status"]) => {
     try {
-      const response = await jobService.updateJobStatus(jobId, newStatus);
-      if (response.success) {
-        await fetchInitialData(); // Refresh all data
+      // Find the job to get current technician info
+      const currentJob = jobs.find(job => job.id === jobId);
+      const wasAssigned = currentJob?.assignedTechnicianId;
+      
+      // If marking as Pending and job was assigned, we need to unassign
+      if (newStatus === "Pending" && wasAssigned) {
+        // Update job to unassign technician and change status
+        const response = await jobService.updateJob(jobId, {
+          status: newStatus,
+          assignedTechnician: null as any // Unassign the technician
+        });
+        
+        if (response.success) {
+          // Refresh all data to get updated job counts from backend
+          await fetchInitialData();
+        } else {
+          setError(response.message);
+        }
       } else {
-        setError(response.message);
+        // For other status changes, just update the status
+        const response = await jobService.updateJobStatus(jobId, newStatus);
+        if (response.success) {
+          // Update jobs state locally
+          setJobs(prevJobs => 
+            prevJobs.map(job => {
+              if (job.id === jobId) {
+                return {
+                  ...job,
+                  status: newStatus
+                };
+              }
+              return job;
+            })
+          );
+        } else {
+          setError(response.message);
+        }
       }
     } catch (err) {
       setError('Failed to update job status');

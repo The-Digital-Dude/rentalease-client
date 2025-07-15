@@ -15,3 +15,4 @@ export { default as RoleDisplay } from "./RoleDisplay";
 export { default as RoleTestButtons } from "./RoleTestButtons";
 export { default as PropertyDetailsModal } from "./PropertyDetailsModal";
 export { default as PropertyFormModal } from "./PropertyFormModal";
+export { AgencyCard } from "./AgencyCard";

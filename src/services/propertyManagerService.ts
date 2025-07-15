@@ -198,4 +198,20 @@ export const propertyManagerService = {
       };
     }
   },
+
+  // Resend credentials email
+  resendCredentialsEmail: async (id: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await api.post(`/v1/property-manager/auth/${id}/resend-credentials`);
+      return {
+        success: true,
+        message: response.data.message || 'Credentials email resent successfully',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to resend credentials email',
+      };
+    }
+  },
 }; 

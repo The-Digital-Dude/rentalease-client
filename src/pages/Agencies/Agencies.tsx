@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { RiAddLine, RiSearchLine, RiFilterLine } from "react-icons/ri";
-import { AgencyFormModal } from "../../components";
+import { AgencyFormModal, AgencyCard } from "../../components";
 import { propertyManagerService } from "../../services/propertyManagerService";
 import type { PropertyManager } from "../../services/propertyManagerService";
 import { VALID_REGIONS } from "../../constants";
@@ -170,6 +170,43 @@ const Agencies = () => {
     setShowForm(true);
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      setError("");
+      setSuccessMessage("");
+      
+      const response = await propertyManagerService.deletePropertyManager(id);
+      
+      if (response.success) {
+        setAgencies((prevAgencies) =>
+          prevAgencies.filter((agency) => agency.id !== id)
+        );
+        setSuccessMessage("Property manager deleted successfully!");
+      } else {
+        setError(response.message || "Failed to delete property manager");
+      }
+    } catch (error: any) {
+      setError(error.message || "Failed to delete property manager");
+    }
+  };
+
+  const handleResendCredentials = async (id: string) => {
+    try {
+      setError("");
+      setSuccessMessage("");
+      
+      const response = await propertyManagerService.resendCredentialsEmail(id);
+      
+      if (response.success) {
+        setSuccessMessage(response.message || "Credentials email sent successfully!");
+      } else {
+        setError(response.message || "Failed to send credentials email");
+      }
+    } catch (error: any) {
+      setError(error.message || "Failed to send credentials email");
+    }
+  };
+
   const handleCloseModal = () => {
     setShowForm(false);
     setEditingAgency(null);
@@ -285,59 +322,14 @@ const Agencies = () => {
           </div>
         ) : (
           filteredAgencies.map((agency) => (
-          <div key={agency.id} className="agency-card">
-            <div className="agency-header">
-              <h3>{agency.name}</h3>
-              <span className={`status-badge ${agency.status}`}>
-                {agency.status}
-              </span>
-            </div>
-            <div className="agency-details">
-              <div className="detail-group">
-                <div className="detail-item">
-                  <span className="label">ABN</span>
-                  <span>{agency.abn}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Contact</span>
-                  <span>{agency.contactPerson}</span>
-                </div>
-              </div>
-              <div className="detail-group">
-                <div className="detail-item">
-                  <span className="label">Email</span>
-                  <span>{agency.contactEmail}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Phone</span>
-                  <span>{agency.contactPhone}</span>
-                </div>
-              </div>
-              <div className="detail-group">
-                <div className="detail-item">
-                  <span className="label">Region</span>
-                  <span>{agency.region}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Compliance</span>
-                  <span>{agency.complianceLevel}</span>
-                </div>
-              </div>
-            </div>
-            <div className="agency-footer">
-              <div className="outstanding-amount">
-                <span className="label">Outstanding</span>
-                <span className="amount">${agency.outstandingAmount}</span>
-              </div>
-              <button
-                className="btn-secondary"
-                onClick={() => handleEdit(agency)}
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        ))
+            <AgencyCard
+              key={agency.id}
+              agency={agency}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onResendCredentials={handleResendCredentials}
+            />
+          ))
         )}
       </div>
 
@@ -348,6 +340,7 @@ const Agencies = () => {
         editingAgency={editingAgency}
         complianceLevels={complianceLevels}
         regions={VALID_REGIONS}
+        isSubmitting={submitLoading}
       />
     </div>
   );

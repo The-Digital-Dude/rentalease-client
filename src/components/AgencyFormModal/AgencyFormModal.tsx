@@ -35,6 +35,7 @@ interface AgencyFormModalProps {
   editingAgency?: Agency | null;
   complianceLevels: string[];
   regions: readonly string[];
+  isSubmitting?: boolean;
 }
 
 const initialFormData: AgencyFormData = {
@@ -56,6 +57,7 @@ const AgencyFormModal = ({
   editingAgency,
   complianceLevels,
   regions,
+  isSubmitting = false,
 }: AgencyFormModalProps) => {
   const [formData, setFormData] = useState<AgencyFormData>(initialFormData);
 
@@ -88,11 +90,13 @@ const AgencyFormModal = ({
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double submission
     onSubmit(formData);
     setFormData(initialFormData);
   };
 
   const handleClose = () => {
+    if (isSubmitting) return; // Prevent closing during submission
     setFormData(initialFormData);
     onClose();
   };
@@ -105,7 +109,7 @@ const AgencyFormModal = ({
       size="large"
     >
       <form onSubmit={handleFormSubmit}>
-        <div className="form-grid">
+        <div className={`form-grid ${isSubmitting ? 'form-disabled' : ''}`}>
           <div className="form-group">
             <label htmlFor="name">Property Manager Name</label>
             <input
@@ -114,6 +118,7 @@ const AgencyFormModal = ({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -125,6 +130,7 @@ const AgencyFormModal = ({
               name="abn"
               value={formData.abn}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -136,6 +142,7 @@ const AgencyFormModal = ({
               name="contactPerson"
               value={formData.contactPerson}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -147,6 +154,7 @@ const AgencyFormModal = ({
               name="contactEmail"
               value={formData.contactEmail}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -158,6 +166,7 @@ const AgencyFormModal = ({
               name="contactPhone"
               value={formData.contactPhone}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -168,6 +177,7 @@ const AgencyFormModal = ({
               name="region"
               value={formData.region}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             >
               <option value="">Select Region</option>
@@ -185,6 +195,7 @@ const AgencyFormModal = ({
               name="complianceLevel"
               value={formData.complianceLevel}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             >
               <option value="">Select Compliance Level</option>
@@ -202,6 +213,7 @@ const AgencyFormModal = ({
               name="status"
               value={formData.status}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               required
             >
               <option value="active">Active</option>
@@ -221,17 +233,34 @@ const AgencyFormModal = ({
                 value={formData.password || ""}
                 onChange={handleInputChange}
                 placeholder="Enter a secure password"
+                disabled={isSubmitting}
                 required
               />
             </div>
           )}
         </div>
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={handleClose}>
+          <button 
+            type="button" 
+            className="btn-secondary" 
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
-            {editingAgency ? "Update Agency" : "Add Agency"}
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="submit-loading">
+                <div className="spinner"></div>
+                <span>{editingAgency ? "Updating..." : "Adding Agency..."}</span>
+              </div>
+            ) : (
+              editingAgency ? "Update Agency" : "Add Agency"
+            )}
           </button>
         </div>
       </form>

@@ -1,1 +1,2 @@
-export * from './userTypeUtils'; 
+export * from './userTypeUtils';
+export * from './dateUtils'; 

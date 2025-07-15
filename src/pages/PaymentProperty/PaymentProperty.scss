@@ -969,18 +969,7 @@
     }
   }
 
-  .property-footer {
-    .property-dates {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-
-      small {
-        color: #64748b;
-        font-size: 0.75rem;
-      }
-    }
-  }
+  
 }
 
 .no-properties {
@@ -1094,14 +1083,5 @@
   margin-top: 1rem;
 }
 
-.property-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 
-  @media (min-width: 640px) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-}
+

@@ -13,40 +13,21 @@ import {
   PaymentCard,
   BillingCard,
   EmptyState,
-  TenantInfo,
-  LandlordInfo
+  PropertyManagement
 } from "../../components";
 import type { 
   TabItem, 
   FilterConfig, 
   Payment as PaymentType,
-  PropertyBilling as PropertyBillingType
+  PropertyBilling as PropertyBillingType,
+  Property as PropertyType
 } from "../../components";
 import "./PaymentProperty.scss";
 
 // Using types from components
 type Payment = PaymentType;
 type PropertyBilling = PropertyBillingType;
-
-interface Property {
-  id: string;
-  address: string;
-  propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
-  propertyManager: string;
-  region: string;
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  tenantName?: string;
-  tenantEmail?: string;
-  tenantPhone?: string;
-  landlordName?: string;
-  landlordEmail?: string;
-  landlordPhone?: string;
-  createdDate: string;
-  lastInspection?: string;
-  nextInspection?: string;
-  notes?: string;
-}
+type Property = PropertyType;
 
 interface PropertyFormData {
   address: string;
@@ -633,83 +614,17 @@ const PaymentProperty = () => {
 
         {activeTab === "manage-properties" && (
           <div className="content-card">
-            <div className="section-header">
-              <h3>Property Portfolio</h3>
-              <p>Manage your existing properties</p>
-            </div>
-
-            <SearchFilterBar
-              searchValue={searchTerm}
-              onSearchChange={setSearchTerm}
+            <PropertyManagement
+              properties={filteredProperties}
+              onPropertyEdit={handleEditProperty}
+              onPropertyView={(property) => console.log('View property:', property.id)}
+              onAddProperty={() => {
+                setEditingProperty(null);
+                setShowPropertyModal(true);
+              }}
               searchPlaceholder="Search properties..."
+              enableFilters={true}
             />
-
-            <div className="properties-grid">
-              {filteredProperties.map((property) => (
-                <div key={property.id} className="property-card">
-                  <div className="property-header">
-                    <div className="property-info">
-                      <h4>{property.address}</h4>
-                      <p className="property-type">{property.propertyType}</p>
-                    </div>
-                  </div>
-
-                  <div className="property-details">
-                    <div className="detail-row">
-                      <span>Region:</span>
-                      <span>{property.region}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span>Manager:</span>
-                      <span>{property.propertyManager}</span>
-                    </div>
-                  </div>
-
-                  {property.tenantName && (
-                    <TenantInfo tenant={{
-                      name: property.tenantName,
-                      email: property.tenantEmail || '',
-                      phone: property.tenantPhone || ''
-                    }} />
-                  )}
-
-                  {property.landlordName && (
-                    <LandlordInfo landlord={{
-                      name: property.landlordName,
-                      email: property.landlordEmail || '',
-                      phone: property.landlordPhone || ''
-                    }} />
-                  )}
-
-                  <div className="property-footer">
-                    <div className="property-dates">
-                      <small>Added: {property.createdDate}</small>
-                      {property.nextInspection && (
-                        <small>
-                          Next Inspection: {property.nextInspection}
-                        </small>
-                      )}
-                    </div>
-
-                    <div className="property-actions">
-                      <button
-                        className="action-btn edit-btn"
-                        onClick={() => handleEditProperty(property)}
-                      >
-                        Edit Property
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {filteredProperties.length === 0 && (
-              <EmptyState
-                title="No Properties Found"
-                description="No properties found matching your criteria."
-              />
-            )}
           </div>
         )}
       </div>

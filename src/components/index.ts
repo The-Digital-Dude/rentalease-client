@@ -22,6 +22,10 @@ export { default as TabNavigation } from "./TabNavigation";
 export { default as SearchFilterBar } from "./SearchFilterBar";
 export { default as PaymentCard } from "./PaymentCard";
 export { default as BillingCard } from "./BillingCard";
+export { default as PropertyCard } from "./PropertyCard";
+export { default as PropertyGrid } from "./PropertyGrid";
+export { default as PropertyManagement } from "./PropertyManagement";
+export { default as PropertyShowcase } from "./PropertyShowcase";
 export { default as EmptyState } from "./EmptyState";
 export { AgencyCard } from "./AgencyCard";
 
@@ -30,3 +34,4 @@ export type { TabItem } from "./TabNavigation";
 export type { FilterOption, FilterConfig } from "./SearchFilterBar";
 export type { Payment } from "./PaymentCard";
 export type { PropertyBilling } from "./BillingCard";
+export type { Property } from "./PropertyCard";

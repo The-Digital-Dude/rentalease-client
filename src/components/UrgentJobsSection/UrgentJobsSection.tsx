@@ -1,5 +1,6 @@
 import React from "react";
 import { RiAlertLine, RiCalendarLine } from "react-icons/ri";
+import { formatDateTime } from "../../utils";
 import "./UrgentJobsSection.scss";
 import type { ComponentJob } from "../../utils/jobAdapter";
 
@@ -44,7 +45,7 @@ const UrgentJobsSection: React.FC<UrgentJobsSectionProps> = ({
               </div>
               <p className="due-date">
                 <RiCalendarLine />
-                Due: {new Date(job.dueDate).toLocaleDateString()}
+                Due: {formatDateTime(job.dueDate)}
                 {isOverdue(job.dueDate) && (
                   <span className="overdue-label">OVERDUE</span>
                 )}

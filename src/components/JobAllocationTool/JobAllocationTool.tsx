@@ -1,5 +1,6 @@
 import React from "react";
 import { RiDragDropLine, RiUserLine } from "react-icons/ri";
+import { formatDateTime } from "../../utils";
 import "./JobAllocationTool.scss";
 import type { ComponentJob } from "../../utils/jobAdapter";
 import type { ComponentTechnician } from "../../utils/staffAdapter";
@@ -54,7 +55,7 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                 <p className="job-address">{job.propertyAddress}</p>
                 <div className="job-footer">
                   <span className="due-date">
-                    Due: {new Date(job.dueDate).toLocaleDateString()}
+                    Due: {formatDateTime(job.dueDate)}
                   </span>
                   <span
                     className={`priority ${getPriorityColor(job.priority)}`}

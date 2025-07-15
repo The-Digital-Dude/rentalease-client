@@ -1,0 +1,37 @@
+.property-grid-container {
+  width: 100%;
+
+  .properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+  }
+
+  // Responsive adjustments for the search and filter bar
+  .search-filter-bar {
+    margin-bottom: 0;
+  }
+
+  // Empty state adjustments
+  .empty-state {
+    margin-top: 2rem;
+  }
+} 

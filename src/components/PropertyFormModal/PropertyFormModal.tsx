@@ -1,69 +1,66 @@
 import { useState, useEffect } from "react";
-import { RiSaveLine } from "react-icons/ri";
-import Modal from "../Modal";
-import { VALID_REGIONS } from "../../constants";
+import { RiSaveLine, RiCloseLine, RiHomeLine, RiUser3Line, RiCalendarCheckLine, RiMapPinLine, RiPhoneLine, RiMailLine, RiUserLine } from "react-icons/ri";
+import { useAppSelector } from "../../store";
+import type { 
+  Property, 
+  CreatePropertyData, 
+  PropertyAddress,
+  PropertyTenant
+} from "../../services/propertyService";
+import { 
+  VALID_STATES
+} from "../../services/propertyService";
 import "./PropertyFormModal.scss";
-
-interface Property {
-  id: string;
-  address: string;
-  propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
-  bedrooms: number;
-  bathrooms: number;
-  rentAmount: number;
-  propertyManager: string;
-  region: string;
-  status: "Available" | "Occupied" | "Maintenance" | "Pending";
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  tenantName?: string;
-  tenantEmail?: string;
-  tenantPhone?: string;
-  createdDate: string;
-  lastInspection?: string;
-  nextInspection?: string;
-  notes?: string;
-}
-
-interface PropertyFormData {
-  address: string;
-  propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
-  bedrooms: number;
-  bathrooms: number;
-  rentAmount: number;
-  propertyManager: string;
-  region: string;
-  status: "Available" | "Occupied" | "Maintenance" | "Pending";
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  tenantName?: string;
-  tenantEmail?: string;
-  tenantPhone?: string;
-  notes?: string;
-}
 
 interface PropertyFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: PropertyFormData) => void;
+  onSubmit: (data: CreatePropertyData) => void;
   editingProperty?: Property | null;
   isSubmitting?: boolean;
 }
 
+interface PropertyFormData {
+  // Address (all required)
+  street: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+  
+  // Tenant Information (all required)
+  tenantName: string;
+  tenantEmail: string;
+  tenantPhone: string;
+  
+  // Inspection Dates (optional)
+  gasInspectionDate: string;
+  electricalInspectionDate: string;
+  smokeAlarmInspectionDate: string;
+  poolSafetyInspectionDate: string;
+  
+  // Additional
+  notes: string;
+}
+
 const initialFormData: PropertyFormData = {
-  address: "",
-  propertyType: "House",
-  bedrooms: 1,
-  bathrooms: 1,
-  rentAmount: 0,
-  propertyManager: "",
-  region: "",
-  status: "Available",
-  leaseStartDate: "",
-  leaseEndDate: "",
+  // Address
+  street: "",
+  suburb: "",
+  state: "NSW",
+  postcode: "",
+  
+  // Tenant Information
   tenantName: "",
   tenantEmail: "",
   tenantPhone: "",
+  
+  // Inspection Dates
+  gasInspectionDate: "",
+  electricalInspectionDate: "",
+  smokeAlarmInspectionDate: "",
+  poolSafetyInspectionDate: "",
+  
+  // Additional
   notes: "",
 };
 
@@ -75,288 +72,425 @@ const PropertyFormModal = ({
   isSubmitting = false,
 }: PropertyFormModalProps) => {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
+  const [activeTab, setActiveTab] = useState<'basic' | 'inspections'>('basic');
+  const { userType } = useAppSelector((state) => state.user);
 
   // Update form data when editing property changes
   useEffect(() => {
     if (editingProperty) {
       setFormData({
-        address: editingProperty.address,
-        propertyType: editingProperty.propertyType,
-        bedrooms: editingProperty.bedrooms,
-        bathrooms: editingProperty.bathrooms,
-        rentAmount: editingProperty.rentAmount,
-        propertyManager: editingProperty.propertyManager,
-        region: editingProperty.region,
-        status: editingProperty.status,
-        leaseStartDate: editingProperty.leaseStartDate || "",
-        leaseEndDate: editingProperty.leaseEndDate || "",
-        tenantName: editingProperty.tenantName || "",
-        tenantEmail: editingProperty.tenantEmail || "",
-        tenantPhone: editingProperty.tenantPhone || "",
+        // Address
+        street: editingProperty.address.street || "",
+        suburb: editingProperty.address.suburb || "",
+        state: editingProperty.address.state || "NSW",
+        postcode: editingProperty.address.postcode || "",
+        
+        // Tenant Information
+        tenantName: editingProperty.currentTenant?.name || "",
+        tenantEmail: editingProperty.currentTenant?.email || "",
+        tenantPhone: editingProperty.currentTenant?.phone || "",
+        
+        // Inspection Dates
+        gasInspectionDate: editingProperty.complianceSchedule?.gasCompliance?.nextInspection || "",
+        electricalInspectionDate: editingProperty.complianceSchedule?.electricalSafety?.nextInspection || "",
+        smokeAlarmInspectionDate: editingProperty.complianceSchedule?.smokeAlarms?.nextInspection || "",
+        poolSafetyInspectionDate: editingProperty.complianceSchedule?.poolSafety?.nextInspection || "",
+        
+        // Additional
         notes: editingProperty.notes || "",
       });
     } else {
       setFormData(initialFormData);
     }
-  }, [editingProperty, isOpen]);
+  }, [editingProperty]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+  // Handle ESC key press
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleInputChange = (field: keyof PropertyFormData, value: string | number | boolean) => {
+    setFormData(prev => ({
       ...prev,
-      [name]: value === "" ? "" : value,
+      [field]: value
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Validate required fields
+    if (!formData.street || !formData.suburb || !formData.postcode || 
+        !formData.tenantName || !formData.tenantEmail || !formData.tenantPhone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    // Prepare data for submission
+    const propertyData: CreatePropertyData = {
+      address: {
+        street: formData.street,
+        suburb: formData.suburb,
+        state: formData.state as PropertyAddress['state'],
+        postcode: formData.postcode,
+      },
+      propertyType: "House" as any,
+      bedrooms: 2,
+      bathrooms: 1,
+      rentAmount: 0,
+      region: "",
+      status: "Occupied" as any,
+      currentTenant: {
+        name: formData.tenantName,
+        email: formData.tenantEmail,
+        phone: formData.tenantPhone,
+      },
+      complianceSchedule: {
+        gasCompliance: formData.gasInspectionDate ? {
+          nextInspection: formData.gasInspectionDate,
+          required: true
+        } : undefined,
+        electricalSafety: formData.electricalInspectionDate ? {
+          nextInspection: formData.electricalInspectionDate,
+          required: true
+        } : undefined,
+        smokeAlarms: formData.smokeAlarmInspectionDate ? {
+          nextInspection: formData.smokeAlarmInspectionDate
+        } : undefined,
+        poolSafety: formData.poolSafetyInspectionDate ? {
+          nextInspection: formData.poolSafetyInspectionDate,
+          required: true
+        } : undefined,
+      },
+      notes: formData.notes,
+    };
+
+    onSubmit(propertyData);
   };
 
   const handleClose = () => {
-    // Reset form when closing
     setFormData(initialFormData);
+    setActiveTab('basic');
     onClose();
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={editingProperty ? "Edit Property" : "Add New Property"}
-      size="large"
-    >
-      <form onSubmit={handleSubmit} className="property-form">
-        <div className="form-section">
-          <h4>Property Information</h4>
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="address">Property Address *</label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="Enter full property address"
-                required
-              />
+    <div className="property-form-modal-backdrop" onClick={handleBackdropClick}>
+      <div className="property-form-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="property-form-modal__header">
+          <div className="header-content">
+            <div className="header-icon">
+              <RiHomeLine />
             </div>
-
-            <div className="form-group">
-              <label htmlFor="propertyType">Property Type *</label>
-              <select
-                id="propertyType"
-                name="propertyType"
-                value={formData.propertyType}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="House">House</option>
-                <option value="Apartment">Apartment</option>
-                <option value="Townhouse">Townhouse</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="bedrooms">Bedrooms *</label>
-              <input
-                type="number"
-                id="bedrooms"
-                name="bedrooms"
-                value={formData.bedrooms}
-                onChange={handleInputChange}
-                min="1"
-                max="10"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="bathrooms">Bathrooms *</label>
-              <input
-                type="number"
-                id="bathrooms"
-                name="bathrooms"
-                value={formData.bathrooms}
-                onChange={handleInputChange}
-                min="1"
-                max="10"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="rentAmount">Weekly Rent Amount ($) *</label>
-              <input
-                type="number"
-                id="rentAmount"
-                name="rentAmount"
-                value={formData.rentAmount}
-                onChange={handleInputChange}
-                min="0"
-                step="10"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="region">Region *</label>
-              <select
-                id="region"
-                name="region"
-                value={formData.region}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Region</option>
-                {VALID_REGIONS.map((region) => (
-                  <option key={region} value={region}>
-                    {region}
-                  </option>
-                ))}
-              </select>
+            <div className="header-text">
+              <h2>{editingProperty ? 'Edit Property' : 'Add New Property'}</h2>
+              <p>Fill in the property and tenant details</p>
             </div>
           </div>
-        </div>
-
-        <div className="form-section">
-          <h4>Management Details</h4>
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="propertyManager">Property Manager *</label>
-              <input
-                type="text"
-                id="propertyManager"
-                name="propertyManager"
-                value={formData.propertyManager}
-                onChange={handleInputChange}
-                placeholder="Enter property manager name/company"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="status">Property Status *</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="Available">Available</option>
-                <option value="Occupied">Occupied</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {formData.status === "Occupied" && (
-          <div className="form-section">
-            <h4>Tenant Information</h4>
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="tenantName">Tenant Name</label>
-                <input
-                  type="text"
-                  id="tenantName"
-                  name="tenantName"
-                  value={formData.tenantName}
-                  onChange={handleInputChange}
-                  placeholder="Enter tenant name"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tenantEmail">Tenant Email</label>
-                <input
-                  type="email"
-                  id="tenantEmail"
-                  name="tenantEmail"
-                  value={formData.tenantEmail}
-                  onChange={handleInputChange}
-                  placeholder="Enter tenant email"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tenantPhone">Tenant Phone</label>
-                <input
-                  type="tel"
-                  id="tenantPhone"
-                  name="tenantPhone"
-                  value={formData.tenantPhone}
-                  onChange={handleInputChange}
-                  placeholder="Enter tenant phone"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="leaseStartDate">Lease Start Date</label>
-                <input
-                  type="date"
-                  id="leaseStartDate"
-                  name="leaseStartDate"
-                  value={formData.leaseStartDate}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="leaseEndDate">Lease End Date</label>
-                <input
-                  type="date"
-                  id="leaseEndDate"
-                  name="leaseEndDate"
-                  value={formData.leaseEndDate}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="form-section">
-          <h4>Additional Information</h4>
-          <div className="form-group">
-            <label htmlFor="notes">Notes</label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              placeholder="Any additional notes about the property..."
-              rows={3}
-            />
-          </div>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn-primary" disabled={isSubmitting}>
-            <RiSaveLine />
-            {isSubmitting
-              ? editingProperty
-                ? "Updating Property..."
-                : "Adding Property..."
-              : editingProperty
-              ? "Update Property"
-              : "Add Property"}
+          <button 
+            className="close-btn"
+            onClick={handleClose}
+            type="button"
+          >
+            <RiCloseLine />
           </button>
         </div>
-      </form>
-    </Modal>
+
+        {/* Navigation */}
+        <div className="property-form-modal__nav">
+          <button
+            className={`nav-btn ${activeTab === 'basic' ? 'active' : ''}`}
+            onClick={() => setActiveTab('basic')}
+            type="button"
+          >
+            <div className="nav-btn__icon">
+              <RiMapPinLine />
+            </div>
+            <div className="nav-btn__content">
+              <span className="nav-btn__title">Property & Tenant</span>
+              <span className="nav-btn__subtitle">Address and tenant details</span>
+            </div>
+          </button>
+          
+          <button
+            className={`nav-btn ${activeTab === 'inspections' ? 'active' : ''}`}
+            onClick={() => setActiveTab('inspections')}
+            type="button"
+          >
+            <div className="nav-btn__icon">
+              <RiCalendarCheckLine />
+            </div>
+            <div className="nav-btn__content">
+              <span className="nav-btn__title">Inspections</span>
+              <span className="nav-btn__subtitle">Schedule compliance checks</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Form Content */}
+        <form onSubmit={handleSubmit} className="property-form-modal__form">
+          <div className="form-content">
+            {activeTab === 'basic' && (
+              <div className="form-sections">
+                {/* Property Address Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <div className="section-icon">
+                      <RiHomeLine />
+                    </div>
+                    <div className="section-title">
+                      <h3>Property Address</h3>
+                      <p>Enter the complete property address</p>
+                    </div>
+                  </div>
+                  
+                  <div className="form-grid">
+                    <div className="form-field full-width">
+                      <label>
+                        <RiMapPinLine />
+                        Street Address
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.street}
+                        onChange={(e) => handleInputChange('street', e.target.value)}
+                        placeholder="123 Collins Street"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        Suburb
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.suburb}
+                        onChange={(e) => handleInputChange('suburb', e.target.value)}
+                        placeholder="Melbourne"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        State
+                        <span className="required">*</span>
+                      </label>
+                      <select
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        required
+                      >
+                        {VALID_STATES.map(state => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        Postcode
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.postcode}
+                        onChange={(e) => handleInputChange('postcode', e.target.value)}
+                        placeholder="3000"
+                        pattern="[0-9]{4}"
+                        maxLength={4}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tenant Information Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <div className="section-icon">
+                      <RiUser3Line />
+                    </div>
+                    <div className="section-title">
+                      <h3>Tenant Information</h3>
+                      <p>Current tenant contact details</p>
+                    </div>
+                  </div>
+                  
+                  <div className="form-grid">
+                    <div className="form-field full-width">
+                      <label>
+                        <RiUserLine />
+                        Full Name
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tenantName}
+                        onChange={(e) => handleInputChange('tenantName', e.target.value)}
+                        placeholder="John Smith"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        <RiMailLine />
+                        Email Address
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.tenantEmail}
+                        onChange={(e) => handleInputChange('tenantEmail', e.target.value)}
+                        placeholder="john@example.com"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>
+                        <RiPhoneLine />
+                        Phone Number
+                        <span className="required">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.tenantPhone}
+                        onChange={(e) => handleInputChange('tenantPhone', e.target.value)}
+                        placeholder="0412 345 678"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'inspections' && (
+              <div className="form-sections">
+                <div className="form-section">
+                  <div className="section-header">
+                    <div className="section-icon">
+                      <RiCalendarCheckLine />
+                    </div>
+                    <div className="section-title">
+                      <h3>Compliance Inspections</h3>
+                      <p>Schedule upcoming inspection dates (optional)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="form-grid">
+                    <div className="form-field">
+                      <label>Gas Compliance Check</label>
+                      <input
+                        type="date"
+                        value={formData.gasInspectionDate}
+                        onChange={(e) => handleInputChange('gasInspectionDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Electrical Safety Check</label>
+                      <input
+                        type="date"
+                        value={formData.electricalInspectionDate}
+                        onChange={(e) => handleInputChange('electricalInspectionDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Smoke Alarm Check</label>
+                      <input
+                        type="date"
+                        value={formData.smokeAlarmInspectionDate}
+                        onChange={(e) => handleInputChange('smokeAlarmInspectionDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Pool Safety Check</label>
+                      <input
+                        type="date"
+                        value={formData.poolSafetyInspectionDate}
+                        onChange={(e) => handleInputChange('poolSafetyInspectionDate', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                <div className="form-section">
+                  <div className="section-header">
+                    <div className="section-title">
+                      <h3>Additional Notes</h3>
+                      <p>Any additional information about the property</p>
+                    </div>
+                  </div>
+                  
+                  <div className="form-grid">
+                    <div className="form-field full-width">
+                      <textarea
+                        value={formData.notes}
+                        onChange={(e) => handleInputChange('notes', e.target.value)}
+                        placeholder="Enter any additional notes..."
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="property-form-modal__footer">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isSubmitting}
+            >
+              <RiSaveLine />
+              {isSubmitting ? 'Saving...' : (editingProperty ? 'Update Property' : 'Add Property')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -11,57 +11,22 @@ export interface PropertyAddress {
 }
 
 export interface PropertyTenant {
-  name?: string;
-  email?: string;
-  phone?: string;
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  bondAmount?: number;
-}
-
-export interface PropertyFeatures {
-  airConditioning?: boolean;
-  heating?: 'Gas' | 'Electric' | 'Ducted' | 'Split System' | 'None';
-  parking?: 'Garage' | 'Carport' | 'Street' | 'None';
-  pool?: boolean;
-  garden?: boolean;
-  furnished?: boolean;
-  petFriendly?: boolean;
-}
-
-export interface PropertyFinancial {
-  weeklyRent?: number;
-  bondRequired?: number;
-  expenses?: {
-    councilRates?: number;
-    waterRates?: number;
-    insurance?: number;
-    maintenance?: number;
-  };
-  lastRentReview?: string;
-  nextRentReview?: string;
+  name: string;
+  email: string;
+  phone: string;
 }
 
 export interface ComplianceItem {
-  lastInspection?: string;
   nextInspection?: string;
-  frequency?: number;
-  certificateNumber?: string;
+  required?: boolean;
   status?: 'Compliant' | 'Due Soon' | 'Overdue' | 'Not Required';
 }
 
 export interface ComplianceSchedule {
-  gasCompliance?: ComplianceItem & { required?: boolean };
-  electricalSafety?: ComplianceItem & { required?: boolean };
-  smokeAlarms?: ComplianceItem & { batteryReplaced?: string };
-  poolSafety?: ComplianceItem & { required?: boolean };
-}
-
-export interface RoutineInspections {
-  lastInspection?: string;
-  nextInspection?: string;
-  frequency?: number;
-  inspectionType?: 'Entry' | 'Routine' | 'Exit' | 'Maintenance';
+  gasCompliance?: ComplianceItem;
+  electricalSafety?: ComplianceItem;
+  smokeAlarms?: ComplianceItem;
+  poolSafety?: ComplianceItem;
 }
 
 export interface ComplianceSummary {
@@ -89,12 +54,8 @@ export interface Property {
     email: string;
     phone: string;
   };
-  currentTenant?: PropertyTenant;
+  currentTenant: PropertyTenant;
   complianceSchedule?: ComplianceSchedule;
-  routineInspections?: RoutineInspections;
-  jobHistory?: string[];
-  features?: PropertyFeatures;
-  financial?: PropertyFinancial;
   notes?: string;
   hasOverdueCompliance?: boolean;
   complianceSummary?: ComplianceSummary;
@@ -104,17 +65,15 @@ export interface Property {
 
 export interface CreatePropertyData {
   address: PropertyAddress;
-  propertyType: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
+  propertyType?: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
   bedrooms?: number;
   bathrooms?: number;
   rentAmount?: number;
   propertyManager?: string; // Only for super users
-  region: string;
+  region?: string;
   status?: 'Available' | 'Occupied' | 'Maintenance' | 'Pending';
-  currentTenant?: PropertyTenant;
+  currentTenant: PropertyTenant;
   complianceSchedule?: ComplianceSchedule;
-  features?: PropertyFeatures;
-  financial?: PropertyFinancial;
   notes?: string;
 }
 
@@ -126,8 +85,6 @@ export interface UpdatePropertyData {
   rentAmount?: number;
   status?: 'Available' | 'Occupied' | 'Maintenance' | 'Pending';
   currentTenant?: PropertyTenant;
-  features?: PropertyFeatures;
-  financial?: PropertyFinancial;
   notes?: string;
 }
 
@@ -162,7 +119,6 @@ export interface PropertyComplianceResponse {
     complianceSummary: ComplianceSummary;
     hasOverdueCompliance: boolean;
     complianceSchedule: ComplianceSchedule;
-    routineInspections: RoutineInspections;
   };
 }
 
@@ -323,8 +279,4 @@ export const VALID_STATES = ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'
 
 export const PROPERTY_TYPES = ['House', 'Apartment', 'Townhouse', 'Commercial', 'Other'] as const;
 
-export const PROPERTY_STATUSES = ['Available', 'Occupied', 'Maintenance', 'Pending'] as const;
-
-export const HEATING_TYPES = ['Gas', 'Electric', 'Ducted', 'Split System', 'None'] as const;
-
-export const PARKING_TYPES = ['Garage', 'Carport', 'Street', 'None'] as const; 
+export const PROPERTY_STATUSES = ['Available', 'Occupied', 'Maintenance', 'Pending'] as const; 

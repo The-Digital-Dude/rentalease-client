@@ -82,10 +82,10 @@ class AuthService {
     const typeMapping: Record<string, string> = {
       superUser: "super_user",
       admin: "super_user",
-      propertyManager: "property_manager",
+      propertyManager: "agency",
       staff: "staff",
       tenant: "tenant",
-      agent: "property_manager", // Assuming agent maps to property_manager
+      agent: "agency", // Agents are now mapped to agency type
     };
 
     return typeMapping[backendType] || "staff"; // Default to staff if unknown

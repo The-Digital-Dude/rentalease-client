@@ -1,8 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 // Define the different user types
-export type UserType = 'super_user' | 'property_manager' | 'staff' | 'tenant';
+export type UserType = "super_user" | "agency" | "staff" | "tenant";
 
 // Define the user state interface
 export interface UserState {
@@ -32,7 +32,7 @@ interface LoginPayload {
 
 // Create the user slice
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     // Action to log in a user
@@ -42,16 +42,16 @@ const userSlice = createSlice({
       state.userType = action.payload.userType;
       state.name = action.payload.name;
       state.id = action.payload.id;
-      
+
       // Also update localStorage to ensure consistency
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const userData = {
           email: action.payload.email,
           userType: action.payload.userType,
           name: action.payload.name,
           id: action.payload.id,
         };
-        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem("userData", JSON.stringify(userData));
       }
     },
     // Action to log out a user
@@ -62,14 +62,14 @@ const userSlice = createSlice({
       state.name = null;
       state.id = null;
       // Clear localStorage when logging out
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
     },
     // Action to restore user state from localStorage
     restoreAuthState: (state) => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('userData');
-      
+      const token = localStorage.getItem("authToken");
+      const userData = localStorage.getItem("userData");
+
       if (token && userData) {
         try {
           const parsedUserData = JSON.parse(userData);
@@ -80,8 +80,8 @@ const userSlice = createSlice({
           state.id = parsedUserData.id;
         } catch (error) {
           // If parsing fails, clear invalid data
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userData");
         }
       }
     },
@@ -96,7 +96,8 @@ const userSlice = createSlice({
 });
 
 // Export actions
-export const { login, logout, restoreAuthState, updateUser } = userSlice.actions;
+export const { login, logout, restoreAuthState, updateUser } =
+  userSlice.actions;
 
 // Export reducer
-export default userSlice.reducer; 
+export default userSlice.reducer;

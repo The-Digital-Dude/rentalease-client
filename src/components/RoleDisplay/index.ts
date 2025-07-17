@@ -1,1 +1,1 @@
-export { default } from './RoleDisplay'; 
+export { RoleDisplay } from "./RoleDisplay";

@@ -1,80 +1,44 @@
-import React from "react";
-import { Route } from "react-router-dom";
-import { ProtectedRoute } from "../components";
-import {
-  Dashboard,
-  Agencies,
-  JobManagement,
-  Properties,
-  Staff,
-  RegionManagement,
-  ReportsAnalytics,
-  ContactsCommunication,
-  PropertyCompliance,
-  PaymentProperty,
-} from "../pages";
-import { getFullRoute, baseRoutes } from "./roleBasedRoutes";
-import type { UserType } from "../store";
+import React, { lazy } from "react";
+import type { UserType } from "../store/userSlice";
+import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 
-// Define component mapping for each base route
-const componentMap: Record<string, React.ComponentType> = {
-  dashboard: Dashboard,
-  agencies: Agencies,
-  jobs: JobManagement,
-  properties: Properties,
-  staff: Staff,
-  regions: RegionManagement,
-  reports: ReportsAnalytics,
-  contacts: ContactsCommunication,
-  compliance: PropertyCompliance,
-  "payment-property": PaymentProperty,
-  invoices: () => (
-    <div className="page-container">
-      <div className="page-header">
-        <h1>Invoices</h1>
-        <p>Track payments and billing</p>
-      </div>
-      <div className="content-card">
-        <h3>Invoice Management</h3>
-        <p>Invoice management features coming soon.</p>
-      </div>
-    </div>
-  ),
+// Lazy load components
+const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
+const Properties = lazy(() => import("../pages/Properties/Properties"));
+const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
+const Staff = lazy(() => import("../pages/Staff/Staff"));
+const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
+const Contacts = lazy(
+  () => import("../pages/ContactsCommunication/ContactsCommunication")
+);
+const Reports = lazy(
+  () => import("../pages/ReportsAnalytics/ReportsAnalytics")
+);
+
+// Define route configuration
+export const routeConfig = (userType: UserType) => {
+  // Get allowed routes for the user type
+  const userRoutes = allowedRoutes[userType] || [];
+
+  // Base route components mapping
+  const routeComponents: Record<string, React.ComponentType> = {
+    dashboard: Dashboard,
+    properties: Properties,
+    jobs: Jobs,
+    staff: Staff,
+    agencies: Agencies,
+    contacts: Contacts,
+    reports: Reports,
+  };
+
+  // Generate routes based on user permissions
+  return userRoutes.map((route) => ({
+    path: `/${route}`,
+    element: React.createElement(routeComponents[route]),
+  }));
 };
 
-// Function to generate dynamic routes for a user type
-export const generateUserRoutes = (
-  userType: UserType
-): React.ReactElement[] => {
-  const userRoutes = baseRoutes[userType];
-
-  return userRoutes.map((baseRoute) => {
-    const fullPath = getFullRoute(userType, baseRoute);
-    const Component = componentMap[baseRoute];
-
-    return (
-      <Route
-        key={fullPath}
-        path={fullPath}
-        element={
-          <ProtectedRoute requiredPath={fullPath}>
-            <Component />
-          </ProtectedRoute>
-        }
-      />
-    );
-  });
-};
-
-// Function to generate all possible routes for all user types
-export const generateAllRoutes = (): React.ReactElement[] => {
-  const allRoutes: React.ReactElement[] = [];
-
-  // Generate routes for each user type
-  Object.keys(baseRoutes).forEach((userType) => {
-    const routes = generateUserRoutes(userType as UserType);
-    allRoutes.push(...routes);
-  });
-
-  return allRoutes;
+// Get the default route for a user type
+export const getDefaultRoute = (userType: UserType): string => {
+  return defaultRoutes[userType] || "/login";
 };

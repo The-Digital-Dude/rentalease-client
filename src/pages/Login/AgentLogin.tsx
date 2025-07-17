@@ -1,126 +1,87 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { RiUser3Line, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
-import { useAppDispatch } from "../../store";
+import { useDispatch } from "react-redux";
 import { login } from "../../store/userSlice";
+import type { UserType } from "../../store/userSlice";
 import { authService } from "../../services";
-import { getFullRoute } from "../../config/roleBasedRoutes";
+import { defaultRoutes } from "../../config/roleBasedRoutes";
 import "./Login.scss";
 
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
-const AgentLogin = () => {
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
-    password: "",
-  });
+export const AgentLogin = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  
-  const dispatch = useAppDispatch();
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error when user starts typing
-    if (error) {
-      setError("");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await authService.login(formData.email, formData.password, "agent");
-      
-      if (response.success && response.data) {
-        // Map API response to Redux store structure
-        const userType = response.data.user.userType as any; // Cast to handle different user types
-        
-        console.log('Login successful, userType:', userType); // Debug log
-        
-        dispatch(login({
-          email: response.data.user.email,
-          userType: userType,
-          name: response.data.user.name,
-          id: response.data.user.id,
-        }));
-
-        console.log('Login dispatch completed, userType:', userType); // Debug log
-        
-        // Navigate to dashboard after successful login
-        const dashboardPath = getFullRoute(userType, 'dashboard');
-        console.log('Navigating to dashboard:', dashboardPath);
-        navigate(dashboardPath, { replace: true });
-      } else {
-        setError(response.message || "Login failed");
-      }
-    } catch (error: any) {
-      setError(error.message || "Login failed. Please check your credentials.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await authService.login(email, password, "agent");
+
+      if (response.success && response.data) {
+        const { user } = response.data;
+
+        // Store user data in Redux
+        dispatch(
+          login({
+            email: user.email,
+            userType: user.userType as UserType,
+            name: user.name,
+            id: user.id,
+          })
+        );
+
+        // Navigate to dashboard after successful login
+        const dashboardPath =
+          (user.userType && defaultRoutes[user.userType as UserType]) ||
+          "/login";
+        console.log("Navigating to dashboard:", dashboardPath);
+        navigate(dashboardPath, { replace: true });
+      } else {
+        setError(response.message || "Login failed");
+      }
+    } catch (error: any) {
+      setError(error.message || "An error occurred during login");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
-        {isLoading && (
-          <div className="loading-overlay">
-            <div className="overlay-content">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">Authenticating...</div>
-            </div>
-          </div>
-        )}
         <div className="login-header">
-          <div className="logo-container">
-            <img
-              src="/rentalease-logo.png"
-              alt="RentalEase"
-              className="login-logo"
-            />
+          <div className="logo">
+            <img src="/rentalease-logo.png" alt="RentalEase Logo" />
           </div>
           <div className="user-type-indicator agent">
             <RiUser3Line />
             <span>Agent Portal</span>
           </div>
-          <h1>Welcome Back</h1>
-          <p>Sign in to your agent account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-          
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder="Enter your email"
             />
           </div>
 
@@ -130,15 +91,14 @@ const AgentLogin = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                placeholder="Enter your password"
               />
               <button
                 type="button"
-                className="password-toggle"
+                className="toggle-password"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
@@ -146,29 +106,22 @@ const AgentLogin = () => {
             </div>
           </div>
 
-          <button type="submit" className="login-btn" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="loading-spinner"></div>
-                Signing in...
-              </>
-            ) : (
-              "Sign in as Agent"
-            )}
-          </button>
-        </form>
+          {error && <div className="error-message">{error}</div>}
 
-        <div className="login-footer">
-          <p>
-            <Link to="/password-reset?type=agent">Forgot your password?</Link>
-          </p>
-          <p>
-            Having trouble signing in? <a href="#contact">Contact support</a>
-          </p>
-        </div>
+          <button
+            type="submit"
+            className={`btn-primary ${loading ? "loading" : ""}`}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
+          <div className="login-links">
+            <Link to="/forgot-password">Forgot Password?</Link>
+            <Link to="/login">Admin Login</Link>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
-
-export default AgentLogin;

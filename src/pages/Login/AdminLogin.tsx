@@ -3,8 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { RiShieldUserLine, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 import { useAppDispatch } from "../../store";
 import { login } from "../../store/userSlice";
+import type { UserType } from "../../store/userSlice";
 import { authService } from "../../services";
-import { getFullRoute } from "../../config/roleBasedRoutes";
+import { defaultRoutes } from "../../config/roleBasedRoutes";
 import "./Login.scss";
 
 interface LoginFormData {
@@ -20,7 +21,7 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -42,26 +43,33 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const response = await authService.login(formData.email, formData.password, "admin");
-      
+      const response = await authService.login(
+        formData.email,
+        formData.password,
+        "admin"
+      );
+
       if (response.success && response.data) {
         // Map API response to Redux store structure
         const userType = response.data.user.userType as any; // Cast to handle different user types
-        
-        console.log('Login successful, userType:', userType); // Debug log
-        
-        dispatch(login({
-          email: response.data.user.email,
-          userType: userType,
-          name: response.data.user.name,
-          id: response.data.user.id,
-        }));
 
-        console.log('Login dispatch completed, userType:', userType); // Debug log
-        
+        console.log("Login successful, userType:", userType); // Debug log
+
+        dispatch(
+          login({
+            email: response.data.user.email,
+            userType: userType,
+            name: response.data.user.name,
+            id: response.data.user.id,
+          })
+        );
+
+        console.log("Login dispatch completed, userType:", userType); // Debug log
+
         // Navigate to dashboard after successful login
-        const dashboardPath = getFullRoute(userType, 'dashboard');
-        console.log('Navigating to dashboard:', dashboardPath);
+        const dashboardPath =
+          (userType && defaultRoutes[userType as UserType]) || "/login";
+        console.log("Navigating to dashboard:", dashboardPath);
         navigate(dashboardPath, { replace: true });
       } else {
         setError(response.message || "Login failed");
@@ -105,12 +113,8 @@ const AdminLogin = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-          
+          {error && <div className="error-message">{error}</div>}
+
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input

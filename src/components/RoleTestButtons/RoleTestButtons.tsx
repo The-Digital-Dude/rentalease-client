@@ -1,83 +1,71 @@
 import React from "react";
-import { useAppDispatch, login, logout } from "../../store";
-import type { UserType } from "../../store";
-import { getFullRoute } from "../../config/roleBasedRoutes";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../../store";
+import { login } from "../../store/userSlice";
+import type { UserType } from "../../store/userSlice";
+import { defaultRoutes } from "../../config/roleBasedRoutes";
 import "./RoleTestButtons.scss";
 
-const RoleTestButtons: React.FC = () => {
+interface TestUser {
+  userType: UserType;
+  name: string;
+  email: string;
+  id: string;
+}
+
+const testUsers: TestUser[] = [
+  {
+    userType: "super_user",
+    name: "Super Admin",
+    email: "admin@rentalease.com",
+    id: "su-1",
+  },
+  {
+    userType: "agency",
+    name: "Agency",
+    email: "manager@rentalease.com",
+    id: "pm-1",
+  },
+  {
+    userType: "staff",
+    name: "Staff Member",
+    email: "staff@rentalease.com",
+    id: "st-1",
+  },
+];
+
+export const RoleTestButtons = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const testUsers = [
-    {
-      userType: "super_user" as UserType,
-      name: "Super Admin",
-      email: "admin@rentalease.com",
-      id: "super-1",
-      color: "red",
-    },
-    {
-      userType: "property_manager" as UserType,
-      name: "Agency",
-      email: "manager@rentalease.com",
-      id: "pm-1",
-      color: "blue",
-    },
-    {
-      userType: "staff" as UserType,
-      name: "Staff Member",
-      email: "staff@rentalease.com",
-      id: "staff-1",
-      color: "green",
-    },
-    {
-      userType: "tenant" as UserType,
-      name: "Tenant User",
-      email: "tenant@rentalease.com",
-      id: "tenant-1",
-      color: "yellow",
-    },
-  ];
-
-  const handleRoleTest = (user: (typeof testUsers)[0]) => {
+  const handleRoleSwitch = (user: TestUser) => {
     dispatch(
       login({
-        email: user.email,
         userType: user.userType,
         name: user.name,
+        email: user.email,
         id: user.id,
       })
     );
-    // Navigate to user's dashboard after login
-    const dashboardPath = getFullRoute(user.userType, "dashboard");
-    navigate(dashboardPath);
-  };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
+    const dashboardPath = defaultRoutes[user.userType];
+    navigate(dashboardPath, { replace: true });
   };
 
   return (
     <div className="role-test-buttons">
-      <h3>Test Different User Roles</h3>
-      <div className="button-grid">
+      <h3>Test Different Roles</h3>
+      <div className="button-group">
         {testUsers.map((user) => (
           <button
             key={user.userType}
-            className={`role-btn ${user.color}`}
-            onClick={() => handleRoleTest(user)}
+            onClick={() => handleRoleSwitch(user)}
+            className={`role-button ${user.userType}`}
           >
-            Login as {user.name}
+            {user.name}
           </button>
         ))}
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
       </div>
     </div>
   );
 };
-
-export default RoleTestButtons;

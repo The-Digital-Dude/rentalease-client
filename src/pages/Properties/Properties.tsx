@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../store";
-import { getFullRoute } from "../../config/roleBasedRoutes";
+import { defaultRoutes } from "../../config/roleBasedRoutes";
+import type { UserType } from "../../store/userSlice";
 import PropertiesHeader from "../../components/PropertiesHeader";
 import PropertyErrorAlert from "../../components/PropertyErrorAlert";
 import PropertyModals from "../../components/PropertyModals";
@@ -24,7 +25,7 @@ import "./Properties.scss";
 const Properties = () => {
   const { userType } = useAppSelector((state) => state.user);
   const navigate = useNavigate();
-  const currentPath = userType ? getFullRoute(userType, "properties") : "/";
+  const currentPath = userType ? defaultRoutes[userType as UserType] : "/";
 
   // State management
   const [properties, setProperties] = useState<Property[]>([]);

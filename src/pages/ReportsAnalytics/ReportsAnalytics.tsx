@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { 
-  RiBarChartBoxLine, 
-  RiLineChartLine, 
-  RiUserStarLine, 
+import {
+  RiBarChartBoxLine,
+  RiLineChartLine,
+  RiUserStarLine,
   RiShieldCheckLine,
   RiMoneyDollarCircleLine,
   RiCalendarLine,
@@ -13,14 +13,14 @@ import {
   RiCheckboxCircleLine,
   RiCloseCircleLine,
   RiTimeLine,
-  RiStarLine
+  RiStarLine,
 } from "react-icons/ri";
 import "./ReportsAnalytics.scss";
 
 interface ComplianceData {
   id: string;
   name: string;
-  type: 'agency' | 'region' | 'property';
+  type: "agency" | "region" | "property";
   totalJobs: number;
   completedJobs: number;
   compliantJobs: number;
@@ -69,7 +69,7 @@ const ReportsAnalytics = () => {
       compliantJobs: 128,
       overdueJobs: 13,
       complianceRate: 97.0,
-      avgCompletionTime: 2.3
+      avgCompletionTime: 2.3,
     },
     {
       id: "2",
@@ -80,7 +80,7 @@ const ReportsAnalytics = () => {
       compliantJobs: 79,
       overdueJobs: 7,
       complianceRate: 96.3,
-      avgCompletionTime: 2.1
+      avgCompletionTime: 2.1,
     },
     {
       id: "3",
@@ -91,7 +91,7 @@ const ReportsAnalytics = () => {
       compliantJobs: 58,
       overdueJobs: 6,
       complianceRate: 95.1,
-      avgCompletionTime: 2.8
+      avgCompletionTime: 2.8,
     },
     {
       id: "4",
@@ -102,8 +102,8 @@ const ReportsAnalytics = () => {
       compliantJobs: 83,
       overdueJobs: 10,
       complianceRate: 94.3,
-      avgCompletionTime: 2.5
-    }
+      avgCompletionTime: 2.5,
+    },
   ];
 
   const revenueData: RevenueData[] = [
@@ -114,7 +114,7 @@ const ReportsAnalytics = () => {
       jobType: "Plumbing",
       amount: 15750,
       jobCount: 45,
-      avgJobValue: 350
+      avgJobValue: 350,
     },
     {
       period: "2024-01",
@@ -123,7 +123,7 @@ const ReportsAnalytics = () => {
       jobType: "Electrical",
       amount: 12400,
       jobCount: 31,
-      avgJobValue: 400
+      avgJobValue: 400,
     },
     {
       period: "2024-01",
@@ -132,7 +132,7 @@ const ReportsAnalytics = () => {
       jobType: "HVAC",
       amount: 18900,
       jobCount: 27,
-      avgJobValue: 700
+      avgJobValue: 700,
     },
     {
       period: "2024-01",
@@ -141,8 +141,8 @@ const ReportsAnalytics = () => {
       jobType: "General Maintenance",
       amount: 8750,
       jobCount: 35,
-      avgJobValue: 250
-    }
+      avgJobValue: 250,
+    },
   ];
 
   const technicianData: TechnicianPerformance[] = [
@@ -155,7 +155,7 @@ const ReportsAnalytics = () => {
       rating: 4.8,
       onTimeRate: 94.5,
       totalRevenue: 31150,
-      efficiency: 96.2
+      efficiency: 96.2,
     },
     {
       id: "2",
@@ -166,7 +166,7 @@ const ReportsAnalytics = () => {
       rating: 4.7,
       onTimeRate: 96.1,
       totalRevenue: 28400,
-      efficiency: 97.8
+      efficiency: 97.8,
     },
     {
       id: "3",
@@ -177,7 +177,7 @@ const ReportsAnalytics = () => {
       rating: 4.6,
       onTimeRate: 88.9,
       totalRevenue: 37800,
-      efficiency: 91.5
+      efficiency: 91.5,
     },
     {
       id: "4",
@@ -188,11 +188,11 @@ const ReportsAnalytics = () => {
       rating: 4.9,
       onTimeRate: 98.2,
       totalRevenue: 22400,
-      efficiency: 98.5
-    }
+      efficiency: 98.5,
+    },
   ];
 
-  const filteredCompliance = complianceData.filter(item => {
+  const filteredCompliance = complianceData.filter((item) => {
     if (complianceFilter === "all") return true;
     return item.type === complianceFilter;
   });
@@ -240,7 +240,11 @@ const ReportsAnalytics = () => {
   const tabs = [
     { id: "compliance", label: "Compliance Status", icon: RiShieldCheckLine },
     { id: "revenue", label: "Revenue Reports", icon: RiMoneyDollarCircleLine },
-    { id: "performance", label: "Technician Performance", icon: RiUserStarLine },
+    {
+      id: "performance",
+      label: "Technician Performance",
+      icon: RiUserStarLine,
+    },
   ];
 
   const renderComplianceReport = () => (
@@ -253,12 +257,12 @@ const ReportsAnalytics = () => {
         <div className="header-actions">
           <div className="filter-group">
             <RiFilterLine className="filter-icon" />
-            <select 
-              value={complianceFilter} 
+            <select
+              value={complianceFilter}
               onChange={(e) => setComplianceFilter(e.target.value)}
             >
               <option value="all">All Types</option>
-              <option value="agency">Property Managers</option>
+              <option value="agency">Agencies</option>
               <option value="region">Regions</option>
               <option value="property">Properties</option>
             </select>
@@ -327,7 +331,7 @@ const ReportsAnalytics = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredCompliance.map(item => {
+            {filteredCompliance.map((item) => {
               const compliance = getComplianceStatus(item.complianceRate);
               return (
                 <tr key={item.id}>
@@ -343,13 +347,19 @@ const ReportsAnalytics = () => {
                   </td>
                   <td>{item.totalJobs}</td>
                   <td>
-                    <span className="job-count completed">{item.completedJobs}</span>
+                    <span className="job-count completed">
+                      {item.completedJobs}
+                    </span>
                   </td>
                   <td>
-                    <span className="job-count compliant">{item.compliantJobs}</span>
+                    <span className="job-count compliant">
+                      {item.compliantJobs}
+                    </span>
                   </td>
                   <td>
-                    <span className="job-count overdue">{item.overdueJobs}</span>
+                    <span className="job-count overdue">
+                      {item.overdueJobs}
+                    </span>
                   </td>
                   <td>
                     <div className="compliance-rate">
@@ -378,8 +388,8 @@ const ReportsAnalytics = () => {
         <div className="header-actions">
           <div className="filter-group">
             <RiCalendarLine className="filter-icon" />
-            <select 
-              value={revenueFilter} 
+            <select
+              value={revenueFilter}
               onChange={(e) => setRevenueFilter(e.target.value)}
             >
               <option value="week">This Week</option>
@@ -390,11 +400,11 @@ const ReportsAnalytics = () => {
           </div>
           <div className="filter-group">
             <RiFilterLine className="filter-icon" />
-            <select 
-              value={revenueBreakdown} 
+            <select
+              value={revenueBreakdown}
               onChange={(e) => setRevenueBreakdown(e.target.value)}
             >
-              <option value="agency">By Property Manager</option>
+              <option value="agency">By Agency</option>
               <option value="region">By Region</option>
               <option value="jobType">By Job Type</option>
             </select>
@@ -449,13 +459,18 @@ const ReportsAnalytics = () => {
       </div>
 
       <div className="revenue-breakdown">
-        <h4>Revenue Breakdown - {revenueBreakdown.charAt(0).toUpperCase() + revenueBreakdown.slice(1)}</h4>
+        <h4>
+          Revenue Breakdown -{" "}
+          {revenueBreakdown.charAt(0).toUpperCase() + revenueBreakdown.slice(1)}
+        </h4>
         <div className="breakdown-grid">
           {Object.entries(groupedRevenue).map(([key, data]) => (
             <div key={key} className="breakdown-card">
               <div className="breakdown-header">
                 <h5>{key}</h5>
-                <span className="revenue-amount">${data.amount.toLocaleString()}</span>
+                <span className="revenue-amount">
+                  ${data.amount.toLocaleString()}
+                </span>
               </div>
               <div className="breakdown-stats">
                 <div className="stat">
@@ -469,7 +484,15 @@ const ReportsAnalytics = () => {
                 <div className="stat">
                   <span className="stat-label">Share:</span>
                   <span>
-                    {((data.amount / Object.values(groupedRevenue).reduce((sum, d) => sum + d.amount, 0)) * 100).toFixed(1)}%
+                    {(
+                      (data.amount /
+                        Object.values(groupedRevenue).reduce(
+                          (sum, d) => sum + d.amount,
+                          0
+                        )) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </span>
                 </div>
               </div>
@@ -490,8 +513,8 @@ const ReportsAnalytics = () => {
         <div className="header-actions">
           <div className="filter-group">
             <RiFilterLine className="filter-icon" />
-            <select 
-              value={technicianSort} 
+            <select
+              value={technicianSort}
               onChange={(e) => setTechnicianSort(e.target.value)}
             >
               <option value="rating">By Rating</option>
@@ -507,7 +530,7 @@ const ReportsAnalytics = () => {
       </div>
 
       <div className="performance-grid">
-        {sortedTechnicians.map(tech => (
+        {sortedTechnicians.map((tech) => (
           <div key={tech.id} className="performance-card">
             <div className="card-header">
               <div className="tech-info">
@@ -519,7 +542,7 @@ const ReportsAnalytics = () => {
                 <span>{tech.rating.toFixed(1)}</span>
               </div>
             </div>
-            
+
             <div className="performance-metrics">
               <div className="metric">
                 <div className="metric-header">
@@ -527,60 +550,72 @@ const ReportsAnalytics = () => {
                   <span className="metric-value">{tech.jobsCompleted}</span>
                 </div>
                 <div className="metric-bar">
-                  <div 
-                    className="metric-fill jobs" 
+                  <div
+                    className="metric-fill jobs"
                     style={{ width: `${(tech.jobsCompleted / 120) * 100}%` }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="metric">
                 <div className="metric-header">
                   <span className="metric-label">Avg Completion Time</span>
-                  <span className="metric-value">{tech.avgCompletionTime.toFixed(1)} days</span>
+                  <span className="metric-value">
+                    {tech.avgCompletionTime.toFixed(1)} days
+                  </span>
                 </div>
                 <div className="metric-bar">
-                  <div 
-                    className="metric-fill time" 
-                    style={{ width: `${Math.max(0, (4 - tech.avgCompletionTime) / 4) * 100}%` }}
+                  <div
+                    className="metric-fill time"
+                    style={{
+                      width: `${
+                        Math.max(0, (4 - tech.avgCompletionTime) / 4) * 100
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="metric">
                 <div className="metric-header">
                   <span className="metric-label">On-Time Rate</span>
-                  <span className="metric-value">{tech.onTimeRate.toFixed(1)}%</span>
+                  <span className="metric-value">
+                    {tech.onTimeRate.toFixed(1)}%
+                  </span>
                 </div>
                 <div className="metric-bar">
-                  <div 
-                    className="metric-fill ontime" 
+                  <div
+                    className="metric-fill ontime"
                     style={{ width: `${tech.onTimeRate}%` }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="metric">
                 <div className="metric-header">
                   <span className="metric-label">Revenue Generated</span>
-                  <span className="metric-value">${tech.totalRevenue.toLocaleString()}</span>
+                  <span className="metric-value">
+                    ${tech.totalRevenue.toLocaleString()}
+                  </span>
                 </div>
                 <div className="metric-bar">
-                  <div 
-                    className="metric-fill revenue" 
+                  <div
+                    className="metric-fill revenue"
                     style={{ width: `${(tech.totalRevenue / 40000) * 100}%` }}
                   ></div>
                 </div>
               </div>
-              
+
               <div className="metric">
                 <div className="metric-header">
                   <span className="metric-label">Efficiency Score</span>
-                  <span className="metric-value">{tech.efficiency.toFixed(1)}%</span>
+                  <span className="metric-value">
+                    {tech.efficiency.toFixed(1)}%
+                  </span>
                 </div>
                 <div className="metric-bar">
-                  <div 
-                    className="metric-fill efficiency" 
+                  <div
+                    className="metric-fill efficiency"
                     style={{ width: `${tech.efficiency}%` }}
                   ></div>
                 </div>
@@ -600,12 +635,12 @@ const ReportsAnalytics = () => {
       </div>
 
       <div className="reports-tabs">
-        {tabs.map(tab => {
+        {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
-              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
               onClick={() => setActiveTab(tab.id)}
             >
               <Icon className="tab-icon" />
@@ -624,4 +659,4 @@ const ReportsAnalytics = () => {
   );
 };
 
-export default ReportsAnalytics; 
+export default ReportsAnalytics;

@@ -1,12 +1,12 @@
-import React from 'react';
-import { 
-  RiEyeLine, 
-  RiDownloadLine, 
-  RiCheckLine, 
-  RiAlertLine, 
-  RiCloseCircleLine 
-} from 'react-icons/ri';
-import './PaymentCard.scss';
+import React from "react";
+import {
+  RiEyeLine,
+  RiDownloadLine,
+  RiCheckLine,
+  RiAlertLine,
+  RiCloseCircleLine,
+} from "react-icons/ri";
+import "./PaymentCard.scss";
 
 export interface Payment {
   id: string;
@@ -31,11 +31,11 @@ interface PaymentCardProps {
   className?: string;
 }
 
-const PaymentCard: React.FC<PaymentCardProps> = ({ 
-  payment, 
-  onView, 
+const PaymentCard: React.FC<PaymentCardProps> = ({
+  payment,
+  onView,
   onDownload,
-  className = '' 
+  className = "",
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,7 +96,9 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
             {getStatusIcon(payment.status)}
             {payment.status}
           </span>
-          <span className={`type-badge ${getPaymentTypeColor(payment.paymentType)}`}>
+          <span
+            className={`type-badge ${getPaymentTypeColor(payment.paymentType)}`}
+          >
             {payment.paymentType}
           </span>
         </div>
@@ -122,7 +124,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
           <span>{payment.tenantName || "N/A"}</span>
         </div>
         <div className="detail-row">
-          <span>Property Manager:</span>
+          <span>Agency:</span>
           <span>{payment.propertyManager}</span>
         </div>
         {payment.paymentMethod && (
@@ -140,14 +142,14 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
       )}
 
       <div className="payment-actions">
-        <button 
+        <button
           className="action-btn view-btn"
           onClick={() => onView?.(payment)}
         >
           <RiEyeLine />
           View Details
         </button>
-        <button 
+        <button
           className="action-btn download-btn"
           onClick={() => onDownload?.(payment)}
         >
@@ -159,4 +161,4 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
   );
 };
 
-export default PaymentCard; 
+export default PaymentCard;

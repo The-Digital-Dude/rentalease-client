@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
-import { RiDeleteBin6Line, RiMailSendLine } from 'react-icons/ri';
-import type { PropertyManager } from '../../services/propertyManagerService';
-import './AgencyCard.scss';
+import React, { useState } from "react";
+import { RiEditLine, RiDeleteBin6Line, RiMailSendLine } from "react-icons/ri";
+import type { Agency } from "../../services/agencyService";
+import "./AgencyCard.scss";
 
 interface AgencyCardProps {
-  agency: PropertyManager;
-  onEdit: (agency: PropertyManager) => void;
+  agency: Agency;
+  onEdit: (agency: Agency) => void;
   onDelete: (id: string) => void;
   onResendCredentials: (id: string) => void;
 }
 
-const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onResendCredentials }) => {
+const AgencyCard: React.FC<AgencyCardProps> = ({
+  agency,
+  onEdit,
+  onDelete,
+  onResendCredentials,
+}) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCredentialsConfirm, setShowCredentialsConfirm] = useState(false);
 
@@ -64,7 +69,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onRes
           <button
             className="delete-btn"
             onClick={handleDeleteClick}
-            title="Delete Property Manager"
+            title="Delete Agency"
           >
             <RiDeleteBin6Line />
           </button>
@@ -73,16 +78,15 @@ const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onRes
 
       {showDeleteConfirm && (
         <div className="delete-confirmation">
-          <p>Are you sure you want to delete <strong>{agency.name}</strong>?</p>
+          <p>
+            Are you sure you want to delete <strong>{agency.name}</strong>?
+          </p>
           <div className="confirmation-actions">
-            <button 
-              className="btn-danger btn-sm" 
-              onClick={handleConfirmDelete}
-            >
+            <button className="btn-danger btn-sm" onClick={handleConfirmDelete}>
               Yes, Delete
             </button>
-            <button 
-              className="btn-secondary btn-sm" 
+            <button
+              className="btn-secondary btn-sm"
               onClick={handleCancelDelete}
             >
               Cancel
@@ -98,20 +102,22 @@ const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onRes
             <h4>Resend Credentials</h4>
           </div>
           <p>
-            Are you sure you want to resend credentials to <strong>{agency.name}</strong>?
+            Are you sure you want to resend credentials to{" "}
+            <strong>{agency.name}</strong>?
           </p>
           <div className="warning-message">
-            <strong>⚠️ Warning:</strong> This will generate a new password and the current password will no longer work.
+            <strong>⚠️ Warning:</strong> This will generate a new password and
+            the current password will no longer work.
           </div>
           <div className="confirmation-actions">
-            <button 
-              className="btn-primary btn-sm" 
+            <button
+              className="btn-primary btn-sm"
               onClick={handleConfirmResendCredentials}
             >
               Yes, Send New Credentials
             </button>
-            <button 
-              className="btn-secondary btn-sm" 
+            <button
+              className="btn-secondary btn-sm"
               onClick={handleCancelResendCredentials}
             >
               Cancel
@@ -152,16 +158,13 @@ const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onRes
           </div>
         </div>
       </div>
-      
+
       <div className="agency-footer">
         <div className="outstanding-amount">
           <span className="label">Outstanding</span>
           <span className="amount">${agency.outstandingAmount}</span>
         </div>
-        <button
-          className="btn-secondary"
-          onClick={() => onEdit(agency)}
-        >
+        <button className="btn-secondary" onClick={() => onEdit(agency)}>
           Edit
         </button>
       </div>
@@ -169,4 +172,4 @@ const AgencyCard: React.FC<AgencyCardProps> = ({ agency, onEdit, onDelete, onRes
   );
 };
 
-export default AgencyCard; 
+export default AgencyCard;

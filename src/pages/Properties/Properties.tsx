@@ -283,7 +283,7 @@ const Properties = () => {
         onAddProperty={handleAddProperty}
         title="Property Portfolio"
         description="Manage your properties with advanced filtering and search capabilities"
-        searchPlaceholder="Search properties by address, tenant, landlord, or property manager..."
+        searchPlaceholder="Search properties by address, tenant, landlord, or agency..."
         enableFilters={true}
         showActions={true}
       />

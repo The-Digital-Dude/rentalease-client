@@ -48,7 +48,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   // Define label mapping for each base route
   const labelMap: Record<string, string> = {
     dashboard: "Dashboard",
-    agencies: "Property Managers",
+    agencies: "Agencies",
     jobs: "Jobs",
     properties: "Properties",
     staff: "Staff",

@@ -105,13 +105,13 @@ const AgencyFormModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={editingAgency ? "Edit Property Manager" : "Add New Property Manager"}
+      title={editingAgency ? "Edit Agency" : "Add New Agency"}
       size="large"
     >
       <form onSubmit={handleFormSubmit}>
-        <div className={`form-grid ${isSubmitting ? 'form-disabled' : ''}`}>
+        <div className={`form-grid ${isSubmitting ? "form-disabled" : ""}`}>
           <div className="form-group">
-            <label htmlFor="name">Property Manager Name</label>
+            <label htmlFor="name">Agency Name</label>
             <input
               type="text"
               id="name"
@@ -222,7 +222,7 @@ const AgencyFormModal = ({
               <option value="suspended">Suspended</option>
             </select>
           </div>
-          {/* Password field only for new property managers */}
+          {/* Password field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">
               <label htmlFor="password">Password</label>
@@ -240,26 +240,26 @@ const AgencyFormModal = ({
           )}
         </div>
         <div className="form-actions">
-          <button 
-            type="button" 
-            className="btn-secondary" 
+          <button
+            type="button"
+            className="btn-secondary"
             onClick={handleClose}
             disabled={isSubmitting}
           >
             Cancel
           </button>
-          <button 
-            type="submit" 
-            className="btn-primary" 
-            disabled={isSubmitting}
-          >
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
             {isSubmitting ? (
               <div className="submit-loading">
                 <div className="spinner"></div>
-                <span>{editingAgency ? "Updating..." : "Adding Agency..."}</span>
+                <span>
+                  {editingAgency ? "Updating..." : "Adding Agency..."}
+                </span>
               </div>
+            ) : editingAgency ? (
+              "Update Agency"
             ) : (
-              editingAgency ? "Update Agency" : "Add Agency"
+              "Add Agency"
             )}
           </button>
         </div>

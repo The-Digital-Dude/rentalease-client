@@ -1,20 +1,33 @@
-export { default as api, staffAPI } from './api';
-export { default as authService } from './authService';
-export { default as jobService } from './jobService';
-export { propertyManagerService } from './propertyManagerService';
-export { default as staffService } from './staffService';
+export { default as api, staffAPI } from "./api";
+export { default as authService } from "./authService";
+export { default as jobService } from "./jobService";
+export { agencyService } from "./agencyService";
+export { default as staffService } from "./staffService";
 
 // Staff-related types
 export interface StaffMember {
   id: string;
   fullName: string;
-  tradeType: 'Plumber' | 'Electrician' | 'Carpenter' | 'Painter' | 'Cleaner' | 'Gardener' | 'Handyman' | 'HVAC Technician' | 'Pest Control' | 'Locksmith' | 'Flooring Specialist' | 'Appliance Repair' | 'Other';
+  tradeType:
+    | "Plumber"
+    | "Electrician"
+    | "Carpenter"
+    | "Painter"
+    | "Cleaner"
+    | "Gardener"
+    | "Handyman"
+    | "HVAC Technician"
+    | "Pest Control"
+    | "Locksmith"
+    | "Flooring Specialist"
+    | "Appliance Repair"
+    | "Other";
   phone: string;
   email: string;
-  availabilityStatus: 'Available' | 'Unavailable' | 'Busy' | 'On Leave';
+  availabilityStatus: "Available" | "Unavailable" | "Busy" | "On Leave";
   startDate: string;
-  serviceRegions: ('North' | 'South' | 'East' | 'West' | 'Central')[];
-  status: 'Active' | 'Inactive' | 'Suspended' | 'Terminated';
+  serviceRegions: ("North" | "South" | "East" | "West" | "Central")[];
+  status: "Active" | "Inactive" | "Suspended" | "Terminated";
   rating: number;
   totalJobs: number;
   completedJobs: number;
@@ -23,7 +36,7 @@ export interface StaffMember {
   licensingDocuments: StaffDocument[];
   insuranceDocuments: StaffDocument[];
   owner: {
-    ownerType: 'SuperUser' | 'PropertyManager';
+    ownerType: "SuperUser" | "Agency";
     ownerId: string;
   };
   createdAt: string;
@@ -49,11 +62,11 @@ export interface StaffFilters {
   status?: string;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface StaffApiResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: {
     staff: StaffMember[];

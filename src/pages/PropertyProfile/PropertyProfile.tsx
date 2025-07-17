@@ -149,11 +149,11 @@ const PropertyProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* Property Manager */}
+        {/* Agency */}
         <div className="profile-section">
           <h2>
             <RiUser3Line />
-            Property Manager
+            Agency
           </h2>
           <div className="contact-card">
             <div className="contact-info">

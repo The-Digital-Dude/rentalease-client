@@ -7,7 +7,7 @@ This project uses **Redux Toolkit** for state management. The user management sy
 ## 🚀 User Types
 
 - `super_user` - Super admin with full access
-- `property_manager` - Property manager with management access
+- `agency` - Agency with management access
 - `staff` - Staff members with limited access
 - `tenant` - Tenants with basic access
 
@@ -24,37 +24,46 @@ src/store/
 ## 🔧 Usage
 
 ### Import hooks
+
 ```typescript
-import { useAppSelector, useAppDispatch } from '../store';
+import { useAppSelector, useAppDispatch } from "../store";
 ```
 
 ### Get user state
+
 ```typescript
-const { isLoggedIn, email, userType, name } = useAppSelector((state) => state.user);
+const { isLoggedIn, email, userType, name } = useAppSelector(
+  (state) => state.user
+);
 ```
 
 ### Dispatch actions
+
 ```typescript
-import { login, logout, updateUser } from '../store';
+import { login, logout, updateUser } from "../store";
 
 const dispatch = useAppDispatch();
 
 // Login
-dispatch(login({
-  email: 'user@example.com',
-  userType: 'property_manager',
-  name: 'John Doe',
-  id: '123'
-}));
+dispatch(
+  login({
+    email: "user@example.com",
+    userType: "property_manager",
+    name: "John Doe",
+    id: "123",
+  })
+);
 
 // Logout
 dispatch(logout());
 
 // Update user
-dispatch(updateUser({
-  email: 'newemail@example.com',
-  name: 'John Updated'
-}));
+dispatch(
+  updateUser({
+    email: "newemail@example.com",
+    name: "John Updated",
+  })
+);
 ```
 
 ## 🎯 Available Actions
@@ -69,8 +78,8 @@ dispatch(updateUser({
 interface UserState {
   isLoggedIn: boolean;
   email: string | null;
-  userType: 'super_user' | 'property_manager' | 'staff' | 'tenant' | null;
+  userType: "super_user" | "property_manager" | "staff" | "tenant" | null;
   name: string | null;
   id: string | null;
 }
-``` 
+```

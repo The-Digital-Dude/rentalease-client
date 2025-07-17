@@ -56,7 +56,7 @@ const ContactsCommunication = () => {
     {
       id: "1",
       name: "Sarah Johnson",
-      role: "Property Manager",
+      role: "Agency",
       email: "sarah.johnson@agency.com",
       phone: "+1 (555) 123-4567",
       notes: "Prefers email for routine communications",
@@ -91,7 +91,7 @@ const ContactsCommunication = () => {
     return matchesSearch && matchesRole;
   });
 
-  const roles = ["Property Manager", "Admin", "Finance"];
+  const roles = ["Agency", "Admin", "Finance"];
 
   const handleNotificationToggle = (setting: keyof NotificationSettings) => {
     setNotifications((prev) => ({
@@ -150,13 +150,13 @@ const ContactsCommunication = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Contacts & Communication</h1>
-        <p>Manage property manager contacts and automated notifications</p>
+        <p>Manage agency contacts and automated notifications</p>
       </div>
 
-      {/* Property Manager Contacts Section */}
+      {/* Agency Contacts Section */}
       <div className="content-card contacts-section">
         <div className="section-header">
-          <h2>Property Manager Contacts</h2>
+          <h2>Agency Contacts</h2>
           <button className="btn-primary" onClick={handleAddContact}>
             <RiAddLine />
             Add Contact

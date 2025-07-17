@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { RiAddLine, RiSearchLine, RiFilterLine } from "react-icons/ri";
-import { AgencyFormModal, AgencyCard } from "../../components";
-import { propertyManagerService } from "../../services/propertyManagerService";
-import type { PropertyManager } from "../../services/propertyManagerService";
+import {
+  AgencyCard,
+  AgencyFormModal,
+  ConfirmationModal,
+} from "../../components";
+import { agencyService } from "../../services";
+import type { Agency } from "../../services/agencyService";
 import { VALID_REGIONS } from "../../constants";
 import "./Agencies.scss";
 
-// Using PropertyManager interface from service  
-type Agency = PropertyManager;
-
 const complianceLevels = [
   "Basic Package",
-  "Standard Package", 
+  "Standard Package",
   "Premium Package",
   "Full Package",
 ];
@@ -37,23 +38,23 @@ const Agencies = () => {
     }
   }, [successMessage]);
 
-  // Fetch property managers from API
+  // Fetch agencies from API
   useEffect(() => {
     const fetchPropertyManagers = async () => {
       try {
         setLoading(true);
         setError("");
-        const response = await propertyManagerService.getAllPropertyManagers();
-        
+        const response = await agencyService.getAllAgencies();
+
         if (response.success) {
           // Ensure we always have an array
           setAgencies(Array.isArray(response.data) ? response.data : []);
         } else {
-          setError(response.message || "Failed to fetch property managers");
+          setError(response.message || "Failed to fetch agencies");
           setAgencies([]); // Set empty array on error
         }
       } catch (error: any) {
-        setError(error.message || "Failed to fetch property managers");
+        setError(error.message || "Failed to fetch agencies");
         setAgencies([]); // Set empty array on error
       } finally {
         setLoading(false);
@@ -63,14 +64,16 @@ const Agencies = () => {
     fetchPropertyManagers();
   }, []);
 
-  const filteredAgencies = (Array.isArray(agencies) ? agencies : []).filter((agency) => {
-    const matchesSearch = agency.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      selectedStatus === "all" || agency.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredAgencies = (Array.isArray(agencies) ? agencies : []).filter(
+    (agency) => {
+      const matchesSearch = agency.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        selectedStatus === "all" || agency.status === selectedStatus;
+      return matchesSearch && matchesStatus;
+    }
+  );
 
   const handleFormSubmit = async (formData: {
     name: string;
@@ -89,7 +92,7 @@ const Agencies = () => {
       setSuccessMessage("");
 
       if (editingAgency) {
-        // Update existing property manager (exclude password)
+        // Update existing agency (exclude password)
         const updateData = {
           name: formData.name,
           abn: formData.abn,
@@ -101,12 +104,12 @@ const Agencies = () => {
           status: formData.status,
           outstandingAmount: editingAgency.outstandingAmount, // Preserve existing amount
         };
-        
-        const response = await propertyManagerService.updatePropertyManager(
+
+        const response = await agencyService.updateAgency(
           editingAgency.id,
           updateData
         );
-        
+
         if (response.success) {
           setAgencies((prevAgencies) =>
             prevAgencies.map((agency) =>
@@ -118,18 +121,18 @@ const Agencies = () => {
                 : agency
             )
           );
-          setSuccessMessage("Property manager updated successfully!");
+          setSuccessMessage("Agency updated successfully!");
         } else {
-          setError(response.message || "Failed to update property manager");
+          setError(response.message || "Failed to update agency");
           return;
         }
       } else {
-        // Add new property manager (include password)
+        // Add new agency (include password)
         if (!formData.password) {
-          setError("Password is required for new property managers");
+          setError("Password is required for new agencies");
           return;
         }
-        
+
         const newAgencyData = {
           name: formData.name,
           abn: formData.abn,
@@ -139,17 +142,21 @@ const Agencies = () => {
           region: formData.region,
           complianceLevel: formData.complianceLevel,
           status: formData.status,
-          outstandingAmount: 0, // Default outstanding amount for new property managers
+          outstandingAmount: 0, // Default outstanding amount for new agencies
           password: formData.password,
         };
-        
-        const response = await propertyManagerService.createPropertyManager(newAgencyData);
-        
-        if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+
+        const response = await agencyService.createAgency(newAgencyData);
+
+        if (
+          response.success &&
+          Array.isArray(response.data) &&
+          response.data.length > 0
+        ) {
           setAgencies((prevAgencies) => [...prevAgencies, response.data[0]]);
-          setSuccessMessage(response.message || "Property manager created successfully!");
+          setSuccessMessage(response.message || "Agency created successfully!");
         } else {
-          setError(response.message || "Failed to create property manager");
+          setError(response.message || "Failed to create agency");
           return;
         }
       }
@@ -157,7 +164,7 @@ const Agencies = () => {
       setShowForm(false);
       setEditingAgency(null);
     } catch (error: any) {
-      setError(error.message || "Failed to save property manager");
+      setError(error.message || "Failed to save agency");
     } finally {
       setSubmitLoading(false);
     }
@@ -174,19 +181,19 @@ const Agencies = () => {
     try {
       setError("");
       setSuccessMessage("");
-      
-      const response = await propertyManagerService.deletePropertyManager(id);
-      
+
+      const response = await agencyService.deleteAgency(id);
+
       if (response.success) {
         setAgencies((prevAgencies) =>
           prevAgencies.filter((agency) => agency.id !== id)
         );
-        setSuccessMessage("Property manager deleted successfully!");
+        setSuccessMessage("Agency deleted successfully!");
       } else {
-        setError(response.message || "Failed to delete property manager");
+        setError(response.message || "Failed to delete agency");
       }
     } catch (error: any) {
-      setError(error.message || "Failed to delete property manager");
+      setError(error.message || "Failed to delete agency");
     }
   };
 
@@ -194,11 +201,13 @@ const Agencies = () => {
     try {
       setError("");
       setSuccessMessage("");
-      
-      const response = await propertyManagerService.resendCredentialsEmail(id);
-      
+
+      const response = await agencyService.resendCredentialsEmail(id);
+
       if (response.success) {
-        setSuccessMessage(response.message || "Credentials email sent successfully!");
+        setSuccessMessage(
+          response.message || "Credentials email sent successfully!"
+        );
       } else {
         setError(response.message || "Failed to send credentials email");
       }
@@ -225,41 +234,50 @@ const Agencies = () => {
           }}
         >
           <div>
-            <h1>Property Manager Management</h1>
-            <p>Manage your property managers and compliance</p>
+            <h1>Agency Management</h1>
+            <p>Manage your agencies and compliance</p>
           </div>
-          <button className="btn-primary" onClick={() => {
-            setError("");
-            setSuccessMessage("");
-            setShowForm(true);
-          }}>
-            <RiAddLine /> Add New Property Manager
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setError("");
+              setSuccessMessage("");
+              setShowForm(true);
+            }}
+          >
+            <RiAddLine /> Add New Agency
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="error-message" style={{ 
-          background: '#fee2e2', 
-          border: '1px solid #fecaca', 
-          color: '#dc2626', 
-          padding: '1rem', 
-          borderRadius: '8px', 
-          marginBottom: '1rem' 
-        }}>
+        <div
+          className="error-message"
+          style={{
+            background: "#fee2e2",
+            border: "1px solid #fecaca",
+            color: "#dc2626",
+            padding: "1rem",
+            borderRadius: "8px",
+            marginBottom: "1rem",
+          }}
+        >
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="success-message" style={{ 
-          background: '#dcfce7', 
-          border: '1px solid #bbf7d0', 
-          color: '#166534', 
-          padding: '1rem', 
-          borderRadius: '8px', 
-          marginBottom: '1rem' 
-        }}>
+        <div
+          className="success-message"
+          style={{
+            background: "#dcfce7",
+            border: "1px solid #bbf7d0",
+            color: "#166534",
+            padding: "1rem",
+            borderRadius: "8px",
+            marginBottom: "1rem",
+          }}
+        >
           {successMessage}
         </div>
       )}
@@ -269,7 +287,7 @@ const Agencies = () => {
           <RiSearchLine />
           <input
             type="text"
-            placeholder="Search property managers..."
+            placeholder="Search agencies..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -291,34 +309,42 @@ const Agencies = () => {
 
       <div className="agencies-list">
         {loading ? (
-          <div className="loading-container" style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            padding: '2rem',
-            flexDirection: 'column',
-            gap: '1rem'
-          }}>
-            <div className="loading-spinner" style={{
-              width: '40px',
-              height: '40px',
-              border: '3px solid rgba(2, 73, 116, 0.2)',
-              borderTop: '3px solid #024974',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}></div>
-            <p>Loading property managers...</p>
+          <div
+            className="loading-container"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "2rem",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            <div
+              className="loading-spinner"
+              style={{
+                width: "40px",
+                height: "40px",
+                border: "3px solid rgba(2, 73, 116, 0.2)",
+                borderTop: "3px solid #024974",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+            ></div>
+            <p>Loading agencies...</p>
           </div>
         ) : filteredAgencies.length === 0 ? (
-          <div className="no-data" style={{ 
-            textAlign: 'center', 
-            padding: '2rem',
-            color: '#6b7280'
-          }}>
-            {searchTerm || selectedStatus !== 'all' ? 
-              'No property managers found matching your criteria.' : 
-              'No property managers available. Add one to get started.'
-            }
+          <div
+            className="no-data"
+            style={{
+              textAlign: "center",
+              padding: "2rem",
+              color: "#6b7280",
+            }}
+          >
+            {searchTerm || selectedStatus !== "all"
+              ? "No agencies found matching your criteria."
+              : "No agencies available. Add one to get started."}
           </div>
         ) : (
           filteredAgencies.map((agency) => (

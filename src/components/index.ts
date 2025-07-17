@@ -27,6 +27,9 @@ export { default as PropertyGrid } from "./PropertyGrid";
 export { default as PropertyManagement } from "./PropertyManagement";
 export { default as PropertyShowcase } from "./PropertyShowcase";
 export { default as EmptyState } from "./EmptyState";
+export { default as PropertiesHeader } from "./PropertiesHeader";
+export { default as PropertyErrorAlert } from "./PropertyErrorAlert";
+export { default as PropertyModals } from "./PropertyModals";
 export { AgencyCard } from "./AgencyCard";
 
 // Export types

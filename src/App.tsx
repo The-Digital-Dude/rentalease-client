@@ -8,6 +8,7 @@ import {
   AdminLogin,
   PasswordReset,
   Dashboard,
+  PropertyProfile,
 } from "./pages";
 import { useAppSelector, useAppDispatch } from "./store";
 import { restoreAuthState } from "./store/userSlice";
@@ -141,43 +142,43 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#ffffff',
-              color: '#333333',
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              background: "#ffffff",
+              color: "#333333",
+              border: "1px solid #e0e0e0",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
             },
             success: {
               style: {
-                border: '1px solid #22c55e',
-                color: '#15803d',
+                border: "1px solid #22c55e",
+                color: "#15803d",
               },
               iconTheme: {
-                primary: '#22c55e',
-                secondary: '#ffffff',
+                primary: "#22c55e",
+                secondary: "#ffffff",
               },
             },
             error: {
               style: {
-                border: '1px solid #ef4444',
-                color: '#dc2626',
+                border: "1px solid #ef4444",
+                color: "#dc2626",
               },
               iconTheme: {
-                primary: '#ef4444',
-                secondary: '#ffffff',
+                primary: "#ef4444",
+                secondary: "#ffffff",
               },
             },
             loading: {
               style: {
-                border: '1px solid #3b82f6',
-                color: '#1d4ed8',
+                border: "1px solid #3b82f6",
+                color: "#1d4ed8",
               },
               iconTheme: {
-                primary: '#3b82f6',
-                secondary: '#ffffff',
+                primary: "#3b82f6",
+                secondary: "#ffffff",
               },
             },
           }}
@@ -197,11 +198,17 @@ function App() {
     <>
       <div className="app-layout">
         <TopNavbar onMobileMenuClick={handleMobileMenuClick} />
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
         <main className="main-content">
           <Routes>
             {/* Simple test dashboard route without protection */}
             <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Property Profile route */}
+            <Route path="/properties/:id" element={<PropertyProfile />} />
 
             {/* Dynamic routes generated based on user roles */}
             {generateAllRoutes()}
@@ -229,8 +236,8 @@ function App() {
                   <div className="content-card">
                     <h3>Insufficient Permissions</h3>
                     <p>
-                      Your current role ({userType}) doesn't allow access to this
-                      resource.
+                      Your current role ({userType}) doesn't allow access to
+                      this resource.
                     </p>
                   </div>
                 </div>
@@ -244,43 +251,43 @@ function App() {
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#ffffff',
-            color: '#333333',
-            border: '1px solid #e0e0e0',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            fontSize: '14px',
-            fontWeight: '500',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            background: "#ffffff",
+            color: "#333333",
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            fontSize: "14px",
+            fontWeight: "500",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           },
           success: {
             style: {
-              border: '1px solid #22c55e',
-              color: '#15803d',
+              border: "1px solid #22c55e",
+              color: "#15803d",
             },
             iconTheme: {
-              primary: '#22c55e',
-              secondary: '#ffffff',
+              primary: "#22c55e",
+              secondary: "#ffffff",
             },
           },
           error: {
             style: {
-              border: '1px solid #ef4444',
-              color: '#dc2626',
+              border: "1px solid #ef4444",
+              color: "#dc2626",
             },
             iconTheme: {
-              primary: '#ef4444',
-              secondary: '#ffffff',
+              primary: "#ef4444",
+              secondary: "#ffffff",
             },
           },
           loading: {
             style: {
-              border: '1px solid #3b82f6',
-              color: '#1d4ed8',
+              border: "1px solid #3b82f6",
+              color: "#1d4ed8",
             },
             iconTheme: {
-              primary: '#3b82f6',
-              secondary: '#ffffff',
+              primary: "#3b82f6",
+              secondary: "#ffffff",
             },
           },
         }}

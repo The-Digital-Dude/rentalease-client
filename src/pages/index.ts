@@ -8,4 +8,5 @@ export { default as ReportsAnalytics } from "./ReportsAnalytics";
 export { default as ContactsCommunication } from "./ContactsCommunication";
 export { default as PropertyCompliance } from "./PropertyCompliance";
 export { default as PaymentProperty } from "./PaymentProperty";
+export { default as PropertyProfile } from "./PropertyProfile";
 export { Login, AgentLogin, AdminLogin, PasswordReset } from "./Login";

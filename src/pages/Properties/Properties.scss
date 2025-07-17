@@ -34,7 +34,7 @@
 
           @media (max-width: 640px) {
             font-size: 1.75rem;
-            
+
             .header-icon {
               font-size: 2rem;
             }
@@ -464,12 +464,8 @@
         border-color: #cbd5e1;
       }
 
-     
-     
-
       // Property Details
       .property-details {
-        padding: 0 1.5rem;
         margin-bottom: 1rem;
 
         .detail-row {
@@ -498,7 +494,6 @@
 
       // Compliance Section
       .compliance-section {
-        padding: 0 1.5rem;
         margin-bottom: 1rem;
 
         .compliance-header {
@@ -555,9 +550,6 @@
           }
         }
       }
-
-      
-      
     }
   }
 
@@ -612,4 +604,4 @@
       }
     }
   }
-} 
+}

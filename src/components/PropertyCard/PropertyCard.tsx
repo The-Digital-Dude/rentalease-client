@@ -1,28 +1,71 @@
-import React from 'react';
-import { RiEditLine, RiEyeLine } from 'react-icons/ri';
-import TenantInfo from '../TenantInfo';
-import LandlordInfo from '../LandlordInfo';
-import { formatDateTime } from '../../utils';
-import './PropertyCard.scss';
+import React from "react";
+import { RiEditLine, RiEyeLine } from "react-icons/ri";
+import { formatDateTime } from "../../utils";
+import "./PropertyCard.scss";
 
 export interface Property {
   id: string;
-  address: string;
+  address: {
+    street: string;
+    suburb: string;
+    state: "NSW" | "VIC" | "QLD" | "WA" | "SA" | "TAS" | "NT" | "ACT";
+    postcode: string;
+    fullAddress: string;
+  };
   propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
   propertyManager: string;
-  region: string;
-  leaseStartDate?: string;
-  leaseEndDate?: string;
-  tenantName?: string;
-  tenantEmail?: string;
-  tenantPhone?: string;
-  landlordName?: string;
-  landlordEmail?: string;
-  landlordPhone?: string;
-  createdDate: string;
-  lastInspection?: string;
-  nextInspection?: string;
+  region:
+    | "Sydney Metro"
+    | "Melbourne Metro"
+    | "Brisbane Metro"
+    | "Perth Metro"
+    | "Adelaide Metro"
+    | "Darwin Metro"
+    | "Hobart Metro"
+    | "Canberra Metro"
+    | "Regional NSW"
+    | "Regional VIC"
+    | "Regional QLD"
+    | "Regional WA"
+    | "Regional SA"
+    | "Regional NT"
+    | "Regional TAS";
+  currentTenant?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  currentLandlord?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  complianceSchedule: {
+    gasCompliance: {
+      nextInspection?: string;
+      required: boolean;
+      status: "Compliant" | "Due Soon" | "Overdue" | "Not Required";
+    };
+    electricalSafety: {
+      nextInspection?: string;
+      required: boolean;
+      status: "Compliant" | "Due Soon" | "Overdue" | "Not Required";
+    };
+    smokeAlarms: {
+      nextInspection?: string;
+      required: boolean;
+      status: "Compliant" | "Due Soon" | "Overdue" | "Not Required";
+    };
+    poolSafety: {
+      nextInspection?: string;
+      required: boolean;
+      status: "Compliant" | "Due Soon" | "Overdue" | "Not Required";
+    };
+  };
   notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface PropertyCardProps {
@@ -38,13 +81,28 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   onEdit,
   onView,
   showActions = true,
-  className = ''
+  className = "",
 }) => {
+  const getComplianceStatusColor = (status: string) => {
+    switch (status) {
+      case "Compliant":
+        return "compliant";
+      case "Due Soon":
+        return "due-soon";
+      case "Overdue":
+        return "overdue";
+      case "Not Required":
+        return "not-required";
+      default:
+        return "default";
+    }
+  };
+
   return (
     <div className={`property-card ${className}`}>
       <div className="property-header">
         <div className="property-info">
-          <h4>{property.address}</h4>
+          <h4>{property.address.fullAddress}</h4>
           <p className="property-type">{property.propertyType}</p>
         </div>
         {showActions && (
@@ -80,79 +138,116 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <span>Manager:</span>
           <span>{property.propertyManager}</span>
         </div>
-        {property.leaseStartDate && (
-          <div className="detail-row">
-            <span>Lease Start:</span>
-            <span>{formatDateTime(property.leaseStartDate)}</span>
-          </div>
-        )}
-        {property.leaseEndDate && (
-          <div className="detail-row">
-            <span>Lease End:</span>
-            <span>{formatDateTime(property.leaseEndDate)}</span>
-          </div>
-        )}
+        <div className="detail-row">
+          <span>Tenant:</span>
+          <span>{property.currentTenant?.name || "Vacant"}</span>
+        </div>
+        <div className="detail-row">
+          <span>Landlord:</span>
+          <span>{property.currentLandlord?.name || "N/A"}</span>
+        </div>
       </div>
 
-      {property.tenantName && (
-        <TenantInfo tenant={{
-          name: property.tenantName,
-          email: property.tenantEmail || '',
-          phone: property.tenantPhone || ''
-        }} />
-      )}
-
-      {property.landlordName && (
-        <LandlordInfo landlord={{
-          name: property.landlordName,
-          email: property.landlordEmail || '',
-          phone: property.landlordPhone || ''
-        }} />
-      )}
-
-      <div className="property-footer">
-        <div className="property-dates">
-          <small>Added: {formatDateTime(property.createdDate)}</small>
-          {property.lastInspection && (
-            <small>Last Inspection: {formatDateTime(property.lastInspection)}</small>
-          )}
-          {property.nextInspection && (
-            <small>Next Inspection: {formatDateTime(property.nextInspection)}</small>
+      <div className="compliance-section">
+        <h5>Compliance Status</h5>
+        <div className="compliance-items">
+          <div
+            className={`compliance-item ${getComplianceStatusColor(
+              property.complianceSchedule.gasCompliance.status
+            )}`}
+          >
+            <span className="compliance-type">Gas</span>
+            <span className="compliance-status">
+              {property.complianceSchedule.gasCompliance.status}
+            </span>
+            {property.complianceSchedule.gasCompliance.nextInspection && (
+              <span className="compliance-date">
+                {formatDateTime(
+                  property.complianceSchedule.gasCompliance.nextInspection
+                )}
+              </span>
+            )}
+          </div>
+          <div
+            className={`compliance-item ${getComplianceStatusColor(
+              property.complianceSchedule.electricalSafety.status
+            )}`}
+          >
+            <span className="compliance-type">Electrical</span>
+            <span className="compliance-status">
+              {property.complianceSchedule.electricalSafety.status}
+            </span>
+            {property.complianceSchedule.electricalSafety.nextInspection && (
+              <span className="compliance-date">
+                {formatDateTime(
+                  property.complianceSchedule.electricalSafety.nextInspection
+                )}
+              </span>
+            )}
+          </div>
+          <div
+            className={`compliance-item ${getComplianceStatusColor(
+              property.complianceSchedule.smokeAlarms.status
+            )}`}
+          >
+            <span className="compliance-type">Smoke</span>
+            <span className="compliance-status">
+              {property.complianceSchedule.smokeAlarms.status}
+            </span>
+            {property.complianceSchedule.smokeAlarms.nextInspection && (
+              <span className="compliance-date">
+                {formatDateTime(
+                  property.complianceSchedule.smokeAlarms.nextInspection
+                )}
+              </span>
+            )}
+          </div>
+          {property.complianceSchedule.poolSafety.required && (
+            <div
+              className={`compliance-item ${getComplianceStatusColor(
+                property.complianceSchedule.poolSafety.status
+              )}`}
+            >
+              <span className="compliance-type">Pool Safety</span>
+              <span className="compliance-status">
+                {property.complianceSchedule.poolSafety.status}
+              </span>
+              {property.complianceSchedule.poolSafety.nextInspection && (
+                <span className="compliance-date">
+                  {formatDateTime(
+                    property.complianceSchedule.poolSafety.nextInspection
+                  )}
+                </span>
+              )}
+            </div>
           )}
         </div>
-
-        {showActions && (onEdit || onView) && (
-          <div className="property-actions">
-            {onView && (
-              <button
-                className="action-btn view-btn"
-                onClick={() => onView(property)}
-              >
-                <RiEyeLine />
-                View Details
-              </button>
-            )}
-            {onEdit && (
-              <button
-                className="action-btn edit-btn"
-                onClick={() => onEdit(property)}
-              >
-                <RiEditLine />
-                Edit Property
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
-      {property.notes && (
-        <div className="property-notes">
-          <h5>Notes</h5>
-          <p>{property.notes}</p>
+      {showActions && (onEdit || onView) && (
+        <div className="property-actions">
+          {onView && (
+            <button
+              className="action-btn view-btn"
+              onClick={() => onView(property)}
+            >
+              <RiEyeLine />
+              View Details
+            </button>
+          )}
+          {onEdit && (
+            <button
+              className="action-btn edit-btn"
+              onClick={() => onEdit(property)}
+            >
+              <RiEditLine />
+              Edit Property
+            </button>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default PropertyCard; 
+export default PropertyCard;

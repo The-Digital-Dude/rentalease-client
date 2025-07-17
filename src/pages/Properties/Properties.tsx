@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../store";
 import { getFullRoute } from "../../config/roleBasedRoutes";
 import PropertiesHeader from "../../components/PropertiesHeader";
@@ -22,6 +23,7 @@ import "./Properties.scss";
 
 const Properties = () => {
   const { userType } = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
   const currentPath = userType ? getFullRoute(userType, "properties") : "/";
 
   // State management
@@ -79,8 +81,7 @@ const Properties = () => {
   };
 
   const handleViewProperty = (property: PropertyCardType) => {
-    console.log("View property:", property.id);
-    // TODO: Implement property details view
+    navigate(`/properties/${property.id}`);
   };
 
   const handleDeleteProperty = (property: PropertyCardType) => {
@@ -147,24 +148,55 @@ const Properties = () => {
   const transformedProperties: PropertyCardType[] = properties.map(
     (property) => ({
       id: property.id,
-      address: property.fullAddress,
+      address: {
+        street: property.address?.street || "",
+        suburb: property.address?.suburb || "",
+        state: property.address?.state || "NSW",
+        postcode: property.address?.postcode || "",
+        fullAddress:
+          property.address?.fullAddress || property.fullAddress || "",
+      },
       propertyType: property.propertyType,
-      region: property.region,
-      propertyManager: property.propertyManager.companyName,
-      tenantName: property.currentTenant?.name,
-      tenantPhone: property.currentTenant?.phone,
-      tenantEmail: property.currentTenant?.email,
-      landlordName: property.currentLandlord?.name,
-      landlordPhone: property.currentLandlord?.phone,
-      landlordEmail: property.currentLandlord?.email,
-      leaseStartDate: undefined,
-      leaseEndDate: undefined,
-      nextInspection:
-        property.complianceSchedule?.gasCompliance?.nextInspection ||
-        property.complianceSchedule?.electricalSafety?.nextInspection,
-      lastInspection: undefined,
+      region: property.region as PropertyCardType["region"],
+      propertyManager: property.propertyManager?.companyName || "",
+      currentTenant: property.currentTenant,
+      currentLandlord: property.currentLandlord,
+      complianceSchedule: {
+        gasCompliance: {
+          nextInspection:
+            property.complianceSchedule?.gasCompliance?.nextInspection,
+          required:
+            property.complianceSchedule?.gasCompliance?.required ?? true,
+          status:
+            property.complianceSchedule?.gasCompliance?.status ?? "Due Soon",
+        },
+        electricalSafety: {
+          nextInspection:
+            property.complianceSchedule?.electricalSafety?.nextInspection,
+          required:
+            property.complianceSchedule?.electricalSafety?.required ?? true,
+          status:
+            property.complianceSchedule?.electricalSafety?.status ?? "Due Soon",
+        },
+        smokeAlarms: {
+          nextInspection:
+            property.complianceSchedule?.smokeAlarms?.nextInspection,
+          required: property.complianceSchedule?.smokeAlarms?.required ?? true,
+          status:
+            property.complianceSchedule?.smokeAlarms?.status ?? "Due Soon",
+        },
+        poolSafety: {
+          nextInspection:
+            property.complianceSchedule?.poolSafety?.nextInspection,
+          required: property.complianceSchedule?.poolSafety?.required ?? false,
+          status:
+            property.complianceSchedule?.poolSafety?.status ?? "Not Required",
+        },
+      },
       notes: property.notes,
-      createdDate: property.createdAt,
+      isActive: true, // Default to true since it's not in the service interface
+      createdAt: property.createdAt,
+      updatedAt: property.updatedAt || property.createdAt,
     })
   );
 

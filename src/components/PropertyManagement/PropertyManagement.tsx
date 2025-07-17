@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import PropertyGrid from '../PropertyGrid';
-import type { Property } from '../PropertyCard';
-import type { FilterConfig } from '../SearchFilterBar';
-import './PropertyManagement.scss';
+import React, { useState, useMemo } from "react";
+import PropertyGrid from "../PropertyGrid";
+import type { Property } from "../PropertyCard";
+import type { FilterConfig } from "../SearchFilterBar";
+import "./PropertyManagement.scss";
 
 interface PropertyManagementProps {
   properties: Property[];
@@ -27,7 +27,7 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
   description = "Manage your existing properties",
   searchPlaceholder = "Search properties...",
   enableFilters = true,
-  className = ''
+  className = "",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [regionFilter, setRegionFilter] = useState<string>("all");
@@ -36,63 +36,82 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
 
   // Get unique regions and property types for filters
   const uniqueRegions = useMemo(() => {
-    const regions = properties.map(p => p.region).filter(Boolean);
+    const regions = properties.map((p) => p.region).filter(Boolean);
     return [...new Set(regions)].sort();
   }, [properties]);
 
   const uniquePropertyTypes = useMemo(() => {
-    const types = properties.map(p => p.propertyType).filter(Boolean);
+    const types = properties.map((p) => p.propertyType).filter(Boolean);
     return [...new Set(types)].sort();
   }, [properties]);
 
   // Filter properties based on search and filters
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
-      const matchesSearch = 
-        property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.propertyManager.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.tenantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.landlordName?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        property.address.fullAddress
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        property.propertyManager
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        property.currentTenant?.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        property.currentLandlord?.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-      const matchesRegion = regionFilter === "all" || property.region === regionFilter;
-      const matchesType = typeFilter === "all" || property.propertyType === typeFilter;
-      
+      const matchesRegion =
+        regionFilter === "all" || property.region === regionFilter;
+      const matchesType =
+        typeFilter === "all" || property.propertyType === typeFilter;
+
       // Status filtering based on tenant occupancy
-      const matchesStatus = statusFilter === "all" || 
-        (statusFilter === "occupied" && property.tenantName) ||
-        (statusFilter === "vacant" && !property.tenantName);
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "occupied" && property.currentTenant) ||
+        (statusFilter === "vacant" && !property.currentTenant);
 
       return matchesSearch && matchesRegion && matchesType && matchesStatus;
     });
   }, [properties, searchTerm, regionFilter, typeFilter, statusFilter]);
 
   // Filter configurations
-  const filters: FilterConfig[] = enableFilters ? [
-    {
-      id: "region",
-      placeholder: "All Regions",
-      value: regionFilter,
-      onChange: setRegionFilter,
-      options: uniqueRegions.map(region => ({ value: region, label: region }))
-    },
-    {
-      id: "type",
-      placeholder: "All Types",
-      value: typeFilter,
-      onChange: setTypeFilter,
-      options: uniquePropertyTypes.map(type => ({ value: type, label: type }))
-    },
-    {
-      id: "status",
-      placeholder: "All Status",
-      value: statusFilter,
-      onChange: setStatusFilter,
-      options: [
-        { value: "occupied", label: "Occupied" },
-        { value: "vacant", label: "Vacant" }
+  const filters: FilterConfig[] = enableFilters
+    ? [
+        {
+          id: "region",
+          placeholder: "All Regions",
+          value: regionFilter,
+          onChange: setRegionFilter,
+          options: uniqueRegions.map((region) => ({
+            value: region,
+            label: region,
+          })),
+        },
+        {
+          id: "type",
+          placeholder: "All Types",
+          value: typeFilter,
+          onChange: setTypeFilter,
+          options: uniquePropertyTypes.map((type) => ({
+            value: type,
+            label: type,
+          })),
+        },
+        {
+          id: "status",
+          placeholder: "All Status",
+          value: statusFilter,
+          onChange: setStatusFilter,
+          options: [
+            { value: "occupied", label: "Occupied" },
+            { value: "vacant", label: "Vacant" },
+          ],
+        },
       ]
-    }
-  ] : [];
+    : [];
 
   return (
     <div className={`property-management ${className}`}>
@@ -110,13 +129,17 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
         onPropertyEdit={onPropertyEdit}
         onPropertyView={onPropertyView}
         showActions={showActions}
-        emptyStateAction={onAddProperty ? {
-          label: "Add Property",
-          onClick: onAddProperty
-        } : undefined}
+        emptyStateAction={
+          onAddProperty
+            ? {
+                label: "Add Property",
+                onClick: onAddProperty,
+              }
+            : undefined
+        }
       />
     </div>
   );
 };
 
-export default PropertyManagement; 
+export default PropertyManagement;

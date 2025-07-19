@@ -1,16 +1,24 @@
-import { useState, useEffect } from "react";
-import { RiSaveLine, RiCloseLine, RiHomeLine, RiUser3Line, RiCalendarCheckLine, RiMapPinLine, RiPhoneLine, RiMailLine, RiUserLine } from "react-icons/ri";
+import { useState, useEffect, useCallback } from "react";
+import {
+  RiSaveLine,
+  RiCloseLine,
+  RiHomeLine,
+  RiUser3Line,
+  RiCalendarCheckLine,
+  RiMapPinLine,
+  RiPhoneLine,
+  RiMailLine,
+  RiUserLine,
+  RiBuildingLine,
+} from "react-icons/ri";
 import { useAppSelector } from "../../store";
-import type { 
-  Property, 
-  CreatePropertyData, 
+import type {
+  Property,
+  CreatePropertyData,
   PropertyAddress,
-  PropertyTenant,
-  PropertyLandlord
 } from "../../services/propertyService";
-import { 
-  VALID_STATES
-} from "../../services/propertyService";
+import { VALID_STATES } from "../../services/propertyService";
+import { agencyService, type Agency } from "../../services/agencyService";
 import "./PropertyFormModal.scss";
 
 interface PropertyFormModalProps {
@@ -27,23 +35,26 @@ interface PropertyFormData {
   suburb: string;
   state: string;
   postcode: string;
-  
+
+  // Agency Selection (required for super users)
+  agencyId: string;
+
   // Tenant Information (all required)
   tenantName: string;
   tenantEmail: string;
   tenantPhone: string;
-  
+
   // Landlord Information (all required)
   landlordName: string;
   landlordEmail: string;
   landlordPhone: string;
-  
+
   // Inspection Dates (optional)
   gasInspectionDate: string;
   electricalInspectionDate: string;
   smokeAlarmInspectionDate: string;
   poolSafetyInspectionDate: string;
-  
+
   // Additional
   notes: string;
 }
@@ -54,23 +65,26 @@ const initialFormData: PropertyFormData = {
   suburb: "",
   state: "NSW",
   postcode: "",
-  
+
+  // Agency Selection
+  agencyId: "",
+
   // Tenant Information
   tenantName: "",
   tenantEmail: "",
   tenantPhone: "",
-  
+
   // Landlord Information
   landlordName: "",
   landlordEmail: "",
   landlordPhone: "",
-  
+
   // Inspection Dates
   gasInspectionDate: "",
   electricalInspectionDate: "",
   smokeAlarmInspectionDate: "",
   poolSafetyInspectionDate: "",
-  
+
   // Additional
   notes: "",
 };
@@ -83,8 +97,37 @@ const PropertyFormModal = ({
   isSubmitting = false,
 }: PropertyFormModalProps) => {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
-  const [activeTab, setActiveTab] = useState<'basic' | 'inspections'>('basic');
+  const [activeTab, setActiveTab] = useState<"basic" | "inspections">("basic");
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [loadingAgencies, setLoadingAgencies] = useState(false);
   const { userType } = useAppSelector((state) => state.user);
+
+  const handleClose = useCallback(() => {
+    setFormData(initialFormData);
+    setActiveTab("basic");
+    onClose();
+  }, [onClose]);
+
+  // Load agencies for super users
+  useEffect(() => {
+    const loadAgencies = async () => {
+      if (userType === "super_user" && isOpen) {
+        try {
+          setLoadingAgencies(true);
+          const response = await agencyService.getAllAgencies();
+          if (response.success) {
+            setAgencies(response.data);
+          }
+        } catch (error) {
+          console.error("Error loading agencies:", error);
+        } finally {
+          setLoadingAgencies(false);
+        }
+      }
+    };
+
+    loadAgencies();
+  }, [userType, isOpen]);
 
   // Update form data when editing property changes
   useEffect(() => {
@@ -95,23 +138,32 @@ const PropertyFormModal = ({
         suburb: editingProperty.address.suburb || "",
         state: editingProperty.address.state || "NSW",
         postcode: editingProperty.address.postcode || "",
-        
+
+        // Agency Selection
+        agencyId: editingProperty.propertyManager?.id || "",
+
         // Tenant Information
         tenantName: editingProperty.currentTenant?.name || "",
         tenantEmail: editingProperty.currentTenant?.email || "",
         tenantPhone: editingProperty.currentTenant?.phone || "",
-        
+
         // Landlord Information
         landlordName: editingProperty.currentLandlord?.name || "",
         landlordEmail: editingProperty.currentLandlord?.email || "",
         landlordPhone: editingProperty.currentLandlord?.phone || "",
-        
+
         // Inspection Dates
-        gasInspectionDate: editingProperty.complianceSchedule?.gasCompliance?.nextInspection || "",
-        electricalInspectionDate: editingProperty.complianceSchedule?.electricalSafety?.nextInspection || "",
-        smokeAlarmInspectionDate: editingProperty.complianceSchedule?.smokeAlarms?.nextInspection || "",
-        poolSafetyInspectionDate: editingProperty.complianceSchedule?.poolSafety?.nextInspection || "",
-        
+        gasInspectionDate:
+          editingProperty.complianceSchedule?.gasCompliance?.nextInspection ||
+          "",
+        electricalInspectionDate:
+          editingProperty.complianceSchedule?.electricalSafety
+            ?.nextInspection || "",
+        smokeAlarmInspectionDate:
+          editingProperty.complianceSchedule?.smokeAlarms?.nextInspection || "",
+        poolSafetyInspectionDate:
+          editingProperty.complianceSchedule?.poolSafety?.nextInspection || "",
+
         // Additional
         notes: editingProperty.notes || "",
       });
@@ -123,37 +175,54 @@ const PropertyFormModal = ({
   // Handle ESC key press
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === "Escape" && isOpen) {
         handleClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscapeKey);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscapeKey);
+      document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
 
-  const handleInputChange = (field: keyof PropertyFormData, value: string | number | boolean) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof PropertyFormData,
+    value: string | number | boolean
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
-    if (!formData.street || !formData.suburb || !formData.postcode || 
-        !formData.tenantName || !formData.tenantEmail || !formData.tenantPhone ||
-        !formData.landlordName || !formData.landlordEmail || !formData.landlordPhone) {
+    if (
+      !formData.street ||
+      !formData.suburb ||
+      !formData.postcode ||
+      !formData.tenantName ||
+      !formData.tenantEmail ||
+      !formData.tenantPhone ||
+      !formData.landlordName ||
+      !formData.landlordEmail ||
+      !formData.landlordPhone
+    ) {
       alert("Please fill in all required fields");
+      return;
+    }
+
+    // Validate agency selection for super users
+    if (userType === "super_user" && !formData.agencyId) {
+      alert("Please select an agency for the property");
       return;
     }
 
@@ -162,10 +231,15 @@ const PropertyFormModal = ({
       address: {
         street: formData.street,
         suburb: formData.suburb,
-        state: formData.state as PropertyAddress['state'],
+        state: formData.state as PropertyAddress["state"],
         postcode: formData.postcode,
       },
-      propertyType: "House" as any,
+      propertyType: "House" as
+        | "House"
+        | "Apartment"
+        | "Townhouse"
+        | "Commercial"
+        | "Other",
       region: "",
       currentTenant: {
         name: formData.tenantName,
@@ -178,32 +252,39 @@ const PropertyFormModal = ({
         phone: formData.landlordPhone,
       },
       complianceSchedule: {
-        gasCompliance: formData.gasInspectionDate ? {
-          nextInspection: formData.gasInspectionDate,
-          required: true
-        } : undefined,
-        electricalSafety: formData.electricalInspectionDate ? {
-          nextInspection: formData.electricalInspectionDate,
-          required: true
-        } : undefined,
-        smokeAlarms: formData.smokeAlarmInspectionDate ? {
-          nextInspection: formData.smokeAlarmInspectionDate
-        } : undefined,
-        poolSafety: formData.poolSafetyInspectionDate ? {
-          nextInspection: formData.poolSafetyInspectionDate,
-          required: true
-        } : undefined,
+        gasCompliance: formData.gasInspectionDate
+          ? {
+              nextInspection: formData.gasInspectionDate,
+              required: true,
+            }
+          : undefined,
+        electricalSafety: formData.electricalInspectionDate
+          ? {
+              nextInspection: formData.electricalInspectionDate,
+              required: true,
+            }
+          : undefined,
+        smokeAlarms: formData.smokeAlarmInspectionDate
+          ? {
+              nextInspection: formData.smokeAlarmInspectionDate,
+            }
+          : undefined,
+        poolSafety: formData.poolSafetyInspectionDate
+          ? {
+              nextInspection: formData.poolSafetyInspectionDate,
+              required: true,
+            }
+          : undefined,
       },
       notes: formData.notes,
     };
 
-    onSubmit(propertyData);
-  };
+    // Add agencyId for super users
+    if (userType === "super_user" && formData.agencyId) {
+      propertyData.agencyId = formData.agencyId;
+    }
 
-  const handleClose = () => {
-    setFormData(initialFormData);
-    setActiveTab('basic');
-    onClose();
+    onSubmit(propertyData);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -224,15 +305,11 @@ const PropertyFormModal = ({
               <RiHomeLine />
             </div>
             <div className="header-text">
-              <h2>{editingProperty ? 'Edit Property' : 'Add New Property'}</h2>
+              <h2>{editingProperty ? "Edit Property" : "Add New Property"}</h2>
               <p>Fill in the property and tenant details</p>
             </div>
           </div>
-          <button 
-            className="close-btn"
-            onClick={handleClose}
-            type="button"
-          >
+          <button className="close-btn" onClick={handleClose} type="button">
             <RiCloseLine />
           </button>
         </div>
@@ -240,8 +317,8 @@ const PropertyFormModal = ({
         {/* Navigation */}
         <div className="property-form-modal__nav">
           <button
-            className={`nav-btn ${activeTab === 'basic' ? 'active' : ''}`}
-            onClick={() => setActiveTab('basic')}
+            className={`nav-btn ${activeTab === "basic" ? "active" : ""}`}
+            onClick={() => setActiveTab("basic")}
             type="button"
           >
             <div className="nav-btn__icon">
@@ -249,13 +326,15 @@ const PropertyFormModal = ({
             </div>
             <div className="nav-btn__content">
               <span className="nav-btn__title">Property & Tenant</span>
-              <span className="nav-btn__subtitle">Address and tenant details</span>
+              <span className="nav-btn__subtitle">
+                Address and tenant details
+              </span>
             </div>
           </button>
-          
+
           <button
-            className={`nav-btn ${activeTab === 'inspections' ? 'active' : ''}`}
-            onClick={() => setActiveTab('inspections')}
+            className={`nav-btn ${activeTab === "inspections" ? "active" : ""}`}
+            onClick={() => setActiveTab("inspections")}
             type="button"
           >
             <div className="nav-btn__icon">
@@ -263,7 +342,9 @@ const PropertyFormModal = ({
             </div>
             <div className="nav-btn__content">
               <span className="nav-btn__title">Inspections</span>
-              <span className="nav-btn__subtitle">Schedule compliance checks</span>
+              <span className="nav-btn__subtitle">
+                Schedule compliance checks
+              </span>
             </div>
           </button>
         </div>
@@ -271,7 +352,7 @@ const PropertyFormModal = ({
         {/* Form Content */}
         <form onSubmit={handleSubmit} className="property-form-modal__form">
           <div className="form-content">
-            {activeTab === 'basic' && (
+            {activeTab === "basic" && (
               <div className="form-sections">
                 {/* Property Address Section */}
                 <div className="form-section">
@@ -284,7 +365,7 @@ const PropertyFormModal = ({
                       <p>Enter the complete property address</p>
                     </div>
                   </div>
-                  
+
                   <div className="form-grid">
                     <div className="form-field full-width">
                       <label>
@@ -295,7 +376,9 @@ const PropertyFormModal = ({
                       <input
                         type="text"
                         value={formData.street}
-                        onChange={(e) => handleInputChange('street', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("street", e.target.value)
+                        }
                         placeholder="123 Collins Street"
                         required
                       />
@@ -309,7 +392,9 @@ const PropertyFormModal = ({
                       <input
                         type="text"
                         value={formData.suburb}
-                        onChange={(e) => handleInputChange('suburb', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("suburb", e.target.value)
+                        }
                         placeholder="Melbourne"
                         required
                       />
@@ -322,11 +407,15 @@ const PropertyFormModal = ({
                       </label>
                       <select
                         value={formData.state}
-                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("state", e.target.value)
+                        }
                         required
                       >
-                        {VALID_STATES.map(state => (
-                          <option key={state} value={state}>{state}</option>
+                        {VALID_STATES.map((state) => (
+                          <option key={state} value={state}>
+                            {state}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -339,7 +428,9 @@ const PropertyFormModal = ({
                       <input
                         type="text"
                         value={formData.postcode}
-                        onChange={(e) => handleInputChange('postcode', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("postcode", e.target.value)
+                        }
                         placeholder="3000"
                         pattern="[0-9]{4}"
                         maxLength={4}
@@ -348,6 +439,50 @@ const PropertyFormModal = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Agency Selection Section (for super users only) */}
+                {userType === "super_user" && (
+                  <div className="form-section">
+                    <div className="section-header">
+                      <div className="section-icon">
+                        <RiBuildingLine />
+                      </div>
+                      <div className="section-title">
+                        <h3>Agency Assignment</h3>
+                        <p>Select the agency to manage this property</p>
+                      </div>
+                    </div>
+
+                    <div className="form-grid">
+                      <div className="form-field full-width">
+                        <label>
+                          <RiBuildingLine />
+                          Agency
+                          <span className="required">*</span>
+                        </label>
+                        <select
+                          value={formData.agencyId}
+                          onChange={(e) =>
+                            handleInputChange("agencyId", e.target.value)
+                          }
+                          required
+                          disabled={loadingAgencies}
+                        >
+                          <option value="">
+                            {loadingAgencies
+                              ? "Loading agencies..."
+                              : "Select an agency"}
+                          </option>
+                          {agencies.map((agency) => (
+                            <option key={agency.id} value={agency.id}>
+                              {agency.name} - {agency.region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tenant Information Section */}
                 <div className="form-section">
@@ -360,7 +495,7 @@ const PropertyFormModal = ({
                       <p>Current tenant contact details</p>
                     </div>
                   </div>
-                  
+
                   <div className="form-grid">
                     <div className="form-field full-width">
                       <label>
@@ -371,7 +506,9 @@ const PropertyFormModal = ({
                       <input
                         type="text"
                         value={formData.tenantName}
-                        onChange={(e) => handleInputChange('tenantName', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("tenantName", e.target.value)
+                        }
                         placeholder="John Smith"
                         required
                       />
@@ -386,7 +523,9 @@ const PropertyFormModal = ({
                       <input
                         type="email"
                         value={formData.tenantEmail}
-                        onChange={(e) => handleInputChange('tenantEmail', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("tenantEmail", e.target.value)
+                        }
                         placeholder="john@example.com"
                         required
                       />
@@ -401,7 +540,9 @@ const PropertyFormModal = ({
                       <input
                         type="tel"
                         value={formData.tenantPhone}
-                        onChange={(e) => handleInputChange('tenantPhone', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("tenantPhone", e.target.value)
+                        }
                         placeholder="0412 345 678"
                         required
                       />
@@ -420,7 +561,7 @@ const PropertyFormModal = ({
                       <p>Property owner contact details</p>
                     </div>
                   </div>
-                  
+
                   <div className="form-grid">
                     <div className="form-field full-width">
                       <label>
@@ -431,7 +572,9 @@ const PropertyFormModal = ({
                       <input
                         type="text"
                         value={formData.landlordName}
-                        onChange={(e) => handleInputChange('landlordName', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("landlordName", e.target.value)
+                        }
                         placeholder="Jane Doe"
                         required
                       />
@@ -446,7 +589,9 @@ const PropertyFormModal = ({
                       <input
                         type="email"
                         value={formData.landlordEmail}
-                        onChange={(e) => handleInputChange('landlordEmail', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("landlordEmail", e.target.value)
+                        }
                         placeholder="jane@example.com"
                         required
                       />
@@ -461,7 +606,9 @@ const PropertyFormModal = ({
                       <input
                         type="tel"
                         value={formData.landlordPhone}
-                        onChange={(e) => handleInputChange('landlordPhone', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("landlordPhone", e.target.value)
+                        }
                         placeholder="0423 456 789"
                         required
                       />
@@ -471,7 +618,7 @@ const PropertyFormModal = ({
               </div>
             )}
 
-            {activeTab === 'inspections' && (
+            {activeTab === "inspections" && (
               <div className="form-sections">
                 <div className="form-section">
                   <div className="section-header">
@@ -483,14 +630,16 @@ const PropertyFormModal = ({
                       <p>Schedule upcoming inspection dates (optional)</p>
                     </div>
                   </div>
-                  
+
                   <div className="form-grid">
                     <div className="form-field">
                       <label>Gas Compliance Check</label>
                       <input
                         type="date"
                         value={formData.gasInspectionDate}
-                        onChange={(e) => handleInputChange('gasInspectionDate', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("gasInspectionDate", e.target.value)
+                        }
                       />
                     </div>
 
@@ -499,7 +648,12 @@ const PropertyFormModal = ({
                       <input
                         type="date"
                         value={formData.electricalInspectionDate}
-                        onChange={(e) => handleInputChange('electricalInspectionDate', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "electricalInspectionDate",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
 
@@ -508,7 +662,12 @@ const PropertyFormModal = ({
                       <input
                         type="date"
                         value={formData.smokeAlarmInspectionDate}
-                        onChange={(e) => handleInputChange('smokeAlarmInspectionDate', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "smokeAlarmInspectionDate",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
 
@@ -517,7 +676,12 @@ const PropertyFormModal = ({
                       <input
                         type="date"
                         value={formData.poolSafetyInspectionDate}
-                        onChange={(e) => handleInputChange('poolSafetyInspectionDate', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "poolSafetyInspectionDate",
+                            e.target.value
+                          )
+                        }
                       />
                     </div>
                   </div>
@@ -531,12 +695,14 @@ const PropertyFormModal = ({
                       <p>Any additional information about the property</p>
                     </div>
                   </div>
-                  
+
                   <div className="form-grid">
                     <div className="form-field full-width">
                       <textarea
                         value={formData.notes}
-                        onChange={(e) => handleInputChange('notes', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("notes", e.target.value)
+                        }
                         placeholder="Enter any additional notes..."
                         rows={4}
                       />
@@ -563,7 +729,11 @@ const PropertyFormModal = ({
               disabled={isSubmitting}
             >
               <RiSaveLine />
-              {isSubmitting ? 'Saving...' : (editingProperty ? 'Update Property' : 'Add Property')}
+              {isSubmitting
+                ? "Saving..."
+                : editingProperty
+                ? "Update Property"
+                : "Add Property"}
             </button>
           </div>
         </form>

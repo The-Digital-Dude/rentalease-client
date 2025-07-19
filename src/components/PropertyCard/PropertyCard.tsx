@@ -13,7 +13,13 @@ export interface Property {
     fullAddress: string;
   };
   propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
-  propertyManager: string;
+  agency: {
+    _id: string;
+    companyName: string;
+    contactPerson: string;
+    email?: string;
+    phone?: string;
+  };
   region:
     | "Sydney Metro"
     | "Melbourne Metro"
@@ -135,8 +141,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <span>{property.region}</span>
         </div>
         <div className="detail-row">
-          <span>Manager:</span>
-          <span>{property.propertyManager}</span>
+          <span>Agency:</span>
+          <span>{property.agency?.companyName || "N/A"}</span>
         </div>
         <div className="detail-row">
           <span>Tenant:</span>

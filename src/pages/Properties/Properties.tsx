@@ -159,7 +159,13 @@ const Properties = () => {
       },
       propertyType: property.propertyType,
       region: property.region as PropertyCardType["region"],
-      propertyManager: property.propertyManager?.companyName || "",
+      agency: property.agency || {
+        _id: "",
+        companyName: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+      },
       currentTenant: property.currentTenant,
       currentLandlord: property.currentLandlord,
       complianceSchedule: {

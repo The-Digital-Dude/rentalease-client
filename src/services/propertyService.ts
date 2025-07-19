@@ -1,11 +1,11 @@
-import api from './api';
-import type { AxiosResponse } from 'axios';
+import api from "./api";
+import type { AxiosResponse } from "axios";
 
 // Property interfaces
 export interface PropertyAddress {
   street: string;
   suburb: string;
-  state: 'NSW' | 'VIC' | 'QLD' | 'WA' | 'SA' | 'TAS' | 'NT' | 'ACT';
+  state: "NSW" | "VIC" | "QLD" | "WA" | "SA" | "TAS" | "NT" | "ACT";
   postcode: string;
   fullAddress?: string;
 }
@@ -25,7 +25,7 @@ export interface PropertyLandlord {
 export interface ComplianceItem {
   nextInspection?: string;
   required?: boolean;
-  status?: 'Compliant' | 'Due Soon' | 'Overdue' | 'Not Required';
+  status?: "Compliant" | "Due Soon" | "Overdue" | "Not Required";
 }
 
 export interface ComplianceSchedule {
@@ -47,14 +47,14 @@ export interface Property {
   id: string;
   address: PropertyAddress;
   fullAddress: string;
-  propertyType: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
+  propertyType: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
   region: string;
-  propertyManager: {
-    id: string;
+  agency: {
+    _id: string;
     companyName: string;
     contactPerson: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
   };
   currentTenant: PropertyTenant;
   currentLandlord: PropertyLandlord;
@@ -68,8 +68,9 @@ export interface Property {
 
 export interface CreatePropertyData {
   address: PropertyAddress;
-  propertyType?: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
+  propertyType?: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
   propertyManager?: string; // Only for super users
+  agencyId?: string; // Required for super users when creating properties
   region?: string;
   currentTenant: PropertyTenant;
   currentLandlord: PropertyLandlord;
@@ -79,17 +80,17 @@ export interface CreatePropertyData {
 
 export interface UpdatePropertyData {
   address?: PropertyAddress;
-  propertyType?: 'House' | 'Apartment' | 'Townhouse' | 'Commercial' | 'Other';
+  propertyType?: "House" | "Apartment" | "Townhouse" | "Commercial" | "Other";
   bedrooms?: number;
   bathrooms?: number;
   rentAmount?: number;
-  status?: 'Available' | 'Occupied' | 'Maintenance' | 'Pending';
+  status?: "Available" | "Occupied" | "Maintenance" | "Pending";
   currentTenant?: PropertyTenant;
   notes?: string;
 }
 
 export interface PropertiesResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   data: {
     properties: Property[];
@@ -104,7 +105,7 @@ export interface PropertiesResponse {
 }
 
 export interface PropertyResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message: string;
   data: {
     property: Property;
@@ -112,7 +113,7 @@ export interface PropertyResponse {
 }
 
 export interface PropertyComplianceResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   data: {
     propertyId: string;
     fullAddress: string;
@@ -124,10 +125,12 @@ export interface PropertyComplianceResponse {
 
 // Property Service Class
 class PropertyService {
-  private baseUrl = '/v1/properties';
+  private baseUrl = "/v1/properties";
 
   // Create Property
-  async createProperty(propertyData: CreatePropertyData): Promise<PropertyResponse> {
+  async createProperty(
+    propertyData: CreatePropertyData
+  ): Promise<PropertyResponse> {
     try {
       const response: AxiosResponse<PropertyResponse> = await api.post(
         this.baseUrl,
@@ -135,7 +138,12 @@ class PropertyService {
       );
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to create property' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to create property",
+        }
+      );
     }
   }
 
@@ -154,9 +162,15 @@ class PropertyService {
         this.baseUrl,
         { params }
       );
+
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to fetch properties' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch properties",
+        }
+      );
     }
   }
 
@@ -168,12 +182,20 @@ class PropertyService {
       );
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to fetch property' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch property",
+        }
+      );
     }
   }
 
   // Update Property
-  async updateProperty(id: string, propertyData: UpdatePropertyData): Promise<PropertyResponse> {
+  async updateProperty(
+    id: string,
+    propertyData: UpdatePropertyData
+  ): Promise<PropertyResponse> {
     try {
       const response: AxiosResponse<PropertyResponse> = await api.put(
         `${this.baseUrl}/${id}`,
@@ -181,19 +203,30 @@ class PropertyService {
       );
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to update property' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to update property",
+        }
+      );
     }
   }
 
   // Delete Property
-  async deleteProperty(id: string): Promise<{ status: string; message: string }> {
+  async deleteProperty(
+    id: string
+  ): Promise<{ status: string; message: string }> {
     try {
-      const response: AxiosResponse<{ status: string; message: string }> = await api.delete(
-        `${this.baseUrl}/${id}`
-      );
+      const response: AxiosResponse<{ status: string; message: string }> =
+        await api.delete(`${this.baseUrl}/${id}`);
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to delete property' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to delete property",
+        }
+      );
     }
   }
 
@@ -205,40 +238,43 @@ class PropertyService {
       );
       return response.data;
     } catch (error: any) {
-      throw error?.response?.data || { status: 'error', message: 'Failed to fetch property compliance' };
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch property compliance",
+        }
+      );
     }
   }
 
   // Utility methods
   getComplianceStatusColor(status: string): string {
     switch (status) {
-      case 'Compliant':
-        return 'success';
-      case 'Due Soon':
-        return 'warning';
-      case 'Overdue':
-        return 'danger';
-      case 'Not Required':
-        return 'secondary';
+      case "Compliant":
+        return "success";
+      case "Due Soon":
+        return "warning";
+      case "Overdue":
+        return "danger";
+      case "Not Required":
+        return "secondary";
       default:
-        return 'secondary';
+        return "secondary";
     }
   }
 
-
-
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD'
+    return new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
     }).format(amount);
   }
 
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-AU', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-AU", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   }
 
@@ -256,14 +292,38 @@ export default propertyService;
 
 // Export constants
 export const VALID_REGIONS = [
-  'Sydney Metro', 'Melbourne Metro', 'Brisbane Metro', 'Perth Metro',
-  'Adelaide Metro', 'Darwin Metro', 'Hobart Metro', 'Canberra Metro',
-  'Regional NSW', 'Regional VIC', 'Regional QLD', 'Regional WA',
-  'Regional SA', 'Regional NT', 'Regional TAS'
+  "Sydney Metro",
+  "Melbourne Metro",
+  "Brisbane Metro",
+  "Perth Metro",
+  "Adelaide Metro",
+  "Darwin Metro",
+  "Hobart Metro",
+  "Canberra Metro",
+  "Regional NSW",
+  "Regional VIC",
+  "Regional QLD",
+  "Regional WA",
+  "Regional SA",
+  "Regional NT",
+  "Regional TAS",
 ] as const;
 
-export const VALID_STATES = ['NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'] as const;
+export const VALID_STATES = [
+  "NSW",
+  "VIC",
+  "QLD",
+  "WA",
+  "SA",
+  "TAS",
+  "NT",
+  "ACT",
+] as const;
 
-export const PROPERTY_TYPES = ['House', 'Apartment', 'Townhouse', 'Commercial', 'Other'] as const;
-
- 
+export const PROPERTY_TYPES = [
+  "House",
+  "Apartment",
+  "Townhouse",
+  "Commercial",
+  "Other",
+] as const;

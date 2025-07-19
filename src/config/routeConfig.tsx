@@ -25,7 +25,7 @@ export const routeConfig = (userType: UserType) => {
     dashboard: Dashboard,
     properties: Properties,
     jobs: Jobs,
-    staff: Staff,
+    technician: Staff,
     agencies: Agencies,
     contacts: Contacts,
     reports: Reports,

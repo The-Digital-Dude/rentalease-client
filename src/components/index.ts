@@ -32,6 +32,7 @@ export { default as PropertiesHeader } from "./PropertiesHeader";
 export { default as PropertyErrorAlert } from "./PropertyErrorAlert";
 export { default as PropertyModals } from "./PropertyModals";
 export { AgencyCard } from "./AgencyCard";
+export { LoginForm } from "./LoginForm";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

@@ -48,6 +48,21 @@ export interface BackendLoginResponse {
       name: string;
       email: string;
     };
+    agency?: {
+      id: string;
+      companyName: string;
+      contactPerson: string;
+      email: string;
+      phone: string;
+      region: string;
+      compliance: string;
+      status: string;
+      abn: string;
+      outstandingAmount: number;
+      totalProperties: number;
+      lastLogin: string;
+      joinedDate: string;
+    };
     propertyManager?: {
       id: string;
       name: string;
@@ -121,7 +136,18 @@ class AuthService {
 
         const responseData = response.data.data;
 
-        if (responseData.superUser) {
+        // Handle agency login response structure
+        if (responseData.agency) {
+          user = {
+            id: responseData.agency.id,
+            email: responseData.agency.email,
+            name:
+              responseData.agency.contactPerson ||
+              responseData.agency.companyName ||
+              "Agency User",
+          };
+          mappedUserType = this.mapUserType("agent");
+        } else if (responseData.superUser) {
           user = responseData.superUser;
           mappedUserType = this.mapUserType("superUser");
         } else if (responseData.agent) {

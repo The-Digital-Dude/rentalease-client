@@ -3,7 +3,7 @@ import type { UserType } from "../store/userSlice";
 // Define the default route for each user type after login
 export const defaultRoutes: Record<UserType, string> = {
   super_user: "/dashboard",
-  agency: "/agencies",
+  agency: "/dashboard",
   staff: "/staff",
   tenant: "/tenant",
 };
@@ -19,14 +19,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "contacts",
     "reports",
   ],
-  agency: [
-    "dashboard",
-    "properties",
-    "jobs",
-    "technician",
-    "contacts",
-    "reports",
-  ],
+  agency: ["dashboard", "properties", "contacts", "reports"],
   staff: ["dashboard", "jobs", "contacts"],
   tenant: ["dashboard", "contacts"],
 };

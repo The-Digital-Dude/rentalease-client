@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RiSearchLine,
   RiFilterLine,
@@ -13,6 +13,9 @@ import {
 } from "react-icons/ri";
 import { ContactFormModal, ConfirmationModal } from "../../components";
 import "./ContactsCommunication.scss";
+import { contactsAPI } from "../../services/api";
+import { useAppSelector } from "../../store/hooks";
+import EmailContactModal from "../../components/EmailContactModal";
 
 interface Contact {
   id: string;
@@ -40,6 +43,9 @@ interface ContactFormData {
 }
 
 const ContactsCommunication = () => {
+  const userType = useAppSelector((state) => state.user.userType);
+  const isSuperUser = userType === "super_user";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [showContactModal, setShowContactModal] = useState(false);
@@ -50,37 +56,42 @@ const ContactsCommunication = () => {
     upcomingAppointments: true,
     invoiceReminders: false,
   });
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailContact, setEmailContact] = useState<Contact | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
 
-  // Sample contacts data
-  const [contacts, setContacts] = useState<Contact[]>([
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      role: "Agency",
-      email: "sarah.johnson@agency.com",
-      phone: "+1 (555) 123-4567",
-      notes: "Prefers email for routine communications",
-      preferredContact: "Email",
-    },
-    {
-      id: "2",
-      name: "Mike Chen",
-      role: "Admin",
-      email: "mike.chen@agency.com",
-      phone: "+1 (555) 987-6543",
-      notes: "Available for urgent calls until 8 PM",
-      preferredContact: "Phone",
-    },
-    {
-      id: "3",
-      name: "Lisa Rodriguez",
-      role: "Finance",
-      email: "lisa.rodriguez@agency.com",
-      phone: "+1 (555) 456-7890",
-      notes: "Best reached via email for financial matters",
-      preferredContact: "Email",
-    },
-  ]);
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await contactsAPI.getContacts();
+      // API returns { status, data: { contacts } }
+      setContacts(
+        (res.data.data.contacts || []).map((c: any) => ({
+          id: c._id,
+          name: c.name,
+          role: c.role,
+          email: c.email,
+          phone: c.phone,
+          notes: c.notes,
+          preferredContact: c.preferredContact,
+        }))
+      );
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load contacts");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredContacts = contacts.filter((contact) => {
     const matchesSearch =
@@ -91,7 +102,10 @@ const ContactsCommunication = () => {
     return matchesSearch && matchesRole;
   });
 
-  const roles = ["Agency", "Admin", "Finance"];
+  // Roles: for superuser, do not include 'Agency' in the list
+  const roles = isSuperUser
+    ? ["Admin", "Finance"]
+    : ["Agency", "Admin", "Finance"];
 
   const handleNotificationToggle = (setting: keyof NotificationSettings) => {
     setNotifications((prev) => ({
@@ -114,49 +128,101 @@ const ContactsCommunication = () => {
     setDeleteConfirmId(id);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deleteConfirmId) {
-      setContacts((prev) =>
-        prev.filter((contact) => contact.id !== deleteConfirmId)
-      );
-      setDeleteConfirmId(null);
+      setLoading(true);
+      setError(null);
+      try {
+        await contactsAPI.deleteContact(deleteConfirmId);
+        setContacts((prev) => prev.filter((c) => c.id !== deleteConfirmId));
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Failed to delete contact");
+      } finally {
+        setLoading(false);
+        setDeleteConfirmId(null);
+      }
     }
   };
 
-  const handleSubmitContact = (formData: ContactFormData) => {
-    if (editingContact) {
-      // Update existing contact
-      setContacts((prev) =>
-        prev.map((contact) =>
-          contact.id === editingContact.id
-            ? { ...editingContact, ...formData }
-            : contact
-        )
-      );
-    } else {
-      // Add new contact
-      const newContact: Contact = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setContacts((prev) => [...prev, newContact]);
+  const handleSubmitContact = async (formData: ContactFormData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (editingContact) {
+        // Update existing contact
+        const res = await contactsAPI.updateContact(
+          editingContact.id,
+          formData
+        );
+        setContacts((prev) =>
+          prev.map((c) =>
+            c.id === editingContact.id ? { ...c, ...formData } : c
+          )
+        );
+      } else {
+        // Add new contact
+        const res = await contactsAPI.createContact(formData);
+        const newContact = res.data.data.contact;
+        setContacts((prev) => [
+          ...prev,
+          {
+            id: newContact._id,
+            name: newContact.name,
+            role: newContact.role,
+            email: newContact.email,
+            phone: newContact.phone,
+            notes: newContact.notes,
+            preferredContact: newContact.preferredContact,
+          },
+        ]);
+      }
+      setShowContactModal(false);
+      setEditingContact(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to save contact");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setShowContactModal(false);
-    setEditingContact(null);
+  const handleOpenEmailModal = (contact: Contact) => {
+    setEmailContact(contact);
+    setEmailModalOpen(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+  };
+
+  const handleSendEmail = async (subject: string, html: string) => {
+    if (!emailContact) return;
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+    try {
+      await contactsAPI.sendEmailToContact(emailContact.id, { subject, html });
+      setEmailSuccess("Email sent successfully!");
+    } catch (err: any) {
+      setEmailError(err.response?.data?.message || "Failed to send email");
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Contacts & Communication</h1>
-        <p>Manage agency contacts and automated notifications</p>
+        <p>
+          Manage{" "}
+          {isSuperUser
+            ? "contacts and automated notifications"
+            : "agency contacts and automated notifications"}
+        </p>
       </div>
 
-      {/* Agency Contacts Section */}
+      {/* Contacts Section */}
       <div className="content-card contacts-section">
         <div className="section-header">
-          <h2>Agency Contacts</h2>
+          <h2>{isSuperUser ? "Contacts" : "Agency Contacts"}</h2>
           <button className="btn-primary" onClick={handleAddContact}>
             <RiAddLine />
             Add Contact
@@ -199,70 +265,81 @@ const ContactsCommunication = () => {
           </div>
 
           <div className="table-body">
-            {filteredContacts.map((contact) => (
-              <div key={contact.id} className="table-row">
-                <div className="col-name">
-                  <div className="contact-name">{contact.name}</div>
-                </div>
-                <div className="col-role">
-                  <span
-                    className={`role-badge ${contact.role
-                      .toLowerCase()
-                      .replace(" ", "-")}`}
-                  >
-                    {contact.role}
-                  </span>
-                </div>
-                <div className="col-contact">
-                  <div className="contact-info">
-                    <div className="email">
-                      <RiMailLine />
-                      <span>{contact.email}</span>
-                    </div>
-                    <div className="phone">
-                      <RiPhoneLine />
-                      <span>{contact.phone}</span>
-                    </div>
+            {loading ? (
+              <p>Loading contacts...</p>
+            ) : error ? (
+              <p style={{ color: "red" }}>{error}</p>
+            ) : filteredContacts.length === 0 ? (
+              <div className="no-results">
+                <p>No contacts found matching your criteria.</p>
+              </div>
+            ) : (
+              filteredContacts.map((contact) => (
+                <div key={contact.id} className="table-row">
+                  <div className="col-name">
+                    <div className="contact-name">{contact.name}</div>
                   </div>
-                </div>
-                <div className="col-notes">
-                  <div className="notes-content">
-                    <p>{contact.notes}</p>
-                    <span className="preferred-method">
-                      Preferred: {contact.preferredContact}
+                  <div className="col-role">
+                    <span
+                      className={`role-badge ${contact.role
+                        .toLowerCase()
+                        .replace(" ", "-")}`}
+                    >
+                      {contact.role}
                     </span>
                   </div>
+                  <div className="col-contact">
+                    <div className="contact-info">
+                      <div className="email">
+                        <RiMailLine />
+                        <span>{contact.email}</span>
+                      </div>
+                      <div className="phone">
+                        <RiPhoneLine />
+                        <span>{contact.phone}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-notes">
+                    <div className="notes-content">
+                      <p>{contact.notes}</p>
+                      <span className="preferred-method">
+                        Preferred: {contact.preferredContact}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-actions">
+                    <button
+                      className="action-btn edit-btn"
+                      onClick={() => handleEditContact(contact)}
+                      title="Edit Contact"
+                    >
+                      <RiEditLine />
+                    </button>
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => handleDeleteContact(contact.id)}
+                      title="Delete Contact"
+                    >
+                      <RiDeleteBinLine />
+                    </button>
+                    <button
+                      className="action-btn email-btn"
+                      onClick={() => handleOpenEmailModal(contact)}
+                      title="Send Email"
+                    >
+                      <RiMailLine />
+                    </button>
+                  </div>
                 </div>
-                <div className="col-actions">
-                  <button
-                    className="action-btn edit-btn"
-                    onClick={() => handleEditContact(contact)}
-                    title="Edit Contact"
-                  >
-                    <RiEditLine />
-                  </button>
-                  <button
-                    className="action-btn delete-btn"
-                    onClick={() => handleDeleteContact(contact.id)}
-                    title="Delete Contact"
-                  >
-                    <RiDeleteBinLine />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
-
-        {filteredContacts.length === 0 && (
-          <div className="no-results">
-            <p>No contacts found matching your criteria.</p>
-          </div>
-        )}
       </div>
 
       {/* Automated Notifications Section */}
-      <div className="content-card notifications-section">
+      {/* <div className="content-card notifications-section">
         <div className="section-header">
           <h2>Automated Notifications</h2>
           <RiNotificationLine className="section-icon" />
@@ -326,7 +403,7 @@ const ContactsCommunication = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Contact Form Modal */}
       <ContactFormModal
@@ -347,6 +424,18 @@ const ContactsCommunication = () => {
         confirmText="Delete"
         cancelText="Cancel"
         confirmButtonType="danger"
+      />
+
+      {/* Email Contact Modal */}
+      <EmailContactModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSend={handleSendEmail}
+        to={emailContact?.email || ""}
+        contactName={emailContact?.name}
+        loading={emailLoading}
+        error={emailError}
+        success={emailSuccess}
       />
     </div>
   );

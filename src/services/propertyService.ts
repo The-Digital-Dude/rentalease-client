@@ -123,6 +123,29 @@ export interface PropertyComplianceResponse {
   };
 }
 
+export interface FilterOptions {
+  regions: string[];
+  propertyTypes: string[];
+  statuses: string[];
+}
+
+export interface FilterOptionsResponse {
+  status: "success" | "error";
+  message?: string;
+  data: FilterOptions;
+}
+
+export interface PropertyFilters {
+  propertyType?: string;
+  region?: string;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
 // Property Service Class
 class PropertyService {
   private baseUrl = "/v1/properties";
@@ -242,6 +265,43 @@ class PropertyService {
         error?.response?.data || {
           status: "error",
           message: "Failed to fetch property compliance",
+        }
+      );
+    }
+  }
+
+  // Get Filter Options
+  async getFilterOptions(): Promise<FilterOptionsResponse> {
+    try {
+      const response: AxiosResponse<FilterOptionsResponse> = await api.get(
+        `${this.baseUrl}/filter-options`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch filter options",
+        }
+      );
+    }
+  }
+
+  // Get Properties with Enhanced Filtering
+  async getPropertiesWithFilters(
+    filters: PropertyFilters
+  ): Promise<PropertiesResponse> {
+    try {
+      const response: AxiosResponse<PropertiesResponse> = await api.get(
+        this.baseUrl,
+        { params: filters }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch properties",
         }
       );
     }

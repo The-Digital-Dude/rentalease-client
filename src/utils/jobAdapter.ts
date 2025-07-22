@@ -1,10 +1,11 @@
-import type { Job as ServiceJob } from '../services/jobService';
-import type { ComponentTechnician } from './staffAdapter';
+import type { Job as ServiceJob } from "../services/jobService";
+import type { ComponentTechnician } from "./staffAdapter";
 
 export interface ComponentJob {
   id: string;
   job_id: string;
   propertyAddress: string;
+  propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate: string;
   assignedTechnician: string; // Display name for table
@@ -16,40 +17,67 @@ export interface ComponentJob {
 }
 
 export const adaptServiceJobToComponentJob = (
-  serviceJob: ServiceJob, 
+  serviceJob: ServiceJob,
   technicians?: ComponentTechnician[]
 ): ComponentJob => {
-  let assignedTechnicianName = '';
-  let assignedTechnicianId = '';
-  
+  let assignedTechnicianName = "";
+  let assignedTechnicianId = "";
+
   if (serviceJob.assignedTechnician) {
-    if (typeof serviceJob.assignedTechnician === 'string') {
-      // If it's a string, it could be either an ID or a name
+    if (typeof serviceJob.assignedTechnician === "string") {
       assignedTechnicianId = serviceJob.assignedTechnician;
-      
-      // Try to find the technician by ID to get the name
       if (technicians) {
-        const technician = technicians.find(tech => tech.id === serviceJob.assignedTechnician);
-        assignedTechnicianName = technician?.name || serviceJob.assignedTechnician;
+        const technician = technicians.find(
+          (tech) => tech.id === serviceJob.assignedTechnician
+        );
+        assignedTechnicianName =
+          technician?.name || serviceJob.assignedTechnician;
       } else {
         assignedTechnicianName = serviceJob.assignedTechnician;
       }
     } else {
-      // If it's an object with fullName, try to find the ID
-      const technicianObj = serviceJob.assignedTechnician as { fullName: string };
+      const technicianObj = serviceJob.assignedTechnician as {
+        fullName: string;
+      };
       assignedTechnicianName = technicianObj.fullName;
-      
       if (technicians) {
-        const technician = technicians.find(tech => tech.name === technicianObj.fullName);
-        assignedTechnicianId = technician?.id || '';
+        const technician = technicians.find(
+          (tech) => tech.name === technicianObj.fullName
+        );
+        assignedTechnicianId = technician?.id || "";
       }
     }
+  }
+
+  // Property address extraction
+  let propertyAddress = "";
+  let propertyId = "";
+  if (serviceJob.property && typeof serviceJob.property === "object") {
+    if (
+      "address" in serviceJob.property &&
+      serviceJob.property.address &&
+      typeof serviceJob.property.address === "object" &&
+      "fullAddress" in serviceJob.property.address
+    ) {
+      propertyAddress = String(serviceJob.property.address.fullAddress);
+    } else if ("fullAddress" in serviceJob.property) {
+      propertyAddress = String((serviceJob.property as any).fullAddress);
+    }
+    if ("_id" in serviceJob.property && serviceJob.property._id) {
+      propertyId = String(serviceJob.property._id);
+    } else if ("id" in serviceJob.property && serviceJob.property.id) {
+      propertyId = String(serviceJob.property.id);
+    }
+  } else if (typeof serviceJob.property === "string") {
+    propertyId = serviceJob.property;
+    propertyAddress = serviceJob.property;
   }
 
   return {
     id: serviceJob.id,
     job_id: serviceJob.job_id,
-    propertyAddress: serviceJob.propertyAddress,
+    propertyAddress,
+    propertyId,
     jobType: serviceJob.jobType,
     dueDate: serviceJob.dueDate,
     assignedTechnician: assignedTechnicianName,
@@ -57,7 +85,7 @@ export const adaptServiceJobToComponentJob = (
     status: serviceJob.status,
     priority: serviceJob.priority,
     description: serviceJob.description,
-    createdDate: serviceJob.createdAt
+    createdDate: serviceJob.createdAt,
   };
 };
 
@@ -66,6 +94,6 @@ export const resolveTechnicianId = (
   technicianName: string,
   technicians: ComponentTechnician[]
 ): string => {
-  const technician = technicians.find(tech => tech.name === technicianName);
-  return technician?.id || '';
-}; 
+  const technician = technicians.find((tech) => tech.name === technicianName);
+  return technician?.id || "";
+};

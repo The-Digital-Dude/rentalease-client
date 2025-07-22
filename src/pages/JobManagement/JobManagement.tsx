@@ -7,8 +7,13 @@ import {
   JobsOverview,
 } from "../../components";
 import { jobService, staffService } from "../../services";
-import type { Job as ServiceJob, CreateJobData } from "../../services/jobService";
+import propertyService from "../../services/propertyService";
+import type {
+  Job as ServiceJob,
+  CreateJobData,
+} from "../../services/jobService";
 import type { Staff as ServiceStaff } from "../../services/staffService";
+import type { Property } from "../../services/propertyService";
 import type { ComponentJob } from "../../utils/jobAdapter";
 import { adaptServiceJobToComponentJob } from "../../utils/jobAdapter";
 import type { ComponentTechnician } from "../../utils/staffAdapter";
@@ -16,7 +21,7 @@ import { adaptServiceStaffToComponentTechnician } from "../../utils/staffAdapter
 import "./JobManagement.scss";
 
 interface JobFormData {
-  propertyAddress: string;
+  propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate: string;
   assignedTechnician: string;
@@ -25,7 +30,7 @@ interface JobFormData {
 }
 
 const initialFormData: JobFormData = {
-  propertyAddress: "",
+  propertyId: "",
   jobType: "Gas",
   dueDate: "",
   assignedTechnician: "",
@@ -36,6 +41,7 @@ const initialFormData: JobFormData = {
 const JobManagement = () => {
   const [jobs, setJobs] = useState<ComponentJob[]>([]);
   const [technicians, setTechnicians] = useState<ComponentTechnician[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -54,43 +60,55 @@ const JobManagement = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // Fetch jobs and technicians in parallel
-      const [jobsResponse, techResponse] = await Promise.all([
-        jobService.getJobs(),
-        staffService.getStaff()
-      ]);
+
+      // Fetch jobs, technicians, and properties in parallel
+      const [jobsResponse, techResponse, propertiesResponse] =
+        await Promise.all([
+          jobService.getJobs(),
+          staffService.getStaff(),
+          propertyService.getProperties({ limit: 100 }),
+        ]);
 
       // Log responses for debugging
-      console.log('Jobs Response:', jobsResponse);
-      console.log('Tech Response:', techResponse);
+      console.log("Jobs Response:", jobsResponse);
+      console.log("Tech Response:", techResponse);
+      console.log("Properties Response:", propertiesResponse);
 
       let componentTechnicians: ComponentTechnician[] = [];
-      
+
       if (techResponse.success && techResponse.data) {
         const staffData = techResponse.data as ServiceStaff[];
-        componentTechnicians = staffData.map(adaptServiceStaffToComponentTechnician);
+        componentTechnicians = staffData.map(
+          adaptServiceStaffToComponentTechnician
+        );
         setTechnicians(componentTechnicians);
       } else {
-        const errorMessage = techResponse.message || 'Failed to fetch technicians';
-        console.error('Technicians fetch error:', errorMessage);
+        const errorMessage =
+          techResponse.message || "Failed to fetch technicians";
+        console.error("Technicians fetch error:", errorMessage);
         setError(errorMessage);
       }
 
       if (jobsResponse.success && jobsResponse.data) {
-        const componentJobs = (jobsResponse.data as ServiceJob[]).map(job => 
+        const componentJobs = (jobsResponse.data as ServiceJob[]).map((job) =>
           adaptServiceJobToComponentJob(job, componentTechnicians)
         );
         setJobs(componentJobs);
       } else {
-        const errorMessage = jobsResponse.message || 'Failed to fetch jobs';
-        console.error('Jobs fetch error:', errorMessage);
+        const errorMessage = jobsResponse.message || "Failed to fetch jobs";
+        console.error("Jobs fetch error:", errorMessage);
         setError(errorMessage);
         return; // Exit early if jobs fetch fails
       }
+
+      if (propertiesResponse.status === "success" && propertiesResponse.data) {
+        setProperties(propertiesResponse.data.properties);
+      } else {
+        setError(propertiesResponse.message || "Failed to fetch properties");
+      }
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      console.error("Fetch error:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setIsLoading(false);
     }
@@ -145,9 +163,12 @@ const JobManagement = () => {
     try {
       setError(null);
       const jobData: CreateJobData = {
-        ...formData,
+        property: formData.propertyId,
+        jobType: formData.jobType,
+        dueDate: formData.dueDate,
         assignedTechnician: formData.assignedTechnician || null,
-        priority: formData.priority
+        priority: formData.priority,
+        description: formData.description,
       };
       const response = await jobService.createJob(jobData);
       if (response.success && response.data) {
@@ -158,7 +179,7 @@ const JobManagement = () => {
         setError(response.message);
       }
     } catch (err) {
-      setError('Failed to create job');
+      setError("Failed to create job");
     }
   };
 
@@ -185,12 +206,11 @@ const JobManagement = () => {
     e.preventDefault();
     if (draggedJob) {
       // Find the technician
-      const technician = technicians.find(tech => tech.id === technicianId);
+      const technician = technicians.find((tech) => tech.id === technicianId);
       if (!technician) {
-        setError('Technician not found');
+        setError("Technician not found");
         return;
       }
-
 
       // Show confirmation dialog
       const confirmAssignment = window.confirm(
@@ -202,20 +222,23 @@ const JobManagement = () => {
         return;
       }
 
-
       try {
         // Use the new assignJob endpoint
-        const response = await jobService.assignJob(draggedJob.id, technicianId);
-        
+        const response = await jobService.assignJob(
+          draggedJob.id,
+          technicianId
+        );
+
         if (response.success) {
           // Update local technicians state with new job count
-          if (response.data && 'technician' in response.data) {
-            const updatedTechnicians = technicians.map(tech => {
+          if (response.data && "technician" in response.data) {
+            const updatedTechnicians = technicians.map((tech) => {
               if (tech.id === technicianId) {
                 return {
                   ...tech,
                   currentJobs: (response.data as any).technician.currentJobs,
-                  availability: (response.data as any).technician.availabilityStatus
+                  availability: (response.data as any).technician
+                    .availabilityStatus,
                 };
               }
               return tech;
@@ -227,7 +250,7 @@ const JobManagement = () => {
           setError(response.message);
         }
       } catch (err) {
-        setError('Failed to assign job');
+        setError("Failed to assign job");
       }
     }
     setDraggedJob(null);
@@ -239,30 +262,33 @@ const JobManagement = () => {
 
   const handleEditJob = (job: ComponentJob) => {
     setFormData({
-      propertyAddress: job.propertyAddress,
+      propertyId: job.propertyId,
       jobType: job.jobType,
       dueDate: job.dueDate,
-      assignedTechnician: job.assignedTechnician,
+      assignedTechnician: job.assignedTechnicianId,
       priority: job.priority,
       description: job.description || "",
     });
     setShowCreateForm(true);
   };
 
-  const handleUpdateJobStatus = async (jobId: string, newStatus: ComponentJob["status"]) => {
+  const handleUpdateJobStatus = async (
+    jobId: string,
+    newStatus: ComponentJob["status"]
+  ) => {
     try {
       // Find the job to get current technician info
-      const currentJob = jobs.find(job => job.id === jobId);
+      const currentJob = jobs.find((job) => job.id === jobId);
       const wasAssigned = currentJob?.assignedTechnicianId;
-      
+
       // If marking as Pending and job was assigned, we need to unassign
       if (newStatus === "Pending" && wasAssigned) {
         // Update job to unassign technician and change status
         const response = await jobService.updateJob(jobId, {
           status: newStatus,
-          assignedTechnician: null as any // Unassign the technician
+          assignedTechnician: null as any, // Unassign the technician
         });
-        
+
         if (response.success) {
           // Refresh all data to get updated job counts from backend
           await fetchInitialData();
@@ -274,12 +300,12 @@ const JobManagement = () => {
         const response = await jobService.updateJobStatus(jobId, newStatus);
         if (response.success) {
           // Update jobs state locally
-          setJobs(prevJobs => 
-            prevJobs.map(job => {
+          setJobs((prevJobs) =>
+            prevJobs.map((job) => {
               if (job.id === jobId) {
                 return {
                   ...job,
-                  status: newStatus
+                  status: newStatus,
                 };
               }
               return job;
@@ -290,7 +316,7 @@ const JobManagement = () => {
         }
       }
     } catch (err) {
-      setError('Failed to update job status');
+      setError("Failed to update job status");
     }
     setShowActionMenu(null);
   };
@@ -298,31 +324,31 @@ const JobManagement = () => {
   const handleUpdateJob = async (updatedJob: ComponentJob) => {
     try {
       setError(null);
-      const response = await jobService.updateJob(updatedJob.id, {
-        propertyAddress: updatedJob.propertyAddress,
+      const updatePayload: any = {
         jobType: updatedJob.jobType,
         dueDate: updatedJob.dueDate,
-        assignedTechnician: updatedJob.assignedTechnicianId || null as any,
+        assignedTechnician: updatedJob.assignedTechnicianId || null,
         status: updatedJob.status,
         priority: updatedJob.priority,
         description: updatedJob.description || "",
-      });
-      
+      };
+      if (updatedJob.propertyId) {
+        updatePayload.property = updatedJob.propertyId;
+      }
+      const response = await jobService.updateJob(updatedJob.id, updatePayload);
       if (response.success) {
         await fetchInitialData(); // Refresh all data
       } else {
         setError(response.message);
       }
     } catch (err) {
-      setError('Failed to update job');
+      setError("Failed to update job");
     }
   };
 
   if (isLoading) {
     return <div className="page-container">Loading jobs...</div>;
   }
-
-  
 
   return (
     <div className="page-container job-management">
@@ -383,6 +409,7 @@ const JobManagement = () => {
         setShowActionMenu={setShowActionMenu}
         technicians={technicians}
         onJobUpdate={handleUpdateJob}
+        properties={properties}
       />
 
       {/* Create Job Form Modal */}
@@ -393,6 +420,7 @@ const JobManagement = () => {
         formData={formData}
         onInputChange={handleInputChange}
         technicians={technicians}
+        properties={properties}
         mode="create"
       />
     </div>

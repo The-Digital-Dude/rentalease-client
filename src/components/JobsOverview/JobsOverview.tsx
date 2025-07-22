@@ -23,11 +23,15 @@ interface JobsOverviewProps {
   getPriorityColor: (priority: string) => string;
   isOverdue: (dueDate: string) => boolean;
   handleEditJob: (job: ComponentJob) => void;
-  handleUpdateJobStatus: (jobId: string, newStatus: ComponentJob["status"]) => void;
+  handleUpdateJobStatus: (
+    jobId: string,
+    newStatus: ComponentJob["status"]
+  ) => void;
   showActionMenu: string | null;
   setShowActionMenu: (jobId: string | null) => void;
   technicians: ComponentTechnician[];
   onJobUpdate: (updatedJob: ComponentJob) => void;
+  properties: { id: string; fullAddress: string }[];
 }
 
 const JobsOverview: React.FC<JobsOverviewProps> = ({
@@ -47,6 +51,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   setShowActionMenu,
   technicians,
   onJobUpdate,
+  properties,
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<ComponentJob | null>(null);
@@ -57,11 +62,11 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        return '';
+        return "";
       }
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     } catch {
-      return '';
+      return "";
     }
   };
 
@@ -69,30 +74,28 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
     // Find the technician ID by name if we only have the name
     let technicianId = job.assignedTechnicianId;
     if (!technicianId && job.assignedTechnician) {
-      const technician = technicians.find(tech => tech.name === job.assignedTechnician);
-      technicianId = technician?.id || '';
+      const technician = technicians.find(
+        (tech) => tech.name === job.assignedTechnician
+      );
+      technicianId = technician?.id || "";
     }
-    
     const updatedJob = {
       ...job,
-      assignedTechnicianId: technicianId
+      assignedTechnicianId: technicianId,
     };
-
     setEditingJob(updatedJob);
-    
     // Set the form data separately
     setEditFormData({
       id: updatedJob.id,
       job_id: updatedJob.job_id,
-      propertyAddress: updatedJob.propertyAddress,
+      propertyId: updatedJob.propertyId,
       jobType: updatedJob.jobType,
       dueDate: formatDateForInput(updatedJob.dueDate),
       assignedTechnician: technicianId,
       status: updatedJob.status,
       priority: updatedJob.priority,
-      description: updatedJob.description || '',
+      description: updatedJob.description || "",
     });
-    
     setIsEditModalOpen(true);
   };
 
@@ -107,11 +110,12 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
       const updatedJob = {
         ...editingJob,
         ...formData,
-        assignedTechnician: formData.assignedTechnician 
-          ? technicians.find(tech => tech.id === formData.assignedTechnician)?.name || formData.assignedTechnician
-          : '',
-        assignedTechnicianId: formData.assignedTechnician || '',
-        description: formData.description ?? editingJob.description ?? '',
+        assignedTechnician: formData.assignedTechnician
+          ? technicians.find((tech) => tech.id === formData.assignedTechnician)
+              ?.name || formData.assignedTechnician
+          : "",
+        assignedTechnicianId: formData.assignedTechnician || "",
+        description: formData.description ?? editingJob.description ?? "",
         createdDate: editingJob.createdDate,
       };
       onJobUpdate(updatedJob);
@@ -120,7 +124,9 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     if (editFormData) {
       setEditFormData({
@@ -283,6 +289,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
           formData={editFormData}
           onInputChange={handleInputChange}
           technicians={technicians}
+          properties={properties}
           mode="edit"
         />
       )}

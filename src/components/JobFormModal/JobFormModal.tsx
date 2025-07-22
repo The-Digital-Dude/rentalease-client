@@ -5,7 +5,7 @@ import "./JobFormModal.scss";
 export interface JobFormData {
   id?: string;
   job_id?: string;
-  propertyAddress: string;
+  propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate: string;
   assignedTechnician: string;
@@ -22,6 +22,11 @@ interface Technician {
   currentJobs: number;
 }
 
+interface Property {
+  id: string;
+  fullAddress: string;
+}
+
 interface JobFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,7 +38,8 @@ interface JobFormModalProps {
     >
   ) => void;
   technicians: Technician[];
-  mode: 'create' | 'edit';
+  properties: Property[];
+  mode: "create" | "edit";
 }
 
 const JobFormModal: React.FC<JobFormModalProps> = ({
@@ -43,35 +49,36 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   formData,
   onInputChange,
   technicians,
-  mode
+  properties,
+  mode,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
 
-  const modalTitle = mode === 'create' ? 'Create New Job' : 'Edit Job';
-  const submitButtonText = mode === 'create' ? 'Create Job' : 'Save Changes';
+  const modalTitle = mode === "create" ? "Create New Job" : "Edit Job";
+  const submitButtonText = mode === "create" ? "Create Job" : "Save Changes";
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={modalTitle}
-      size="medium"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="medium">
       <form onSubmit={handleSubmit} className="job-form">
         <div className="form-group">
-          <label htmlFor="propertyAddress">Property Address *</label>
-          <input
-            type="text"
-            id="propertyAddress"
-            name="propertyAddress"
-            value={formData.propertyAddress}
+          <label htmlFor="propertyId">Property *</label>
+          <select
+            id="propertyId"
+            name="propertyId"
+            value={formData.propertyId}
             onChange={onInputChange}
-            placeholder="Enter property address"
             required
-          />
+          >
+            <option value="">Select Property</option>
+            {properties.map((property) => (
+              <option key={property.id} value={property.id}>
+                {property.fullAddress}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-row">
@@ -108,7 +115,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
           </div>
         </div>
 
-        {mode === 'edit' && (
+        {mode === "edit" && (
           <div className="form-group">
             <label htmlFor="status">Status</label>
             <select
@@ -151,17 +158,20 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               {technicians
                 .filter((tech) => {
                   // In create mode, only show available technicians
-                  if (mode === 'create') {
+                  if (mode === "create") {
                     return tech.availability === "Available";
                   }
                   // In edit mode, show available technicians and the currently assigned one
-                  return tech.availability === "Available" || 
-                         tech.availability === "Busy" || 
-                         tech.id === formData.assignedTechnician;
+                  return (
+                    tech.availability === "Available" ||
+                    tech.availability === "Busy" ||
+                    tech.id === formData.assignedTechnician
+                  );
                 })
                 .map((technician) => (
                   <option key={technician.id} value={technician.id}>
-                    {technician.name} ({technician.currentJobs} jobs) - {technician.availability}
+                    {technician.name} ({technician.currentJobs} jobs) -{" "}
+                    {technician.availability}
                   </option>
                 ))}
             </select>

@@ -83,6 +83,7 @@ export interface JobFilters {
   endDate?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  property?: string; // Add property filter for jobs by property id
 }
 
 export interface JobApiResponse {

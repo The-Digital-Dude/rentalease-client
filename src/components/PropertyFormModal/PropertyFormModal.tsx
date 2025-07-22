@@ -140,7 +140,7 @@ const PropertyFormModal = ({
         postcode: editingProperty.address.postcode || "",
 
         // Agency Selection
-        agencyId: editingProperty.propertyManager?.id || "",
+        agencyId: editingProperty.agency?._id || "",
 
         // Tenant Information
         tenantName: editingProperty.currentTenant?.name || "",
@@ -274,7 +274,7 @@ const PropertyFormModal = ({
               nextInspection: formData.poolSafetyInspectionDate,
               required: true,
             }
-          : undefined,
+          : { required: false, status: "Not Required" },
       },
       notes: formData.notes,
     };

@@ -208,6 +208,14 @@ const Properties = () => {
   );
 
   // Enhanced statistics
+  const now = new Date();
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const recentlyAddedCount = properties.filter((p) => {
+    if (!p.createdAt) return false;
+    const createdAt = new Date(p.createdAt);
+    return now.getTime() - createdAt.getTime() <= THIRTY_DAYS_MS;
+  }).length;
+
   const stats = [
     {
       label: "Total Properties",
@@ -216,47 +224,10 @@ const Properties = () => {
       color: "primary" as const,
     },
     {
-      label: "Occupied Properties",
-      value: properties.filter((p) => p.currentTenant?.name).length,
-      icon: RiUser3Line,
-      color: "success" as const,
-    },
-    {
-      label: "Vacant Properties",
-      value: properties.filter((p) => !p.currentTenant?.name).length,
-      icon: RiEyeLine,
-      color: "info" as const,
-    },
-    {
-      label: "Compliance Issues",
-      value: properties.filter((p) => p.hasOverdueCompliance).length,
-      icon: RiAlertLine,
-      color: "danger" as const,
-    },
-    {
-      label: "High Compliance",
-      value: properties.filter(
-        (p) =>
-          p.complianceSummary?.complianceScore &&
-          p.complianceSummary.complianceScore >= 85
-      ).length,
-      icon: RiShieldCheckLine,
-      color: "success" as const,
-    },
-    {
-      label: "Average Compliance",
-      value:
-        properties.length > 0
-          ? Math.round(
-              properties.reduce(
-                (sum, p) => sum + (p.complianceSummary?.complianceScore || 0),
-                0
-              ) / properties.length
-            )
-          : 0,
-      icon: RiShieldCheckLine,
+      label: "Recently Added Properties",
+      value: recentlyAddedCount,
+      icon: RiHomeLine,
       color: "warning" as const,
-      suffix: "%",
     },
   ];
 

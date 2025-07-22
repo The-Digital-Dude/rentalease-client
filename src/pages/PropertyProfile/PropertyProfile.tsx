@@ -303,12 +303,12 @@ const PropertyProfile: React.FC = () => {
           <h1>{property.address.fullAddress}</h1>
           <p className="property-type">{property.propertyType}</p>
         </div>
-        <div className="header-actions">
+        {/* <div className="header-actions">
           <button onClick={handleEdit} className="edit-btn main-action">
             <RiEditLine />
             Edit Property
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="profile-content">

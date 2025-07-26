@@ -35,6 +35,7 @@ export const routeConfig = (userType: UserType) => {
     properties: Properties,
     jobs: Jobs,
     technician: Staff,
+    staff: Staff,
     agencies: Agencies,
     contacts: Contacts,
     reports: Reports,

@@ -15,12 +15,12 @@ const labelMap: Record<string, string> = {
   jobs: "Jobs",
   properties: "Properties",
   technician: "Technicians",
+  staff: "My Staff",
   contacts: "Contacts",
   reports: "Reports",
   payment: "Payment",
   compliance: "Compliance",
   region: "Region Management",
-  staff: "Staff",
   login: "Login",
 };
 

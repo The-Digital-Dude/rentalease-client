@@ -12,15 +12,12 @@ export const defaultRoutes: Record<UserType, string> = {
 export const allowedRoutes: Record<UserType, string[]> = {
   super_user: [
     "dashboard",
+    "agencies",
     "properties",
     "jobs",
     "technician",
-    "agencies",
-    "region",
+    "staff",
     "reports",
-    "contacts",
-    "compliance",
-    "payment",
   ],
   agency: ["dashboard", "properties", "contacts", "reports"],
   staff: ["dashboard", "jobs", "contacts"],

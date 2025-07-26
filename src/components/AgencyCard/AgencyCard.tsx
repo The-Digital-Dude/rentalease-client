@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { RiEditLine, RiDeleteBin6Line, RiMailSendLine } from "react-icons/ri";
+import {
+  RiEditLine,
+  RiDeleteBin6Line,
+  RiMailSendLine,
+  RiEyeLine,
+} from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 import type { Agency } from "../../services/agencyService";
 import "./AgencyCard.scss";
 
@@ -16,6 +22,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   onDelete,
   onResendCredentials,
 }) => {
+  const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCredentialsConfirm, setShowCredentialsConfirm] = useState(false);
 
@@ -51,6 +58,11 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
     setShowCredentialsConfirm(false);
   };
 
+  const handleViewProfile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/agencies/${agency.id}`);
+  };
+
   return (
     <div className="agency-card">
       <div className="agency-header">
@@ -59,6 +71,13 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
           <span className={`status-badge ${agency.status}`}>
             {agency.status}
           </span>
+          <button
+            className="view-btn"
+            onClick={handleViewProfile}
+            title="View Agency Profile"
+          >
+            <RiEyeLine />
+          </button>
           <button
             className="credentials-btn"
             onClick={handleResendCredentialsClick}

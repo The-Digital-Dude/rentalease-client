@@ -17,6 +17,7 @@ import "./App.css";
 // Import pages
 import { Login, AdminLogin, AgentLogin, PasswordReset } from "./pages/Login";
 import PropertyProfile from "./pages/PropertyProfile";
+import AgencyProfile from "./pages/AgencyProfile";
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -96,6 +97,9 @@ const App = () => {
 
           {/* Property Profile Route */}
           <Route path="/properties/:id" element={<PropertyProfile />} />
+
+          {/* Agency Profile Route */}
+          <Route path="/agencies/:id" element={<AgencyProfile />} />
 
           {/* Default Route */}
           <Route

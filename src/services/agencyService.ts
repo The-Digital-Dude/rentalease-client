@@ -30,6 +30,131 @@ export interface ServerAgency {
   lastLogin?: string | null;
   joinedDate?: string;
   createdAt?: string;
+  lastUpdated?: string;
+}
+
+// Detailed agency profile interface for single agency fetch
+export interface AgencyProfile {
+  agency: {
+    id: string;
+    companyName: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    region: string;
+    compliance: string;
+    status: string;
+    abn: string;
+    outstandingAmount: number;
+    totalProperties: number;
+    lastLogin?: string;
+    joinedDate?: string;
+    createdAt?: string;
+    lastUpdated?: string;
+  };
+  statistics: {
+    totalProperties: number;
+    totalJobs: number;
+    totalStaff: number;
+    jobStatusCounts: {
+      pending: number;
+      scheduled: number;
+      completed: number;
+      overdue: number;
+    };
+    propertyStatusCounts: {
+      active: number;
+      inactive: number;
+      maintenance: number;
+    };
+    staffAvailability: {
+      available: number;
+      busy: number;
+      unavailable: number;
+    };
+    financials: {
+      totalJobValue: number;
+      completedJobValue: number;
+      averageJobValue: number;
+    };
+  };
+  properties: Array<{
+    id: string;
+    address: {
+      street: string;
+      suburb: string;
+      state: string;
+      postcode: string;
+      fullAddress: string;
+    };
+    propertyType: string;
+    currentTenant?: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+    currentLandlord?: {
+      name: string;
+      email: string;
+      phone: string;
+    };
+    complianceSchedule?: {
+      gasCheck?: string;
+      electricalCheck?: string;
+      smokeAlarmCheck?: string;
+    };
+    status?: string;
+    createdAt?: string;
+  }>;
+  jobs: Array<{
+    id: string;
+    job_id: string;
+    jobType: string;
+    property: {
+      id: string;
+      address: {
+        street: string;
+        suburb: string;
+        state: string;
+        postcode: string;
+      };
+    };
+    assignedTechnician?: {
+      id: string;
+      fullName: string;
+      tradeType: string;
+      availabilityStatus: string;
+    };
+    dueDate?: string;
+    status: string;
+    priority: string;
+    description: string;
+    cost?: {
+      materialCost: number;
+      laborCost: number;
+      totalCost: number;
+    };
+    estimatedDuration?: number;
+    actualDuration?: number;
+    completedAt?: string;
+    createdAt?: string;
+  }>;
+  staff: Array<{
+    id: string;
+    fullName: string;
+    tradeType: string;
+    availabilityStatus: string;
+    currentJobs: number;
+    hourlyRate: number;
+    status: string;
+    createdAt?: string;
+  }>;
+}
+
+export interface AgencyProfileResponse {
+  success: boolean;
+  data?: AgencyProfile;
+  message?: string;
 }
 
 export interface ServerResponse {
@@ -209,6 +334,33 @@ export const agencyService = {
       return {
         success: false,
         message: error.response?.data?.message || "Failed to delete agency",
+      };
+    }
+  },
+
+  // Get single agency by ID
+  getSingleAgency: async (id: string): Promise<AgencyProfileResponse> => {
+    try {
+      const response = await api.get<{ status: string; data: AgencyProfile }>(
+        `/v1/agency/auth/${id}`
+      );
+
+      if (response.data.status === "success" && response.data.data) {
+        return {
+          success: true,
+          data: response.data.data,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from server",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch agency details",
       };
     }
   },

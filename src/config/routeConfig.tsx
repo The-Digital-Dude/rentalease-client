@@ -14,6 +14,15 @@ const Contacts = lazy(
 const Reports = lazy(
   () => import("../pages/ReportsAnalytics/ReportsAnalytics")
 );
+const RegionManagement = lazy(
+  () => import("../pages/RegionManagement/RegionManagement")
+);
+const PropertyCompliance = lazy(
+  () => import("../pages/PropertyCompliance/PropertyCompliance")
+);
+const PaymentProperty = lazy(
+  () => import("../pages/PaymentProperty/PaymentProperty")
+);
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -29,6 +38,9 @@ export const routeConfig = (userType: UserType) => {
     agencies: Agencies,
     contacts: Contacts,
     reports: Reports,
+    region: RegionManagement,
+    compliance: PropertyCompliance,
+    payment: PaymentProperty,
   };
 
   // Generate routes based on user permissions

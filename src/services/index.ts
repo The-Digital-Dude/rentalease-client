@@ -1,77 +1,103 @@
-export { default as api, staffAPI } from "./api";
+export { default as api, technicianAPI } from "./api";
 export { default as authService } from "./authService";
 export { default as jobService } from "./jobService";
 export { agencyService } from "./agencyService";
-export { default as staffService } from "./staffService";
+export { default as technicianService } from "./technicianService";
 export { notificationService } from "./notificationService";
 
-// Staff-related types
-export interface StaffMember {
+// Technician-related types
+export interface Technician {
   id: string;
+  firstName: string;
+  lastName: string;
   fullName: string;
-  tradeType:
-    | "Plumber"
-    | "Electrician"
-    | "Carpenter"
-    | "Painter"
-    | "Cleaner"
-    | "Gardener"
-    | "Handyman"
-    | "HVAC Technician"
-    | "Pest Control"
-    | "Locksmith"
-    | "Flooring Specialist"
-    | "Appliance Repair"
-    | "Other";
-  phone: string;
   email: string;
-  availabilityStatus: "Available" | "Unavailable" | "Busy" | "On Leave";
-  startDate: string;
-  serviceRegions: ("North" | "South" | "East" | "West" | "Central")[];
-  status: "Active" | "Inactive" | "Suspended" | "Terminated";
-  rating: number;
-  totalJobs: number;
+  phone: string;
+  experience: number;
+  availabilityStatus: "Available" | "Busy" | "Unavailable" | "On Leave";
+  currentJobs: number;
+  maxJobs: number;
+  assignedJobs: AssignedJob[];
   completedJobs: number;
-  notes?: string;
-  hourlyRate?: number;
-  licensingDocuments: StaffDocument[];
-  insuranceDocuments: StaffDocument[];
+  averageRating: number;
+  totalRatings: number;
+  status: "Active" | "Inactive" | "Suspended" | "Pending";
   owner: {
     ownerType: "SuperUser" | "Agency";
     ownerId: string;
   };
+  address: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+    fullAddress?: string;
+  };
+
   createdAt: string;
-  updatedAt: string;
-  lastActiveDate: string;
+  lastUpdated: string;
+  lastLogin?: string;
+  lastActive?: string;
 }
 
-export interface StaffDocument {
-  filename: string;
-  originalName: string;
-  mimetype: string;
-  size: number;
-  uploadDate: string;
-  path: string;
+export interface AssignedJob {
+  jobId: string;
+  assignedDate: string;
+  status: "Active" | "Completed" | "Cancelled";
 }
 
-export interface StaffFilters {
+export interface TechnicianFilters {
   page?: number;
   limit?: number;
-  tradeType?: string;
+  experience?: number;
   availabilityStatus?: string;
-  serviceRegion?: string;
   status?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }
 
-export interface StaffApiResponse {
+export interface CreateTechnicianData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  experience?: number;
+  availabilityStatus?: string;
+  maxJobs?: number;
+  address?: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+  };
+}
+
+export interface UpdateTechnicianData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  experience?: number;
+  availabilityStatus?: string;
+  maxJobs?: number;
+  status?: string;
+  address?: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+  };
+}
+
+export interface TechnicianApiResponse {
   status: "success" | "error";
   message: string;
   data: {
-    staff: StaffMember[];
-    pagination: {
+    technician?: Technician;
+    technicians?: Technician[];
+    pagination?: {
       currentPage: number;
       totalPages: number;
       totalItems: number;
@@ -80,16 +106,4 @@ export interface StaffApiResponse {
       hasPrevPage: boolean;
     };
   };
-}
-
-export interface CreateStaffData {
-  fullName: string;
-  tradeType: string;
-  phone: string;
-  email: string;
-  availabilityStatus?: string;
-  startDate: string;
-  serviceRegions: string[];
-  notes?: string;
-  hourlyRate?: number;
 }

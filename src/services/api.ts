@@ -92,15 +92,14 @@ api.interceptors.response.use(
 // Export types
 export type { AxiosResponse, AxiosError };
 
-// Staff API methods
-export const staffAPI = {
-  // Get all staff members for the authenticated user
-  getStaff: async (params?: {
+// Technician API methods
+export const technicianAPI = {
+  // Get all technicians for the authenticated user
+  getTechnicians: async (params?: {
     page?: number;
     limit?: number;
-    tradeType?: string;
+    experience?: number;
     availabilityStatus?: string;
-    serviceRegion?: string;
     status?: string;
     search?: string;
     sortBy?: string;
@@ -115,43 +114,34 @@ export const staffAPI = {
       });
     }
 
-    const url = `/v1/staff${
+    const url = `/v1/technicians${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
     return api.get(url);
   },
 
-  // Get single staff member
-  getStaffById: async (id: string) => {
-    return api.get(`/v1/staff/${id}`);
+  // Get single technician
+  getTechnicianById: async (id: string) => {
+    return api.get(`/v1/technicians/${id}`);
   },
 
-  // Create new staff member
-  createStaff: async (formData: FormData) => {
-    return api.post("/v1/staff", formData, {
+  // Create new technician
+  createTechnician: async (data: any) => {
+    return api.post("/v1/technicians", data, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
   },
 
-  // Update staff member
-  updateStaff: async (id: string, data: any) => {
-    return api.put(`/v1/staff/${id}`, data);
+  // Update technician
+  updateTechnician: async (id: string, data: any) => {
+    return api.put(`/v1/technicians/${id}`, data);
   },
 
-  // Delete staff member
-  deleteStaff: async (id: string) => {
-    return api.delete(`/v1/staff/${id}`);
-  },
-
-  // Upload documents for staff member
-  uploadDocuments: async (id: string, formData: FormData) => {
-    return api.post(`/v1/staff/${id}/documents`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  // Delete technician
+  deleteTechnician: async (id: string) => {
+    return api.delete(`/v1/technicians/${id}`);
   },
 };
 

@@ -135,6 +135,16 @@ export interface JobApiResponse {
           availabilityStatus: string;
         };
       }
+    | {
+        id: string;
+        fullName: string;
+        experience: number;
+        phone: string;
+        email: string;
+        availabilityStatus: string;
+        currentJobs: number;
+        maxJobs: number;
+      }[]
     | null;
   pagination?: {
     currentPage: number;
@@ -475,28 +485,25 @@ class JobService {
    */
   async getAvailableTechnicians(): Promise<JobApiResponse> {
     try {
-      // Import staff API from this file's API service
-      const { staffAPI } = await import("./api");
+      // Import technician service
+      const technicianService = (await import("./technicianService")).default;
 
-      const response = await staffAPI.getStaff({
-        availabilityStatus: "Available",
-        status: "Active",
-        limit: 100, // Get all available technicians
-        sortBy: "fullName",
-        sortOrder: "asc",
-      });
+      const response = await technicianService.getAvailableTechnicians();
 
-      if (response.data.status === "success") {
-        // Transform staff data to technician format for job assignment
-        const technicians = response.data.data.staff.map((staff: any) => ({
-          id: staff.id,
-          fullName: staff.fullName,
-          tradeType: staff.tradeType,
-          phone: staff.phone,
-          email: staff.email,
-          availabilityStatus: staff.availabilityStatus,
-          serviceRegions: staff.serviceRegions,
-        }));
+      if (response.status === "success") {
+        // Transform technician data for job assignment
+        const technicians = (response.data.technicians || []).map(
+          (technician: any) => ({
+            id: technician.id,
+            fullName: technician.fullName,
+            experience: technician.experience,
+            phone: technician.phone,
+            email: technician.email,
+            availabilityStatus: technician.availabilityStatus,
+            currentJobs: technician.currentJobs,
+            maxJobs: technician.maxJobs,
+          })
+        );
 
         return {
           success: true,

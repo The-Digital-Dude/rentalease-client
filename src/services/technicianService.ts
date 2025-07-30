@@ -1,0 +1,250 @@
+import api from "./api";
+import type { AxiosResponse } from "axios";
+
+// Technician types based on the new schema
+export interface Technician {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  experience: number;
+  availabilityStatus: "Available" | "Busy" | "Unavailable" | "On Leave";
+  currentJobs: number;
+  maxJobs: number;
+  assignedJobs: AssignedJob[];
+  completedJobs: number;
+  averageRating: number;
+  totalRatings: number;
+  status: "Active" | "Inactive" | "Suspended" | "Pending";
+  owner: {
+    ownerType: "SuperUser" | "Agency";
+    ownerId: string;
+  };
+  address: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+    fullAddress?: string;
+  };
+
+  createdAt: string;
+  lastUpdated: string;
+  lastLogin?: string;
+  lastActive?: string;
+}
+
+export interface AssignedJob {
+  jobId: string;
+  assignedDate: string;
+  status: "Active" | "Completed" | "Cancelled";
+}
+
+export interface TechnicianFilters {
+  page?: number;
+  limit?: number;
+  experience?: number;
+  availabilityStatus?: string;
+  status?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export interface CreateTechnicianData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  experience?: number;
+  availabilityStatus?: string;
+  maxJobs?: number;
+  address?: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+  };
+}
+
+export interface UpdateTechnicianData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  experience?: number;
+  availabilityStatus?: string;
+  maxJobs?: number;
+  status?: string;
+  address?: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+  };
+}
+
+export interface TechnicianApiResponse {
+  status: "success" | "error";
+  message: string;
+  data: {
+    technician?: Technician;
+    technicians?: Technician[];
+    pagination?: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+class TechnicianService {
+  /**
+   * Get all technicians with optional filters
+   */
+  async getTechnicians(
+    filters?: TechnicianFilters
+  ): Promise<TechnicianApiResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technicians${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response: AxiosResponse<TechnicianApiResponse> = await api.get(url);
+
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to fetch technicians",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Get single technician by ID
+   */
+  async getTechnicianById(id: string): Promise<TechnicianApiResponse> {
+    try {
+      const response: AxiosResponse<TechnicianApiResponse> = await api.get(
+        `/v1/technicians/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to fetch technician",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Create new technician
+   */
+  async createTechnician(
+    data: CreateTechnicianData
+  ): Promise<TechnicianApiResponse> {
+    try {
+      const response: AxiosResponse<TechnicianApiResponse> = await api.post(
+        "/v1/technicians",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to create technician",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Update technician
+   */
+  async updateTechnician(
+    id: string,
+    updateData: UpdateTechnicianData
+  ): Promise<TechnicianApiResponse> {
+    try {
+      const response: AxiosResponse<TechnicianApiResponse> = await api.put(
+        `/v1/technicians/${id}`,
+        updateData
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to update technician",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Delete technician
+   */
+  async deleteTechnician(id: string): Promise<TechnicianApiResponse> {
+    try {
+      const response: AxiosResponse<TechnicianApiResponse> = await api.delete(
+        `/v1/technicians/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to delete technician",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Get available technicians for job assignment
+   */
+  async getAvailableTechnicians(): Promise<TechnicianApiResponse> {
+    try {
+      const response = await this.getTechnicians({
+        availabilityStatus: "Available",
+        status: "Active",
+        limit: 100,
+        sortBy: "fullName",
+        sortOrder: "asc",
+      });
+      return response;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message:
+          error.response?.data?.message ||
+          "Failed to fetch available technicians",
+        data: {},
+      };
+    }
+  }
+}
+
+const technicianService = new TechnicianService();
+export default technicianService;

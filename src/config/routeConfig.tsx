@@ -6,7 +6,7 @@ import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
-const Staff = lazy(() => import("../pages/Staff/Staff"));
+const Staff = lazy(() => import("../pages/Technician/Technician"));
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const Contacts = lazy(
   () => import("../pages/ContactsCommunication/ContactsCommunication")

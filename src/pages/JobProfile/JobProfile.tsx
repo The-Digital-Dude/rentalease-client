@@ -55,7 +55,6 @@ interface JobProfileData {
   technician?: {
     id: string;
     fullName: string;
-    tradeType: string;
     phone: string;
     email: string;
     availabilityStatus: string;
@@ -137,7 +136,6 @@ const JobProfile: React.FC = () => {
                   fullName:
                     job.assignedTechnician.fullName ||
                     job.assignedTechnician.name,
-                  tradeType: job.assignedTechnician.tradeType || "Technician",
                   phone: job.assignedTechnician.phone || "",
                   email: job.assignedTechnician.email || "",
                   availabilityStatus:
@@ -798,13 +796,6 @@ const JobProfile: React.FC = () => {
                       <div>
                         <label>Name</label>
                         <span>{technician.fullName}</span>
-                      </div>
-                    </div>
-                    <div className="technician-item">
-                      <RiToolsLine />
-                      <div>
-                        <label>Trade Type</label>
-                        <span>{technician.tradeType}</span>
                       </div>
                     </div>
                     <div className="technician-item">

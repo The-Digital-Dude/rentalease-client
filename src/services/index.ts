@@ -3,6 +3,7 @@ export { default as authService } from "./authService";
 export { default as jobService } from "./jobService";
 export { agencyService } from "./agencyService";
 export { default as staffService } from "./staffService";
+export { notificationService } from "./notificationService";
 
 // Staff-related types
 export interface StaffMember {

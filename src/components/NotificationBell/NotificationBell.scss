@@ -122,6 +122,28 @@
         }
       }
 
+      .loading-notifications {
+        padding: 2rem 1.25rem;
+        text-align: center;
+        color: #64748b;
+
+        .loading-spinner {
+          width: 2rem;
+          height: 2rem;
+          border: 2px solid #e2e8f0;
+          border-top: 2px solid #2563eb;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 0.5rem;
+        }
+
+        p {
+          margin: 0;
+          font-weight: 500;
+          color: #475569;
+        }
+      }
+
       .notification-item {
         display: flex;
         align-items: flex-start;
@@ -168,6 +190,24 @@
             margin-bottom: 0.25rem;
             font-size: 0.875rem;
             line-height: 1.25;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .priority-badge {
+              font-size: 0.75rem;
+              font-weight: 500;
+              padding: 0.125rem 0.375rem;
+              border-radius: 0.25rem;
+              text-transform: uppercase;
+              letter-spacing: 0.025em;
+
+              &.high {
+                background: #fef2f2;
+                color: #dc2626;
+                border: 1px solid #fecaca;
+              }
+            }
           }
 
           .notification-message {
@@ -232,6 +272,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 

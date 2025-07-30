@@ -1,35 +1,33 @@
 import React, { useState, useRef, useEffect } from "react";
 import { RiNotification3Line, RiCloseLine } from "react-icons/ri";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  fetchNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  decrementUnreadCount,
+  clearUnreadCount,
+} from "../../store/notificationSlice";
+import { useNotificationPolling } from "../../hooks/useNotificationPolling";
+import type { Notification } from "../../services/notificationService";
 import "./NotificationBell.scss";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: "info" | "success" | "warning" | "error";
-  timestamp: Date;
-  read: boolean;
-}
-
 interface NotificationBellProps {
-  notifications?: Notification[];
   onNotificationClick?: (notification: Notification) => void;
-  onMarkAllRead?: () => void;
 }
 
 const NotificationBell: React.FC<NotificationBellProps> = ({
-  notifications = [],
   onNotificationClick,
-  onMarkAllRead,
 }) => {
+  const dispatch = useAppDispatch();
+  const { notifications, unreadCount, loading, loadingUnreadCount } =
+    useAppSelector((state) => state.notifications);
+
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Calculate unread count
-  useEffect(() => {
-    setUnreadCount(notifications.filter((n) => !n.read).length);
-  }, [notifications]);
+  // Use polling hook for real-time updates
+  useNotificationPolling(30000); // Poll every 30 seconds
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,26 +45,42 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
   }, []);
 
   const handleBellClick = () => {
+    if (!isOpen) {
+      // Fetch notifications when opening the dropdown
+      dispatch(fetchNotifications({ limit: 20 }));
+    }
     setIsOpen(!isOpen);
   };
 
   const handleNotificationClick = (notification: Notification) => {
+    // Mark notification as read when clicked
+    if (notification.status === "Unread") {
+      dispatch(markNotificationAsRead(notification.id));
+      dispatch(decrementUnreadCount());
+    }
     onNotificationClick?.(notification);
     setIsOpen(false);
   };
 
   const handleMarkAllRead = () => {
-    onMarkAllRead?.();
+    dispatch(markAllNotificationsAsRead());
+    dispatch(clearUnreadCount());
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "success":
+      case "JOB_CREATED":
+        return "🔨";
+      case "JOB_ASSIGNED":
+        return "👷";
+      case "JOB_COMPLETED":
         return "✅";
-      case "warning":
+      case "COMPLIANCE_DUE":
         return "⚠️";
-      case "error":
-        return "❌";
+      case "SYSTEM_ALERT":
+        return "🚨";
+      case "GENERAL":
+        return "ℹ️";
       default:
         return "ℹ️";
     }
@@ -114,18 +128,23 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
           </div>
 
           <div className="notification-list">
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="loading-notifications">
+                <div className="loading-spinner"></div>
+                <p>Loading notifications...</p>
+              </div>
+            ) : !Array.isArray(notifications) || notifications.length === 0 ? (
               <div className="empty-notifications">
                 <div className="empty-icon">🔔</div>
                 <p>No notifications yet</p>
                 <span>You're all caught up!</span>
               </div>
             ) : (
-              notifications.map((notification) => (
+              notifications.map((notification: Notification) => (
                 <div
                   key={notification.id}
                   className={`notification-item ${
-                    !notification.read ? "unread" : ""
+                    notification.status === "Unread" ? "unread" : ""
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -135,21 +154,28 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
                   <div className="notification-content">
                     <div className="notification-title">
                       {notification.title}
+                      {notification.priority === "High" && (
+                        <span className="priority-badge high">
+                          High Priority
+                        </span>
+                      )}
                     </div>
                     <div className="notification-message">
                       {notification.message}
                     </div>
                     <div className="notification-time">
-                      {formatTimeAgo(notification.timestamp)}
+                      {formatTimeAgo(new Date(notification.createdAt))}
                     </div>
                   </div>
-                  {!notification.read && <div className="unread-indicator" />}
+                  {notification.status === "Unread" && (
+                    <div className="unread-indicator" />
+                  )}
                 </div>
               ))
             )}
           </div>
 
-          {notifications.length > 0 && (
+          {Array.isArray(notifications) && notifications.length > 0 && (
             <div className="notification-footer">
               <button className="view-all-button">
                 View all notifications

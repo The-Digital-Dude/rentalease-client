@@ -18,9 +18,10 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "technician",
     "staff",
     "reports",
+    "email",
   ],
-  agency: ["dashboard", "properties", "contacts", "reports"],
-  staff: ["dashboard", "jobs", "contacts"],
+  agency: ["dashboard", "properties", "contacts", "reports", "email"],
+  staff: ["dashboard", "jobs", "contacts", "email"],
   tenant: ["dashboard", "contacts"],
 };
 

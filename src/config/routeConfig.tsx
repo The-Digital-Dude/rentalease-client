@@ -23,6 +23,7 @@ const PropertyCompliance = lazy(
 const PaymentProperty = lazy(
   () => import("../pages/PaymentProperty/PaymentProperty")
 );
+const Email = lazy(() => import("../pages/Email/Email"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -42,6 +43,7 @@ export const routeConfig = (userType: UserType) => {
     region: RegionManagement,
     compliance: PropertyCompliance,
     payment: PaymentProperty,
+    email: Email,
   };
 
   // Generate routes based on user permissions

@@ -21,6 +21,7 @@ const labelMap: Record<string, string> = {
   payment: "Payment",
   compliance: "Compliance",
   region: "Region Management",
+  email: "Email",
   login: "Login",
 };
 

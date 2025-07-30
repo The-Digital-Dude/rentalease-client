@@ -1,0 +1,1208 @@
+.email-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  .email-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .sidebar-toggle-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: transparent;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f3f4f6;
+          border-color: #9ca3af;
+          color: #374151;
+        }
+
+        svg {
+          font-size: 18px;
+        }
+      }
+
+      .create-new-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #2563eb;
+        }
+      }
+    }
+
+    .header-right {
+      .search-container {
+        position: relative;
+        width: 300px;
+
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          font-size: 16px;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 8px 12px 8px 40px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          background-color: #f9fafb;
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: white;
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+      }
+    }
+  }
+
+  .email-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+
+    .contact-panel {
+      width: 350px;
+      background-color: white;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+
+      .panel-header {
+        padding: 20px 16px 16px;
+        border-bottom: 1px solid #e5e7eb;
+
+        .timestamp {
+          font-size: 12px;
+          color: #6b7280;
+          margin-bottom: 4px;
+        }
+
+        .campaign-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+        }
+      }
+
+      .contact-search {
+        position: relative;
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+
+        .search-icon {
+          position: absolute;
+          left: 28px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          font-size: 16px;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 8px 12px 8px 40px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          background-color: #f9fafb;
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: white;
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .contact-list {
+        flex: 1;
+        overflow-y: auto;
+
+        .contact-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          border-bottom: 1px solid #f3f4f6;
+
+          &:hover {
+            background-color: #f9fafb;
+          }
+
+          &.selected {
+            background-color: #eff6ff;
+            border-left: 3px solid #3b82f6;
+          }
+
+          .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+          }
+
+          .contact-info {
+            flex: 1;
+            min-width: 0;
+
+            .contact-name {
+              font-size: 14px;
+              font-weight: 500;
+              color: #111827;
+              margin-bottom: 2px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .contact-email {
+              font-size: 12px;
+              color: #6b7280;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+          }
+
+          .contact-actions {
+            color: #9ca3af;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s;
+
+            &:hover {
+              color: #6b7280;
+              background-color: #f3f4f6;
+            }
+          }
+        }
+      }
+    }
+
+    .email-panel {
+      flex: 1;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+
+      .email-details {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+
+        .email-header-info {
+          margin-bottom: 24px;
+
+          .email-field {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+
+            .field-label {
+              font-weight: 600;
+              color: #374151;
+              min-width: 60px;
+              margin-right: 12px;
+            }
+
+            .field-value {
+              color: #111827;
+              flex: 1;
+              word-break: break-word;
+            }
+
+            .more-icon {
+              color: #9ca3af;
+              margin-left: 8px;
+              cursor: pointer;
+              padding: 4px;
+              border-radius: 4px;
+              transition: color 0.2s;
+
+              &:hover {
+                color: #6b7280;
+                background-color: #f3f4f6;
+              }
+            }
+          }
+        }
+
+        .email-body {
+          pre {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #111827;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            padding: 0;
+          }
+        }
+      }
+
+      .no-email-selected {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6b7280;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .context-menu {
+    position: fixed;
+    background-color: #1f2937;
+    border-radius: 8px;
+    padding: 8px 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    min-width: 200px;
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #374151;
+      }
+
+      svg {
+        margin-right: 12px;
+        font-size: 16px;
+      }
+
+      .shortcut {
+        margin-left: auto;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+    }
+  }
+}
+
+// Compose Modal Styles
+.compose-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+
+  .compose-modal {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        color: #6b7280;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #374151;
+          background-color: #f3f4f6;
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 24px;
+      flex: 1;
+      overflow-y: auto;
+
+      .form-group {
+        margin-bottom: 20px;
+
+        label {
+          display: block;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+
+        input, textarea {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          font-family: inherit;
+          transition: border-color 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+
+          &.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+
+            &:focus {
+              border-color: #ef4444;
+              box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+            }
+          }
+        }
+
+        textarea {
+          resize: vertical;
+          min-height: 120px;
+        }
+
+        .error-message {
+          color: #ef4444;
+          font-size: 12px;
+          margin-top: 4px;
+          font-weight: 500;
+        }
+
+        // React Quill Custom Styles
+        .quill-container {
+          .ql-editor {
+            min-height: 200px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #111827;
+            font-family: inherit;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: white;
+            transition: border-color 0.2s;
+
+            &:focus {
+              outline: none;
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            &::placeholder {
+              color: #9ca3af;
+            }
+
+            &.ql-blank::before {
+              color: #9ca3af;
+              font-style: normal;
+            }
+          }
+
+          .ql-toolbar {
+            border: 1px solid #d1d5db;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            background-color: #f9fafb;
+            padding: 8px 12px;
+
+            .ql-formats {
+              margin-right: 15px;
+            }
+
+            .ql-stroke {
+              stroke: #6b7280;
+            }
+
+            .ql-fill {
+              fill: #6b7280;
+            }
+
+            .ql-picker {
+              color: #6b7280;
+            }
+
+            .ql-picker-options {
+              background-color: white;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+
+            .ql-picker-item {
+              color: #374151;
+
+              &:hover {
+                background-color: #f3f4f6;
+              }
+
+              &.ql-selected {
+                background-color: #3b82f6;
+                color: white;
+              }
+            }
+
+            button {
+              &:hover {
+                .ql-stroke {
+                  stroke: #374151;
+                }
+                .ql-fill {
+                  fill: #374151;
+                }
+              }
+
+              &.ql-active {
+                .ql-stroke {
+                  stroke: #3b82f6;
+                }
+                .ql-fill {
+                  fill: #3b82f6;
+                }
+              }
+            }
+          }
+
+          .ql-container {
+            border: 1px solid #d1d5db;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            background-color: white;
+          }
+
+          &.error {
+            .ql-editor {
+              border-color: #ef4444;
+              box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+
+              &:focus {
+                border-color: #ef4444;
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+              }
+            }
+
+            .ql-toolbar {
+              border-color: #ef4444;
+            }
+
+            .ql-container {
+              border-color: #ef4444;
+            }
+          }
+        }
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid #e5e7eb;
+
+      .cancel-btn {
+        padding: 10px 20px;
+        background-color: white;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f9fafb;
+          border-color: #9ca3af;
+        }
+      }
+
+      .send-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background-color: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover:not(:disabled) {
+          background-color: #2563eb;
+        }
+
+        &:disabled {
+          background-color: #9ca3af;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// ===== RESPONSIVE DESIGN =====
+
+// Large Desktop (1200px and up)
+@media (min-width: 1200px) {
+  .email-page {
+    .email-content {
+      .contact-panel {
+        width: 400px;
+      }
+    }
+
+    .compose-modal-overlay {
+      .compose-modal {
+        max-width: 700px;
+      }
+    }
+  }
+}
+
+// Desktop (1024px to 1199px)
+@media (max-width: 1199px) and (min-width: 1024px) {
+  .email-page {
+    .email-content {
+      .contact-panel {
+        width: 350px;
+      }
+    }
+  }
+}
+
+// Tablet (768px to 1023px)
+@media (max-width: 1023px) and (min-width: 768px) {
+  .email-page {
+    .email-header {
+      padding: 12px 20px;
+
+      .header-left {
+        .sidebar-toggle-btn {
+          display: flex;
+        }
+        .create-new-btn {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 16px;
+          font-size: 16px;
+        }
+      }
+
+      .header-right {
+        .search-container {
+          width: 250px;
+        }
+      }
+    }
+
+    .email-content {
+      .contact-panel {
+        width: 300px;
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        transition: transform 0.3s ease;
+
+        &.sidebar-open {
+          transform: translateX(0);
+        }
+
+        .panel-header {
+          padding: 12px 16px;
+
+          .timestamp {
+            font-size: 11px;
+          }
+
+          .campaign-title {
+            font-size: 14px;
+          }
+        }
+
+        .contact-search {
+          padding: 12px 16px;
+        }
+
+        .contact-list {
+          .contact-item {
+            padding: 10px 12px;
+
+            .contact-avatar {
+              width: 36px;
+              height: 36px;
+              font-size: 12px;
+              margin-right: 10px;
+            }
+
+            .contact-info {
+              .contact-name {
+                font-size: 13px;
+              }
+
+              .contact-email {
+                font-size: 11px;
+              }
+            }
+
+            .contact-actions {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .email-panel {
+        .email-details {
+          padding: 20px;
+
+          .email-header-info {
+            .email-field {
+              font-size: 13px;
+
+              .field-label {
+                min-width: 50px;
+                margin-right: 10px;
+              }
+            }
+          }
+
+          .email-body {
+            pre {
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+
+    .sidebar-overlay {
+      display: block;
+    }
+  }
+
+  .compose-modal-overlay {
+    padding: 15px;
+
+    .compose-modal {
+      max-width: 550px;
+
+      .modal-header {
+        padding: 16px 20px;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .modal-footer {
+        padding: 16px 20px;
+      }
+    }
+  }
+}
+
+// Mobile (up to 767px)
+@media (max-width: 767px) {
+  .email-page {
+    height: 100vh;
+    overflow: hidden;
+
+    .email-header {
+      padding: 12px 16px;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+
+      .header-left {
+        .sidebar-toggle-btn {
+          display: flex;
+        }
+        .create-new-btn {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 16px;
+          font-size: 16px;
+        }
+      }
+
+      .header-right {
+        .search-container {
+          width: 100%;
+        }
+      }
+    }
+
+    .email-content {
+      flex-direction: column;
+      height: calc(100vh - 120px);
+
+      .contact-panel {
+        width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+
+        .panel-header {
+          padding: 12px 16px;
+
+          .timestamp {
+            font-size: 11px;
+          }
+
+          .campaign-title {
+            font-size: 14px;
+          }
+        }
+
+        .contact-search {
+          padding: 12px 16px;
+        }
+
+        .contact-list {
+          .contact-item {
+            padding: 8px 12px;
+
+            .contact-avatar {
+              width: 32px;
+              height: 32px;
+              font-size: 11px;
+              margin-right: 8px;
+            }
+
+            .contact-info {
+              .contact-name {
+                font-size: 12px;
+              }
+
+              .contact-email {
+                font-size: 10px;
+              }
+            }
+
+            .contact-actions {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .email-panel {
+        flex: 1;
+        min-height: 0;
+
+        .email-details {
+          padding: 16px;
+
+          .email-header-info {
+            margin-bottom: 16px;
+
+            .email-field {
+              font-size: 12px;
+              margin-bottom: 8px;
+              flex-direction: column;
+              align-items: flex-start;
+
+              .field-label {
+                min-width: auto;
+                margin-right: 0;
+                margin-bottom: 4px;
+                font-size: 11px;
+              }
+
+              .field-value {
+                font-size: 12px;
+                word-break: break-all;
+              }
+            }
+          }
+
+          .email-body {
+            pre {
+              font-size: 12px;
+              line-height: 1.5;
+            }
+          }
+        }
+
+        .no-email-selected {
+          font-size: 14px;
+          padding: 20px;
+          text-align: center;
+        }
+      }
+    }
+
+    .sidebar-overlay {
+      display: block;
+    }
+  }
+
+  .compose-modal-overlay {
+    padding: 10px;
+
+    .compose-modal {
+      max-width: 100%;
+      max-height: 90vh;
+      margin: 0;
+
+      .modal-header {
+        padding: 16px 20px;
+
+        h3 {
+          font-size: 16px;
+        }
+      }
+
+      .modal-body {
+        padding: 16px 20px;
+
+        .form-group {
+          margin-bottom: 16px;
+
+          label {
+            font-size: 13px;
+            margin-bottom: 6px;
+          }
+
+          input, textarea {
+            padding: 10px 12px;
+            font-size: 14px;
+          }
+
+          .quill-container {
+            .ql-editor {
+              min-height: 150px;
+              font-size: 14px;
+              padding: 10px 12px;
+            }
+
+            .ql-toolbar {
+              padding: 6px 8px;
+
+              .ql-formats {
+                margin-right: 10px;
+              }
+            }
+          }
+        }
+      }
+
+      .modal-footer {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 8px;
+
+        .cancel-btn, .send-btn {
+          width: 100%;
+          justify-content: center;
+          padding: 12px 20px;
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
+// Small Mobile (up to 480px)
+@media (max-width: 480px) {
+  .email-page {
+    .email-header {
+      padding: 10px 12px;
+      gap: 8px;
+
+      .header-left {
+        .sidebar-toggle-btn {
+          display: flex;
+        }
+        .create-new-btn {
+          padding: 10px 12px;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .email-content {
+      height: calc(100vh - 100px);
+
+      .contact-panel {
+        height: 180px;
+
+        .panel-header {
+          padding: 10px 12px;
+
+          .timestamp {
+            font-size: 10px;
+          }
+
+          .campaign-title {
+            font-size: 13px;
+          }
+        }
+
+        .contact-search {
+          padding: 10px 12px;
+        }
+
+        .contact-list {
+          .contact-item {
+            padding: 6px 10px;
+
+            .contact-avatar {
+              width: 28px;
+              height: 28px;
+              font-size: 10px;
+              margin-right: 6px;
+            }
+
+            .contact-info {
+              .contact-name {
+                font-size: 11px;
+              }
+
+              .contact-email {
+                font-size: 9px;
+              }
+            }
+          }
+        }
+      }
+
+      .email-panel {
+        .email-details {
+          padding: 12px;
+
+          .email-header-info {
+            .email-field {
+              font-size: 11px;
+
+              .field-label {
+                font-size: 10px;
+              }
+
+              .field-value {
+                font-size: 11px;
+              }
+            }
+          }
+
+          .email-body {
+            pre {
+              font-size: 11px;
+            }
+          }
+        }
+      }
+    }
+
+    .sidebar-overlay {
+      display: block;
+    }
+  }
+
+  .compose-modal-overlay {
+    padding: 5px;
+
+    .compose-modal {
+      .modal-header {
+        padding: 12px 16px;
+
+        h3 {
+          font-size: 15px;
+        }
+      }
+
+      .modal-body {
+        padding: 12px 16px;
+
+        .form-group {
+          margin-bottom: 12px;
+
+          label {
+            font-size: 12px;
+          }
+
+          input, textarea {
+            padding: 8px 10px;
+            font-size: 13px;
+          }
+
+          .quill-container {
+            .ql-editor {
+              min-height: 120px;
+              font-size: 13px;
+              padding: 8px 10px;
+            }
+
+            .ql-toolbar {
+              padding: 4px 6px;
+
+              .ql-formats {
+                margin-right: 8px;
+              }
+            }
+          }
+        }
+      }
+
+      .modal-footer {
+        padding: 12px 16px;
+
+        .cancel-btn, .send-btn {
+          padding: 10px 16px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+// Landscape Mobile (height < 500px)
+@media (max-height: 500px) and (orientation: landscape) {
+  .email-page {
+    .email-content {
+      .contact-panel {
+        height: 150px;
+      }
+    }
+  }
+
+  .compose-modal-overlay {
+    .compose-modal {
+      max-height: 95vh;
+
+      .modal-body {
+        .form-group {
+          .quill-container {
+            .ql-editor {
+              min-height: 100px;
+            }
+          }
+        }
+      }
+    }
+  }
+} 

@@ -9,4 +9,5 @@ export { default as ContactsCommunication } from "./ContactsCommunication";
 export { default as PropertyCompliance } from "./PropertyCompliance";
 export { default as PaymentProperty } from "./PaymentProperty";
 export { default as PropertyProfile } from "./PropertyProfile";
+export { default as Email } from "./Email";
 export { Login, AgentLogin, AdminLogin, PasswordReset } from "./Login";

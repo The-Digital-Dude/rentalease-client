@@ -6,18 +6,52 @@ export interface Job {
   id: string;
   job_id: string;
   property: string | { id: string; fullAddress: string };
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
+  jobType:
+    | "Gas"
+    | "Electrical"
+    | "Smoke"
+    | "Repairs"
+    | "Pool Safety"
+    | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string | { fullName: string } | null;
   status: "Pending" | "Scheduled" | "Completed" | "Overdue";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
+  completedAt?: string;
+  estimatedDuration?: number;
+  actualDuration?: number;
+  cost?: {
+    materialCost: number;
+    laborCost: number;
+    totalCost: number;
+  };
+  notes?: string;
+  owner?: {
+    ownerType: "SuperUser" | "Agency";
+    ownerId: string;
+  };
+  createdBy?: {
+    userType: "SuperUser" | "Agency";
+    userId: string;
+  };
+  lastUpdatedBy?: {
+    userType: "SuperUser" | "Agency";
+    userId: string;
+  };
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateJobData {
   property: string; // property ID
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
+  jobType:
+    | "Gas"
+    | "Electrical"
+    | "Smoke"
+    | "Repairs"
+    | "Pool Safety"
+    | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string | null;
   description?: string;

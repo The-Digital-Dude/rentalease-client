@@ -1,5 +1,6 @@
 import React from "react";
-import { RiAlertLine, RiCalendarLine } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
+import { RiAlertLine, RiCalendarLine, RiEyeLine } from "react-icons/ri";
 import { formatDateTime } from "../../utils";
 import "./UrgentJobsSection.scss";
 import type { ComponentJob } from "../../utils/jobAdapter";
@@ -15,9 +16,15 @@ const UrgentJobsSection: React.FC<UrgentJobsSectionProps> = ({
   getPriorityColor,
   isOverdue,
 }) => {
+  const navigate = useNavigate();
+
   if (urgentJobs.length === 0) {
     return null;
   }
+
+  const handleViewJob = (jobId: string) => {
+    navigate(`/jobs/${jobId}`);
+  };
 
   return (
     <div className="content-card urgent-jobs-section">
@@ -50,6 +57,15 @@ const UrgentJobsSection: React.FC<UrgentJobsSectionProps> = ({
                   <span className="overdue-label">OVERDUE</span>
                 )}
               </p>
+            </div>
+            <div className="job-actions">
+              <button
+                onClick={() => handleViewJob(job.id)}
+                className="view-job-btn"
+                title="View Job Details"
+              >
+                <RiEyeLine />
+              </button>
             </div>
           </div>
         ))}

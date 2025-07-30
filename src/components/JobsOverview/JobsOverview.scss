@@ -208,9 +208,19 @@
                 color: #374151;
               }
 
+              &.view-btn {
+                color: #059669;
+
+                &:hover {
+                  background-color: #ecfdf5;
+                  border-color: #059669;
+                  color: #047857;
+                }
+              }
+
               &.edit-btn {
                 color: #4a90e2;
-                
+
                 &:hover {
                   background-color: #e8f1fc;
                   border-color: #4a90e2;
@@ -223,7 +233,7 @@
                 color: #9ca3af;
                 border: 1px solid #e5e7eb;
                 background-color: #ffffff;
-                
+
                 &:hover {
                   background-color: #f9fafb;
                   border-color: #d1d5db;
@@ -243,7 +253,8 @@
               background: white;
               border: 1px solid #e5e7eb;
               border-radius: 6px;
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
               z-index: 1000;
               min-width: 160px;
               margin-top: 4px;

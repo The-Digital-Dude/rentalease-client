@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RiSearchLine,
   RiCalendarLine,
   RiUserLine,
   RiMoreLine,
   RiEdit2Line,
+  RiEyeLine,
 } from "react-icons/ri";
 import "./JobsOverview.scss";
 import JobFormModal, { type JobFormData } from "../JobFormModal";
@@ -56,6 +58,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<ComponentJob | null>(null);
   const [editFormData, setEditFormData] = useState<JobFormData | null>(null);
+  const navigate = useNavigate();
 
   // Helper function to format date for HTML input (YYYY-MM-DD)
   const formatDateForInput = (dateString: string): string => {
@@ -134,6 +137,10 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
         [e.target.name]: e.target.value,
       });
     }
+  };
+
+  const handleViewJob = (jobId: string) => {
+    navigate(`/jobs/${jobId}`);
   };
 
   return (
@@ -231,6 +238,13 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                   </span>
                 </td>
                 <td className="actions-cell">
+                  <button
+                    className="action-btn view-btn"
+                    onClick={() => handleViewJob(job.id)}
+                    title="View Job Details"
+                  >
+                    <RiEyeLine />
+                  </button>
                   <button
                     className="action-btn edit-btn"
                     onClick={() => handleEditClick(job)}

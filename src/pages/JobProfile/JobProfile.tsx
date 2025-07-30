@@ -54,7 +54,8 @@ interface JobProfileData {
   };
   technician?: {
     id: string;
-    fullName: string;
+    firstName: string;
+    lastName: string;
     phone: string;
     email: string;
     availabilityStatus: string;
@@ -133,8 +134,11 @@ const JobProfile: React.FC = () => {
             technician: job.assignedTechnician
               ? {
                   id: job.assignedTechnician._id || job.assignedTechnician.id,
-                  fullName:
-                    job.assignedTechnician.fullName ||
+                  firstName:
+                    job.assignedTechnician.firstName ||
+                    job.assignedTechnician.name,
+                  lastName:
+                    job.assignedTechnician.lastName ||
                     job.assignedTechnician.name,
                   phone: job.assignedTechnician.phone || "",
                   email: job.assignedTechnician.email || "",
@@ -560,7 +564,9 @@ const JobProfile: React.FC = () => {
                     <div className="assignment-item">
                       <label>Assigned Technician</label>
                       <span>
-                        {technician ? technician.fullName : "Unassigned"}
+                        {technician
+                          ? technician.firstName + " " + technician.lastName
+                          : "Unassigned"}
                       </span>
                     </div>
                   </div>
@@ -795,7 +801,7 @@ const JobProfile: React.FC = () => {
                       <RiUser3Line />
                       <div>
                         <label>Name</label>
-                        <span>{technician.fullName}</span>
+                        <span>{technician.firstName}</span>
                       </div>
                     </div>
                     <div className="technician-item">

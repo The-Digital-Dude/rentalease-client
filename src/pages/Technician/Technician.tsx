@@ -459,7 +459,9 @@ const TechnicianPage = () => {
   const filteredTechnicians = technicians.filter((technician) => {
     const matchesSearch =
       searchTerm === "" ||
-      technician.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${technician.firstName} ${technician.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       technician.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       technician.phone.includes(searchTerm);
 
@@ -514,21 +516,21 @@ const TechnicianPage = () => {
       <div className="directory-header">
         <div className="header-info">
           <h3>
-            Your Technicians
+            Technician Directory
             {!loading && (
               <span className="technician-count">
-                ({pagination.totalItems})
+                {pagination.totalItems} technicians
               </span>
             )}
           </h3>
-          <p>Manage technicians and their availability</p>
+          <p>Manage your team of technicians and track their availability</p>
         </div>
         <div className="search-filter-bar">
           <div className="search-input">
             <RiSearchLine className="search-icon" />
             <input
               type="text"
-              placeholder="Search by name, email, or phone..."
+              placeholder="Search technicians..."
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
@@ -556,10 +558,10 @@ const TechnicianPage = () => {
               </optgroup>
             </select>
           </div>
+          <button className="btn-primary" onClick={() => setActiveTab("add")}>
+            <RiUserAddLine /> Add Technician
+          </button>
         </div>
-        <button className="btn-primary" onClick={() => setActiveTab("add")}>
-          <RiUserAddLine /> Add Technician
-        </button>
       </div>
 
       {loading && (
@@ -600,13 +602,13 @@ const TechnicianPage = () => {
             {filteredTechnicians.map((technician) => (
               <div key={technician.id} className="technician-card">
                 <div className="technician-header">
-                  <div className="technician-info">
-                    <h3>{technician.fullName}</h3>
-                    <p className="experience">
-                      <RiBriefcaseLine /> {technician.experience} years
-                      experience
-                    </p>
+                  <div className="technician-avatar">
+                    <div className="avatar-placeholder">
+                      {technician.firstName.charAt(0)}
+                      {technician.lastName.charAt(0)}
+                    </div>
                   </div>
+                  <div className="technician-info"></div>
                   <div className="technician-actions">
                     <button
                       className="action-btn view-btn"
@@ -631,72 +633,68 @@ const TechnicianPage = () => {
                     </button>
                   </div>
                 </div>
+                <h3
+                  className="technician-name"
+                  style={{ marginBottom: "20px" }}
+                >
+                  {technician.firstName} {technician.lastName}
+                </h3>
 
-                <div className="technician-details">
-                  <div className="detail-row">
-                    <span className="label">Status:</span>
+                <div className="technician-status-section">
+                  <div className="status-badges">
                     <span
-                      className={`status ${getStatusColor(
+                      className={`status-badge availability ${getStatusColor(
                         technician.availabilityStatus
                       )}`}
                     >
                       {technician.availabilityStatus}
                     </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Account:</span>
                     <span
-                      className={`status ${getStatusColor(technician.status)}`}
+                      className={`status-badge account ${getStatusColor(
+                        technician.status
+                      )}`}
                     >
                       {technician.status}
                     </span>
                   </div>
-                  <div className="detail-row">
-                    <span className="label">Jobs:</span>
-                    <span className="job-stats">
-                      {technician.currentJobs}/{technician.maxJobs} active
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Completed:</span>
-                    <span className="completed-jobs">
-                      {technician.completedJobs} jobs
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Rating:</span>
-                    <span className="rating">
-                      <RiStarLine /> {technician.averageRating.toFixed(1)}/5 (
-                      {technician.totalRatings})
-                    </span>
-                  </div>
+                </div>
 
-                  <div className="detail-row">
-                    <span className="label">Phone:</span>
-                    <span className="contact-info">{technician.phone}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Email:</span>
-                    <span className="contact-info">{technician.email}</span>
-                  </div>
-                  {technician.address.fullAddress && (
-                    <div className="detail-row">
-                      <span className="label">Address:</span>
-                      <span className="address">
-                        <RiMapPinLine /> {technician.address.fullAddress}
-                      </span>
+                <div className="technician-stats">
+                  <div className="stat-item">
+                    <div className="stat-value">
+                      {technician.currentJobs}/{technician.maxJobs}
                     </div>
-                  )}
-                  <div className="detail-row">
-                    <span className="label">Last Active:</span>
-                    <span className="last-active">
-                      <RiTimeLine />{" "}
-                      {technician.lastActive
-                        ? new Date(technician.lastActive).toLocaleDateString()
-                        : "Never"}
-                    </span>
+                    <div className="stat-label">Active Jobs</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{technician.completedJobs}</div>
+                    <div className="stat-label">Completed</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">
+                      <RiStarLine /> {technician.averageRating.toFixed(1)}
+                    </div>
+                    <div className="stat-label">Rating</div>
                   </div>
                 </div>
+
+                <div className="technician-contact">
+                  <div className="contact-item">
+                    <span className="contact-label">Phone</span>
+                    <span className="contact-value">{technician.phone}</span>
+                  </div>
+                  <div className="contact-item">
+                    <span className="contact-label">Email</span>
+                    <span className="contact-value">{technician.email}</span>
+                  </div>
+                </div>
+
+                {technician.address.fullAddress && (
+                  <div className="technician-location">
+                    <RiMapPinLine />
+                    <span>{technician.address.fullAddress}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1038,7 +1036,9 @@ const TechnicianPage = () => {
                 <h4>Personal Information</h4>
                 <div className="detail-row">
                   <span className="label">Full Name:</span>
-                  <span>{viewingTechnician.fullName}</span>
+                  <span>
+                    {viewingTechnician.firstName} {viewingTechnician.lastName}
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Experience:</span>

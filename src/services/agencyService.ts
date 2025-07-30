@@ -181,6 +181,98 @@ export interface CreateAgencyResponse {
   };
 }
 
+// Revenue Report interfaces
+export interface RevenueReportResponse {
+  status: string;
+  data: {
+    overallStatistics: {
+      totalAgencies: number;
+      totalJobs: number;
+      completedJobs: number;
+      overdueJobs: number;
+      pendingJobs: number;
+      scheduledJobs: number;
+      totalRevenue: number;
+      completedRevenue: number;
+      pendingRevenue: number;
+      scheduledRevenue: number;
+      averageJobValue: number;
+      completionRate: number;
+    };
+    agencyBreakdown: Array<{
+      agency: {
+        id: string;
+        companyName: string;
+        contactPerson: string;
+        email: string;
+        region: string;
+        status: string;
+        abn: string;
+        outstandingAmount: number;
+        totalProperties: number;
+        joinedDate: string;
+      };
+      jobStatistics: {
+        totalJobs: number;
+        completedJobs: number;
+        overdueJobs: number;
+        pendingJobs: number;
+        scheduledJobs: number;
+        completionRate: number;
+      };
+      revenueStatistics: {
+        totalRevenue: number;
+        completedRevenue: number;
+        pendingRevenue: number;
+        scheduledRevenue: number;
+        averageJobValue: number;
+      };
+    }>;
+  };
+}
+
+// Agency with Stats interfaces
+export interface AgencyWithStats {
+  id: string;
+  companyName: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  region: string;
+  compliance: string;
+  status: string;
+  abn: string;
+  outstandingAmount: number;
+  totalProperties: number;
+  lastLogin: string | null;
+  joinedDate: string;
+  createdAt: string;
+  jobStatistics: {
+    totalJobs: number;
+    completedJobs: number;
+    overdueJobs: number;
+    pendingJobs: number;
+    scheduledJobs: number;
+    totalRevenue: number;
+    completedRevenue: number;
+    averageJobValue: number;
+  };
+}
+
+export interface AgenciesWithStatsResponse {
+  status: string;
+  data: {
+    agencies: AgencyWithStats[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
+}
+
 export interface AgencyResponse {
   success: boolean;
   data: Agency[];
@@ -383,6 +475,83 @@ export const agencyService = {
         success: false,
         message:
           error.response?.data?.message || "Failed to resend credentials email",
+      };
+    }
+  },
+
+  // Get revenue report
+  getRevenueReport: async (): Promise<{
+    success: boolean;
+    data?: RevenueReportResponse["data"];
+    message?: string;
+  }> => {
+    try {
+      const response = await api.get<RevenueReportResponse>(
+        "/v1/agency/auth/revenue-report"
+      );
+
+      if (response.data.status === "success" && response.data.data) {
+        return {
+          success: true,
+          data: response.data.data,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from server",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch revenue report",
+      };
+    }
+  },
+
+  // Get agencies with stats
+  getAgenciesWithStats: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    data?: AgenciesWithStatsResponse["data"];
+    message?: string;
+  }> => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== 0) {
+            queryParams.append(key, String(value));
+          }
+        });
+      }
+
+      const url = `/v1/agency/auth/all-with-stats${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+
+      const response = await api.get<AgenciesWithStatsResponse>(url);
+
+      if (response.data.status === "success" && response.data.data) {
+        return {
+          success: true,
+          data: response.data.data,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Invalid response format from server",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to fetch agencies with stats",
       };
     }
   },

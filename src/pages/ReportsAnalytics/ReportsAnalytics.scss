@@ -154,6 +154,10 @@
         background: #f59e0b;
       }
 
+      &.pending {
+        background: #f59e0b;
+      }
+
       &.revenue {
         background: #8b5cf6;
       }
@@ -330,10 +334,220 @@
       }
     }
   }
+
+  .agency-breakdown-section {
+    margin-top: 2rem;
+
+    h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .loading-state,
+    .error-state,
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+
+      .loading-icon {
+        font-size: 2rem;
+        color: #3b82f6;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #64748b;
+        font-size: 1.125rem;
+        margin: 0;
+      }
+    }
+
+    .error-state {
+      .btn-secondary {
+        margin-top: 1rem;
+      }
+    }
+
+    .agency-breakdown-table {
+      background: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          background: #f8fafc;
+
+          th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid #e2e8f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              background: #f8fafc;
+            }
+
+            td {
+              padding: 1rem;
+              font-size: 0.875rem;
+
+              .agency-info {
+                .agency-link {
+                  text-decoration: none;
+                  color: #2563eb;
+                  transition: color 0.2s ease;
+
+                  &:hover {
+                    color: #1d4ed8;
+                  }
+
+                  strong {
+                    display: block;
+                    color: #2563eb;
+                    margin-bottom: 0.25rem;
+                  }
+                }
+
+                .contact-person {
+                  color: #64748b;
+                  font-size: 0.75rem;
+                }
+              }
+
+              .compliance-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.full-package {
+                  background: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.standard-package {
+                  background: #dbeafe;
+                  color: #1e40af;
+                }
+
+                &.basic-package {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+              }
+
+              .status-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.active {
+                  background: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.inactive {
+                  background: #fee2e2;
+                  color: #991b1b;
+                }
+
+                &.pending {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+
+                &.suspended {
+                  background: #f3f4f6;
+                  color: #374151;
+                }
+              }
+
+              .job-count {
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.375rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.completed {
+                  background: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.pending {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+
+                &.overdue {
+                  background: #fee2e2;
+                  color: #991b1b;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // Revenue Report Styles
 .revenue-report {
+  .loading-state,
+  .error-state,
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+
+    .loading-icon {
+      font-size: 2rem;
+      color: #3b82f6;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #64748b;
+      font-size: 1.125rem;
+      margin: 0;
+    }
+  }
+
+  .error-state {
+    .btn-secondary {
+      margin-top: 1rem;
+    }
+  }
+
   .revenue-breakdown {
     h4 {
       font-size: 1.25rem;
@@ -392,6 +606,114 @@
             span:last-child {
               font-weight: 600;
               color: #1e293b;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .agency-breakdown {
+    margin-top: 2rem;
+
+    h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .agency-table {
+      background: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          background: #f8fafc;
+
+          th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid #e2e8f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              background: #f8fafc;
+            }
+
+            td {
+              padding: 1rem;
+              font-size: 0.875rem;
+
+              .agency-info {
+                strong {
+                  display: block;
+                  color: #1e293b;
+                  margin-bottom: 0.25rem;
+                }
+
+                .contact-person {
+                  color: #64748b;
+                  font-size: 0.75rem;
+                }
+              }
+
+              .job-count {
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.375rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.completed {
+                  background: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.pending {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+              }
+
+              .completion-rate {
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                font-weight: 600;
+
+                &.high {
+                  background: #d1fae5;
+                  color: #065f46;
+                }
+
+                &.medium {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+
+                &.low {
+                  background: #fee2e2;
+                  color: #991b1b;
+                }
+              }
             }
           }
         }
@@ -515,6 +837,16 @@
   }
 }
 
+// Animations
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // Responsive Design
 @media (max-width: 768px) {
   .reports-tabs {
@@ -538,6 +870,16 @@
     }
   }
 
+  .agency-breakdown-section {
+    .agency-breakdown-table {
+      overflow-x: auto;
+
+      table {
+        min-width: 1000px;
+      }
+    }
+  }
+
   .revenue-breakdown {
     .breakdown-grid {
       grid-template-columns: 1fr;
@@ -547,4 +889,14 @@
   .performance-grid {
     grid-template-columns: 1fr;
   }
-} 
+
+  .agency-breakdown {
+    .agency-table {
+      overflow-x: auto;
+
+      table {
+        min-width: 800px;
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   RiBarChartBoxLine,
   RiLineChartLine,
@@ -14,20 +15,10 @@ import {
   RiCloseCircleLine,
   RiTimeLine,
   RiStarLine,
+  RiLoader4Line,
 } from "react-icons/ri";
+import { agencyService } from "../../services/agencyService";
 import "./ReportsAnalytics.scss";
-
-interface ComplianceData {
-  id: string;
-  name: string;
-  type: "agency" | "region" | "property";
-  totalJobs: number;
-  completedJobs: number;
-  compliantJobs: number;
-  overdueJobs: number;
-  complianceRate: number;
-  avgCompletionTime: number;
-}
 
 interface RevenueData {
   period: string;
@@ -53,97 +44,154 @@ interface TechnicianPerformance {
 
 const ReportsAnalytics = () => {
   const [activeTab, setActiveTab] = useState("compliance");
-  const [complianceFilter, setComplianceFilter] = useState("all");
   const [revenueFilter, setRevenueFilter] = useState("month");
   const [revenueBreakdown, setRevenueBreakdown] = useState("agency");
   const [technicianSort, setTechnicianSort] = useState("rating");
 
-  // Mock data - in real app, this would come from an API
-  const complianceData: ComplianceData[] = [
-    {
-      id: "1",
-      name: "Premier Property Solutions",
-      type: "agency",
-      totalJobs: 145,
-      completedJobs: 132,
-      compliantJobs: 128,
-      overdueJobs: 13,
-      complianceRate: 97.0,
-      avgCompletionTime: 2.3,
-    },
-    {
-      id: "2",
-      name: "North Zone",
-      type: "region",
-      totalJobs: 89,
-      completedJobs: 82,
-      compliantJobs: 79,
-      overdueJobs: 7,
-      complianceRate: 96.3,
-      avgCompletionTime: 2.1,
-    },
-    {
-      id: "3",
-      name: "Luxury Apartments CBD",
-      type: "property",
-      totalJobs: 67,
-      completedJobs: 61,
-      compliantJobs: 58,
-      overdueJobs: 6,
-      complianceRate: 95.1,
-      avgCompletionTime: 2.8,
-    },
-    {
-      id: "4",
-      name: "Elite Realty Group",
-      type: "agency",
-      totalJobs: 98,
-      completedJobs: 88,
-      compliantJobs: 83,
-      overdueJobs: 10,
-      complianceRate: 94.3,
-      avgCompletionTime: 2.5,
-    },
-  ];
+  // Revenue report state
+  const [revenueData, setRevenueData] = useState<{
+    overallStatistics: {
+      totalAgencies: number;
+      totalJobs: number;
+      completedJobs: number;
+      overdueJobs: number;
+      pendingJobs: number;
+      scheduledJobs: number;
+      totalRevenue: number;
+      completedRevenue: number;
+      pendingRevenue: number;
+      scheduledRevenue: number;
+      averageJobValue: number;
+      completionRate: number;
+    };
+    agencyBreakdown: Array<{
+      agency: {
+        id: string;
+        companyName: string;
+        contactPerson: string;
+        email: string;
+        region: string;
+        status: string;
+        abn: string;
+        outstandingAmount: number;
+        totalProperties: number;
+        joinedDate: string;
+      };
+      jobStatistics: {
+        totalJobs: number;
+        completedJobs: number;
+        overdueJobs: number;
+        pendingJobs: number;
+        scheduledJobs: number;
+        completionRate: number;
+      };
+      revenueStatistics: {
+        totalRevenue: number;
+        completedRevenue: number;
+        pendingRevenue: number;
+        scheduledRevenue: number;
+        averageJobValue: number;
+      };
+    }>;
+  } | null>(null);
+  const [revenueLoading, setRevenueLoading] = useState(false);
+  const [revenueError, setRevenueError] = useState<string | null>(null);
 
-  const revenueData: RevenueData[] = [
-    {
-      period: "2024-01",
-      agency: "Premier Property Solutions",
-      region: "North Zone",
-      jobType: "Plumbing",
-      amount: 15750,
-      jobCount: 45,
-      avgJobValue: 350,
-    },
-    {
-      period: "2024-01",
-      agency: "Elite Realty Group",
-      region: "South Zone",
-      jobType: "Electrical",
-      amount: 12400,
-      jobCount: 31,
-      avgJobValue: 400,
-    },
-    {
-      period: "2024-01",
-      agency: "Premier Property Solutions",
-      region: "East Zone",
-      jobType: "HVAC",
-      amount: 18900,
-      jobCount: 27,
-      avgJobValue: 700,
-    },
-    {
-      period: "2024-01",
-      agency: "Elite Realty Group",
-      region: "Central Zone",
-      jobType: "General Maintenance",
-      amount: 8750,
-      jobCount: 35,
-      avgJobValue: 250,
-    },
-  ];
+  // Agency breakdown state for compliance page
+  const [agencyBreakdownData, setAgencyBreakdownData] = useState<{
+    agencies: Array<{
+      id: string;
+      companyName: string;
+      contactPerson: string;
+      email: string;
+      phone: string;
+      region: string;
+      compliance: string;
+      status: string;
+      abn: string;
+      outstandingAmount: number;
+      totalProperties: number;
+      lastLogin: string | null;
+      joinedDate: string;
+      createdAt: string;
+      jobStatistics: {
+        totalJobs: number;
+        completedJobs: number;
+        overdueJobs: number;
+        pendingJobs: number;
+        scheduledJobs: number;
+        totalRevenue: number;
+        completedRevenue: number;
+        averageJobValue: number;
+      };
+    }>;
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  } | null>(null);
+  const [agencyBreakdownLoading, setAgencyBreakdownLoading] = useState(false);
+  const [agencyBreakdownError, setAgencyBreakdownError] = useState<
+    string | null
+  >(null);
+
+  // Fetch revenue report data
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      setRevenueLoading(true);
+      setRevenueError(null);
+
+      try {
+        const result = await agencyService.getRevenueReport();
+        if (result.success && result.data) {
+          setRevenueData(result.data);
+        } else {
+          setRevenueError(result.message || "Failed to fetch revenue data");
+        }
+      } catch (error) {
+        setRevenueError("An error occurred while fetching revenue data");
+      } finally {
+        setRevenueLoading(false);
+      }
+    };
+
+    if (activeTab === "revenue") {
+      fetchRevenueData();
+    }
+  }, [activeTab]);
+
+  // Fetch agency breakdown data for compliance page
+  useEffect(() => {
+    const fetchAgencyBreakdownData = async () => {
+      setAgencyBreakdownLoading(true);
+      setAgencyBreakdownError(null);
+
+      try {
+        const result = await agencyService.getAgenciesWithStats({
+          page: 1,
+          limit: 10,
+        });
+        if (result.success && result.data) {
+          setAgencyBreakdownData(result.data);
+        } else {
+          setAgencyBreakdownError(
+            result.message || "Failed to fetch agency data"
+          );
+        }
+      } catch (error) {
+        setAgencyBreakdownError("An error occurred while fetching agency data");
+      } finally {
+        setAgencyBreakdownLoading(false);
+      }
+    };
+
+    if (activeTab === "compliance") {
+      fetchAgencyBreakdownData();
+    }
+  }, [activeTab]);
 
   const technicianData: TechnicianPerformance[] = [
     {
@@ -192,21 +240,53 @@ const ReportsAnalytics = () => {
     },
   ];
 
-  const filteredCompliance = complianceData.filter((item) => {
-    if (complianceFilter === "all") return true;
-    return item.type === complianceFilter;
-  });
-
-  const groupedRevenue = revenueData.reduce((acc, item) => {
-    const key = item[revenueBreakdown as keyof RevenueData];
-    if (!acc[key]) {
-      acc[key] = { amount: 0, jobCount: 0, avgJobValue: 0 };
-    }
-    acc[key].amount += item.amount;
-    acc[key].jobCount += item.jobCount;
-    acc[key].avgJobValue = acc[key].amount / acc[key].jobCount;
-    return acc;
-  }, {} as Record<string, { amount: number; jobCount: number; avgJobValue: number }>);
+  // Process revenue data for breakdown
+  const groupedRevenue =
+    revenueData?.agencyBreakdown?.reduce(
+      (
+        acc: Record<
+          string,
+          {
+            amount: number;
+            jobCount: number;
+            completedJobs: number;
+            avgJobValue: number;
+          }
+        >,
+        item
+      ) => {
+        const key =
+          item.agency[
+            revenueBreakdown === "agency"
+              ? "companyName"
+              : revenueBreakdown === "region"
+              ? "region"
+              : "companyName"
+          ];
+        if (!acc[key]) {
+          acc[key] = {
+            amount: 0,
+            jobCount: 0,
+            completedJobs: 0,
+            avgJobValue: 0,
+          };
+        }
+        acc[key].amount += item.revenueStatistics.totalRevenue;
+        acc[key].jobCount += item.jobStatistics.totalJobs;
+        acc[key].completedJobs += item.jobStatistics.completedJobs;
+        acc[key].avgJobValue = acc[key].amount / Math.max(acc[key].jobCount, 1);
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          amount: number;
+          jobCount: number;
+          completedJobs: number;
+          avgJobValue: number;
+        }
+      >
+    ) || {};
 
   const sortedTechnicians = [...technicianData].sort((a, b) => {
     switch (technicianSort) {
@@ -230,13 +310,6 @@ const ReportsAnalytics = () => {
     return <RiArrowDownLine className="trend-down" />;
   };
 
-  const getComplianceStatus = (rate: number) => {
-    if (rate >= 95) return { status: "excellent", color: "status-excellent" };
-    if (rate >= 90) return { status: "good", color: "status-good" };
-    if (rate >= 80) return { status: "fair", color: "status-fair" };
-    return { status: "poor", color: "status-poor" };
-  };
-
   const tabs = [
     { id: "compliance", label: "Compliance Status", icon: RiShieldCheckLine },
     { id: "revenue", label: "Revenue Reports", icon: RiMoneyDollarCircleLine },
@@ -255,18 +328,6 @@ const ReportsAnalytics = () => {
           <p>Overview of job completion and compliance status</p>
         </div>
         <div className="header-actions">
-          <div className="filter-group">
-            <RiFilterLine className="filter-icon" />
-            <select
-              value={complianceFilter}
-              onChange={(e) => setComplianceFilter(e.target.value)}
-            >
-              <option value="all">All Types</option>
-              <option value="agency">Agencies</option>
-              <option value="region">Regions</option>
-              <option value="property">Properties</option>
-            </select>
-          </div>
           <button className="btn-secondary">
             <RiDownloadLine /> Export Report
           </button>
@@ -279,151 +340,10 @@ const ReportsAnalytics = () => {
             <RiShieldCheckLine />
           </div>
           <div className="card-content">
-            <h4>96.2%</h4>
-            <p>Overall Compliance Rate</p>
-            {getTrendIcon(96.2, 95)}
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="card-icon completed">
-            <RiCheckboxCircleLine />
-          </div>
-          <div className="card-content">
-            <h4>363</h4>
-            <p>Jobs Completed</p>
-            {getTrendIcon(363, 350)}
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="card-icon overdue">
-            <RiCloseCircleLine />
-          </div>
-          <div className="card-content">
-            <h4>36</h4>
-            <p>Overdue Jobs</p>
-            {getTrendIcon(36, 40)}
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="card-icon time">
-            <RiTimeLine />
-          </div>
-          <div className="card-content">
-            <h4>2.4</h4>
-            <p>Avg Completion Days</p>
-            {getTrendIcon(2.4, 3)}
-          </div>
-        </div>
-      </div>
-
-      <div className="compliance-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Total Jobs</th>
-              <th>Completed</th>
-              <th>Compliant</th>
-              <th>Overdue</th>
-              <th>Compliance Rate</th>
-              <th>Avg Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCompliance.map((item) => {
-              const compliance = getComplianceStatus(item.complianceRate);
-              return (
-                <tr key={item.id}>
-                  <td>
-                    <div className="name-cell">
-                      <strong>{item.name}</strong>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`type-badge ${item.type}`}>
-                      {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                    </span>
-                  </td>
-                  <td>{item.totalJobs}</td>
-                  <td>
-                    <span className="job-count completed">
-                      {item.completedJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="job-count compliant">
-                      {item.compliantJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="job-count overdue">
-                      {item.overdueJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="compliance-rate">
-                      <span className={`rate ${compliance.color}`}>
-                        {item.complianceRate.toFixed(1)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td>{item.avgCompletionTime.toFixed(1)} days</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const renderRevenueReport = () => (
-    <div className="revenue-report">
-      <div className="report-header">
-        <div className="header-content">
-          <h3>Revenue Reports</h3>
-          <p>Financial performance breakdown and analysis</p>
-        </div>
-        <div className="header-actions">
-          <div className="filter-group">
-            <RiCalendarLine className="filter-icon" />
-            <select
-              value={revenueFilter}
-              onChange={(e) => setRevenueFilter(e.target.value)}
-            >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <RiFilterLine className="filter-icon" />
-            <select
-              value={revenueBreakdown}
-              onChange={(e) => setRevenueBreakdown(e.target.value)}
-            >
-              <option value="agency">By Agency</option>
-              <option value="region">By Region</option>
-              <option value="jobType">By Job Type</option>
-            </select>
-          </div>
-          <button className="btn-secondary">
-            <RiDownloadLine /> Export Report
-          </button>
-        </div>
-      </div>
-
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="card-icon revenue">
-            <RiMoneyDollarCircleLine />
-          </div>
-          <div className="card-content">
-            <h4>$55,800</h4>
-            <p>Total Revenue</p>
-            {getTrendIcon(55800, 50000)}
+            <h4>
+              {agencyBreakdownData ? agencyBreakdownData.agencies.length : 0}
+            </h4>
+            <p>Total Agencies</p>
           </div>
         </div>
         <div className="summary-card">
@@ -431,77 +351,332 @@ const ReportsAnalytics = () => {
             <RiBarChartBoxLine />
           </div>
           <div className="card-content">
-            <h4>138</h4>
+            <h4>
+              {agencyBreakdownData
+                ? agencyBreakdownData.agencies.reduce(
+                    (sum, agency) => sum + agency.jobStatistics.totalJobs,
+                    0
+                  )
+                : 0}
+            </h4>
             <p>Total Jobs</p>
-            {getTrendIcon(138, 130)}
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon average">
-            <RiLineChartLine />
+          <div className="card-icon completed">
+            <RiCheckboxCircleLine />
           </div>
           <div className="card-content">
-            <h4>$404</h4>
-            <p>Average Job Value</p>
-            {getTrendIcon(404, 400)}
+            <h4>
+              {agencyBreakdownData
+                ? agencyBreakdownData.agencies.reduce(
+                    (sum, agency) => sum + agency.jobStatistics.completedJobs,
+                    0
+                  )
+                : 0}
+            </h4>
+            <p>Completed Jobs</p>
           </div>
         </div>
         <div className="summary-card">
-          <div className="card-icon growth">
-            <RiArrowUpLine />
+          <div className="card-icon overdue">
+            <RiCloseCircleLine />
           </div>
           <div className="card-content">
-            <h4>+12.5%</h4>
-            <p>Growth Rate</p>
-            {getTrendIcon(12.5, 10)}
+            <h4>
+              {agencyBreakdownData
+                ? agencyBreakdownData.agencies.reduce(
+                    (sum, agency) => sum + agency.jobStatistics.overdueJobs,
+                    0
+                  )
+                : 0}
+            </h4>
+            <p>Overdue Jobs</p>
+          </div>
+        </div>
+        <div className="summary-card">
+          <div className="card-icon pending">
+            <RiTimeLine />
+          </div>
+          <div className="card-content">
+            <h4>
+              {agencyBreakdownData
+                ? agencyBreakdownData.agencies.reduce(
+                    (sum, agency) => sum + agency.jobStatistics.pendingJobs,
+                    0
+                  )
+                : 0}
+            </h4>
+            <p>Pending Jobs</p>
           </div>
         </div>
       </div>
 
-      <div className="revenue-breakdown">
-        <h4>
-          Revenue Breakdown -{" "}
-          {revenueBreakdown.charAt(0).toUpperCase() + revenueBreakdown.slice(1)}
-        </h4>
-        <div className="breakdown-grid">
-          {Object.entries(groupedRevenue).map(([key, data]) => (
-            <div key={key} className="breakdown-card">
-              <div className="breakdown-header">
-                <h5>{key}</h5>
-                <span className="revenue-amount">
-                  ${data.amount.toLocaleString()}
-                </span>
-              </div>
-              <div className="breakdown-stats">
-                <div className="stat">
-                  <span className="stat-label">Jobs:</span>
-                  <span>{data.jobCount}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Avg Value:</span>
-                  <span>${data.avgJobValue.toFixed(0)}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Share:</span>
-                  <span>
-                    {(
-                      (data.amount /
-                        Object.values(groupedRevenue).reduce(
-                          (sum, d) => sum + d.amount,
-                          0
-                        )) *
-                      100
-                    ).toFixed(1)}
-                    %
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Agency Breakdown Section */}
+      <div className="agency-breakdown-section">
+        <h4>Agency Breakdown</h4>
+        {agencyBreakdownLoading ? (
+          <div className="loading-state">
+            <RiLoader4Line className="loading-icon" />
+            <p>Loading agency data...</p>
+          </div>
+        ) : agencyBreakdownError ? (
+          <div className="error-state">
+            <p>Error: {agencyBreakdownError}</p>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                setAgencyBreakdownError(null);
+                setAgencyBreakdownData(null);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : agencyBreakdownData ? (
+          <div className="agency-breakdown-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Agency</th>
+                  <th>Region</th>
+                  <th>Compliance</th>
+                  <th>Status</th>
+                  <th>Total Jobs</th>
+                  <th>Completed</th>
+                  <th>Pending</th>
+                  <th>Overdue</th>
+                  <th>Total Revenue</th>
+                  <th>Avg Job Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agencyBreakdownData.agencies.map((agency) => (
+                  <tr key={agency.id}>
+                    <td>
+                      <div className="agency-info">
+                        <Link
+                          to={`/agencies/${agency.id}`}
+                          className="agency-link"
+                        >
+                          <strong>{agency.companyName}</strong>
+                        </Link>
+                        <span className="contact-person">
+                          {agency.contactPerson}
+                        </span>
+                      </div>
+                    </td>
+                    <td>{agency.region}</td>
+                    <td>
+                      <span
+                        className={`compliance-badge ${agency.compliance
+                          .toLowerCase()
+                          .replace(" ", "-")}`}
+                      >
+                        {agency.compliance}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`status-badge ${agency.status.toLowerCase()}`}
+                      >
+                        {agency.status}
+                      </span>
+                    </td>
+                    <td>{agency.jobStatistics.totalJobs}</td>
+                    <td>
+                      <span className="job-count completed">
+                        {agency.jobStatistics.completedJobs}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="job-count pending">
+                        {agency.jobStatistics.pendingJobs}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="job-count overdue">
+                        {agency.jobStatistics.overdueJobs}
+                      </span>
+                    </td>
+                    <td>
+                      ${agency.jobStatistics.totalRevenue.toLocaleString()}
+                    </td>
+                    <td>
+                      ${agency.jobStatistics.averageJobValue.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p>No agency data available</p>
+          </div>
+        )}
       </div>
     </div>
   );
+
+  const renderRevenueReport = () => {
+    if (revenueLoading) {
+      return (
+        <div className="revenue-report">
+          <div className="loading-state">
+            <RiLoader4Line className="loading-icon" />
+            <p>Loading revenue data...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (revenueError) {
+      return (
+        <div className="revenue-report">
+          <div className="error-state">
+            <p>Error: {revenueError}</p>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                setRevenueError(null);
+                setRevenueData(null);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!revenueData) {
+      return (
+        <div className="revenue-report">
+          <div className="empty-state">
+            <p>No revenue data available</p>
+          </div>
+        </div>
+      );
+    }
+
+    const { overallStatistics, agencyBreakdown } = revenueData;
+
+    return (
+      <div className="revenue-report">
+        <div className="report-header">
+          <div className="header-content">
+            <h3>Revenue Reports</h3>
+            <p>Financial performance breakdown and analysis</p>
+          </div>
+          <div className="header-actions">
+            <div className="filter-group">
+              <RiCalendarLine className="filter-icon" />
+              <select
+                value={revenueFilter}
+                onChange={(e) => setRevenueFilter(e.target.value)}
+              >
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <RiFilterLine className="filter-icon" />
+              <select
+                value={revenueBreakdown}
+                onChange={(e) => setRevenueBreakdown(e.target.value)}
+              >
+                <option value="agency">By Agency</option>
+                <option value="region">By Region</option>
+              </select>
+            </div>
+            <button className="btn-secondary">
+              <RiDownloadLine /> Export Report
+            </button>
+          </div>
+        </div>
+
+        <div className="summary-cards">
+          <div className="summary-card">
+            <div className="card-icon revenue">
+              <RiMoneyDollarCircleLine />
+            </div>
+            <div className="card-content">
+              <h4>${overallStatistics.totalRevenue.toLocaleString()}</h4>
+              <p>Total Revenue</p>
+              {getTrendIcon(overallStatistics.totalRevenue, 0)}
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon jobs">
+              <RiBarChartBoxLine />
+            </div>
+            <div className="card-content">
+              <h4>{overallStatistics.totalJobs}</h4>
+              <p>Total Jobs</p>
+              {getTrendIcon(overallStatistics.totalJobs, 0)}
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon average">
+              <RiLineChartLine />
+            </div>
+            <div className="card-content">
+              <h4>${overallStatistics.averageJobValue.toLocaleString()}</h4>
+              <p>Average Job Value</p>
+              {getTrendIcon(overallStatistics.averageJobValue, 0)}
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon growth">
+              <RiArrowUpLine />
+            </div>
+            <div className="card-content">
+              <h4>{overallStatistics.completionRate.toFixed(1)}%</h4>
+              <p>Completion Rate</p>
+              {getTrendIcon(overallStatistics.completionRate, 0)}
+            </div>
+          </div>
+        </div>
+
+        <div className="revenue-breakdown">
+          <h4>
+            Revenue Breakdown -{" "}
+            {revenueBreakdown.charAt(0).toUpperCase() +
+              revenueBreakdown.slice(1)}
+          </h4>
+          <div className="breakdown-grid">
+            {Object.entries(groupedRevenue).map(([key, data]) => (
+              <div key={key} className="breakdown-card">
+                <div className="breakdown-header">
+                  <h5>{key}</h5>
+                  <span className="revenue-amount">
+                    ${data.amount.toLocaleString()}
+                  </span>
+                </div>
+                <div className="breakdown-stats">
+                  <div className="stat">
+                    <span className="stat-label">Total Jobs</span>
+                    <span>{data.jobCount}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Completed</span>
+                    <span>{data.completedJobs}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Revenue</span>
+                    <span>${data.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderPerformanceReport = () => (
     <div className="performance-report">

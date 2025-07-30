@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppSelector } from "../../store";
 import { Sidebar } from "../Sidebar";
-import { RiMenuLine, RiCloseLine } from "react-icons/ri";
+import TopNavbar from "../TopNavbar";
 import "./AppLayout.scss";
 
 interface AppLayoutProps {
@@ -28,29 +28,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <div className="app-layout">
       {/* Top Navigation Bar */}
-      <header className="top-navbar">
-        <div className="navbar-content">
-          <div className="navbar-left">
-            <button
-              className="mobile-menu-button"
-              onClick={toggleSidebar}
-              aria-label="Toggle sidebar"
-            >
-              {sidebarOpen ? (
-                <RiCloseLine size={24} />
-              ) : (
-                <RiMenuLine size={24} />
-              )}
-            </button>
-            <div className="app-logo">
-              <h2>RentalEase</h2>
-            </div>
-          </div>
-          <div className="navbar-right">
-            <span className="user-role">{userType}</span>
-          </div>
-        </div>
-      </header>
+      <TopNavbar onMobileMenuClick={toggleSidebar} />
 
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />

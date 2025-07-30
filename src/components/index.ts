@@ -33,6 +33,7 @@ export { default as PropertyErrorAlert } from "./PropertyErrorAlert";
 export { default as PropertyModals } from "./PropertyModals";
 export { AgencyCard } from "./AgencyCard";
 export { LoginForm } from "./LoginForm";
+export { default as NotificationBell } from "./NotificationBell";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { RiNotification3Line, RiCloseLine } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   fetchNotifications,
@@ -20,6 +21,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
   onNotificationClick,
 }) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { notifications, unreadCount, loading, loadingUnreadCount } =
     useAppSelector((state) => state.notifications);
 
@@ -58,8 +60,15 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
       dispatch(markNotificationAsRead(notification.id));
       dispatch(decrementUnreadCount());
     }
+
+    // Navigate to job details if jobId is available
+    if (notification.data?.jobId) {
+      navigate(`/jobs/${notification.data.jobId}`);
+    }
+
     onNotificationClick?.(notification);
     setIsOpen(false);
+    console.log("Notification clicked:", notification);
   };
 
   const handleMarkAllRead = () => {

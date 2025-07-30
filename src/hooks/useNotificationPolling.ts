@@ -4,7 +4,7 @@ import { fetchUnreadCount } from "../store/notificationSlice";
 
 export const useNotificationPolling = (intervalMs: number = 30000) => {
   const dispatch = useAppDispatch();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<any>(null);
 
   useEffect(() => {
     // Initial fetch

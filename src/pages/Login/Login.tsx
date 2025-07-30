@@ -2,6 +2,7 @@ import {
   RiUser3Line,
   RiShieldUserLine,
   RiArrowRightLine,
+  RiToolsLine,
 } from "react-icons/ri";
 import { Link } from "react-router-dom";
 import "./Login.scss";
@@ -47,6 +48,21 @@ const Login = () => {
               <h3>Admin Login</h3>
               <p>
                 Access admin panel, manage users, and oversee system operations
+              </p>
+            </div>
+            <div className="option-arrow">
+              <RiArrowRightLine />
+            </div>
+          </Link>
+
+          <Link to="/login/technician" className="login-option-card">
+            <div className="option-icon technician">
+              <RiToolsLine />
+            </div>
+            <div className="option-content">
+              <h3>Technician Login</h3>
+              <p>
+                Access technician portal, manage jobs, and update work status
               </p>
             </div>
             <div className="option-arrow">

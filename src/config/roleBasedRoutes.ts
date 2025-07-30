@@ -6,6 +6,7 @@ export const defaultRoutes: Record<UserType, string> = {
   agency: "/dashboard",
   staff: "/staff",
   tenant: "/tenant",
+  technician: "/technicianDashboard",
 };
 
 // Define the allowed routes for each user type
@@ -22,6 +23,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
   agency: ["dashboard", "properties", "contacts", "reports"],
   staff: ["dashboard", "jobs", "contacts"],
   tenant: ["dashboard", "contacts"],
+  technician: ["dashboard", "jobs", "technician", "technicianDashboard"],
 };
 
 // Helper function to get the base route for a user type

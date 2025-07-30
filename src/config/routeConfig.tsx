@@ -6,7 +6,16 @@ import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
-const Staff = lazy(() => import("../pages/Technician/Technician"));
+const Technician = lazy(() => import("../pages/Technician/Technician"));
+const TechnicianDashboard = lazy(
+  () => import("../pages/TechnicianDashboard/TechnicianDashboard")
+);
+const StaffDashboard = lazy(
+  () => import("../pages/StaffDashboard/StaffDashboard")
+);
+const TenantDashboard = lazy(
+  () => import("../pages/TenantDashboard/TenantDashboard")
+);
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const Contacts = lazy(
   () => import("../pages/ContactsCommunication/ContactsCommunication")
@@ -34,14 +43,16 @@ export const routeConfig = (userType: UserType) => {
     dashboard: Dashboard,
     properties: Properties,
     jobs: Jobs,
-    technician: Staff,
-    staff: Staff,
+    technician: Technician,
+    staff: StaffDashboard,
+    tenant: TenantDashboard,
     agencies: Agencies,
     contacts: Contacts,
     reports: Reports,
     region: RegionManagement,
     compliance: PropertyCompliance,
     payment: PaymentProperty,
+    technicianDashboard: TechnicianDashboard,
   };
 
   // Generate routes based on user permissions

@@ -3,10 +3,78 @@
     margin-bottom: 2rem;
 
     .header-content {
-      h1 {
-        font-size: 1.75rem;
-        color: #1e293b;
-        margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .header-info {
+        flex: 1;
+
+        h1 {
+          font-size: 1.75rem;
+          color: #1e293b;
+          margin: 0 0 0.5rem 0;
+        }
+
+        p {
+          color: #64748b;
+          margin: 0 0 0.5rem 0;
+
+          &.current-path {
+            font-size: 0.875rem;
+            color: #94a3b8;
+
+            code {
+              background: #f1f5f9;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-family: monospace;
+              font-size: 0.8rem;
+            }
+          }
+        }
+      }
+
+      .dashboard-logout-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+
+        &:hover {
+          background: #fee2e2;
+          border-color: #fca5a5;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        svg {
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+          padding: 0.5rem 1rem;
+          font-size: 0.8rem;
+
+          span {
+            display: none;
+          }
+        }
       }
     }
   }

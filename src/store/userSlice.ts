@@ -2,7 +2,12 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 // Define the different user types
-export type UserType = "super_user" | "agency" | "staff" | "tenant";
+export type UserType =
+  | "super_user"
+  | "agency"
+  | "staff"
+  | "tenant"
+  | "technician";
 
 // Define the user state interface
 export interface UserState {

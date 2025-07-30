@@ -80,6 +80,11 @@ export interface BackendLoginResponse {
       name: string;
       email: string;
     };
+    technician?: {
+      id: string;
+      name: string;
+      email: string;
+    };
     token: string;
   };
 }
@@ -101,6 +106,7 @@ class AuthService {
       staff: "staff",
       tenant: "tenant",
       agent: "agency", // Agents are now mapped to agency type
+      technician: "technician",
     };
 
     return typeMapping[backendType] || "staff"; // Default to staff if unknown
@@ -120,6 +126,8 @@ class AuthService {
 
       if (userType === "agent" || userType === "propertyManager") {
         endpoint = "/v1/agency/auth/login";
+      } else if (userType === "technician") {
+        endpoint = "/v1/technician/auth/login";
       }
 
       const response = await api.post<BackendLoginResponse>(endpoint, {
@@ -170,6 +178,9 @@ class AuthService {
         } else if (responseData.tenant) {
           user = responseData.tenant;
           mappedUserType = this.mapUserType("tenant");
+        } else if (responseData.technician) {
+          user = responseData.technician;
+          mappedUserType = this.mapUserType("technician");
         }
 
         if (!user) {

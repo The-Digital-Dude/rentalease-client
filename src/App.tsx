@@ -15,7 +15,13 @@ import { AppLayout } from "./components";
 import "./App.css";
 
 // Import pages
-import { Login, AdminLogin, AgentLogin, PasswordReset } from "./pages/Login";
+import {
+  Login,
+  AdminLogin,
+  AgentLogin,
+  TechnicianLogin,
+  PasswordReset,
+} from "./pages/Login";
 import PropertyProfile from "./pages/PropertyProfile";
 import AgencyProfile from "./pages/AgencyProfile";
 import JobProfile from "./pages/JobProfile";
@@ -60,7 +66,8 @@ const App = () => {
       userType &&
       (location.pathname === "/login" ||
         location.pathname === "/login/admin" ||
-        location.pathname === "/login/agent") &&
+        location.pathname === "/login/agent" ||
+        location.pathname === "/login/technician") &&
       !location.pathname.startsWith("/password-reset")
     ) {
       const dashboardPath = userType
@@ -81,6 +88,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/login/admin" element={<AdminLogin />} />
           <Route path="/login/agent" element={<AgentLogin />} />
+          <Route path="/login/technician" element={<TechnicianLogin />} />
           <Route path="/password-reset" element={<PasswordReset />} />
 
           {/* Protected Routes */}

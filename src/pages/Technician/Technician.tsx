@@ -36,6 +36,7 @@ interface CreateTechnicianFormData {
   confirmPassword: string;
   experience: string;
   availabilityStatus: string;
+  status: string;
   maxJobs: string;
   address: {
     street: string;
@@ -76,6 +77,7 @@ const TechnicianPage = () => {
     confirmPassword: "",
     experience: "",
     availabilityStatus: "Available",
+    status: "Active",
     maxJobs: "4",
     address: {
       street: "",
@@ -293,6 +295,7 @@ const TechnicianPage = () => {
       confirmPassword: "",
       experience: "",
       availabilityStatus: "Available",
+      status: "Active",
       maxJobs: "4",
       address: {
         street: "",
@@ -316,6 +319,7 @@ const TechnicianPage = () => {
       confirmPassword: "",
       experience: technician.experience.toString(),
       availabilityStatus: technician.availabilityStatus,
+      status: technician.status,
       maxJobs: technician.maxJobs.toString(),
       address: {
         street: technician.address.street || "",
@@ -366,6 +370,7 @@ const TechnicianPage = () => {
             ? parseInt(formData.experience)
             : undefined,
           availabilityStatus: formData.availabilityStatus,
+          status: formData.status,
           maxJobs: parseInt(formData.maxJobs),
           address: formData.address,
         };
@@ -394,6 +399,7 @@ const TechnicianPage = () => {
           password: formData.password,
           experience: formData.experience ? parseInt(formData.experience) : 0,
           availabilityStatus: formData.availabilityStatus,
+          status: formData.status,
           maxJobs: parseInt(formData.maxJobs),
           address: {
             street: formData.address.street || undefined,
@@ -908,6 +914,20 @@ const TechnicianPage = () => {
                   {status}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Account Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Suspended">Suspended</option>
+              <option value="Pending">Pending</option>
             </select>
           </div>
 

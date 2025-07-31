@@ -4,9 +4,9 @@ import type { UserType } from "../store/userSlice";
 export const defaultRoutes: Record<UserType, string> = {
   super_user: "/dashboard",
   agency: "/dashboard",
-  staff: "/staff",
-  tenant: "/tenant",
-  technician: "/technicianDashboard",
+  staff: "/dashboard",
+  tenant: "/dashboard",
+  technician: "/dashboard",
 };
 
 // Define the allowed routes for each user type
@@ -24,14 +24,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
   agency: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
   staff: ["dashboard", "devDashboard", "jobs", "contacts"],
   tenant: ["dashboard", "devDashboard", "contacts"],
-  technician: [
-    "dashboard",
-    "devDashboard",
-    "jobs",
-    "technician",
-    "technicianDashboard",
-    "availableJobs",
-  ],
+  technician: ["devDashboard", "dashboard", "jobs", "availableJobs"],
 };
 
 // Helper function to get the base route for a user type

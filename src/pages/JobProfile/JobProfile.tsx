@@ -795,68 +795,28 @@ const JobProfile: React.FC = () => {
             {technician ? (
               <div className="technician-details">
                 <div className="technician-card">
-                  <h3>Technician Profile</h3>
+                  <h3>Technician Details</h3>
                   <div className="technician-info">
                     <div className="technician-item">
                       <RiUser3Line />
                       <div>
                         <label>Name</label>
-                        <span>{technician.firstName}</span>
+                        <span>{technician.firstName} {technician.lastName}</span>
                       </div>
                     </div>
                     <div className="technician-item">
-                      <RiCheckboxCircleLine />
-                      <div>
-                        <label>Availability</label>
-                        <span
-                          className={`status-badge ${getStatusBadgeClass(
-                            technician.availabilityStatus
-                          )}`}
-                        >
-                          {technician.availabilityStatus}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="technician-item">
-                      <RiTimeLine />
-                      <div>
-                        <label>Current Jobs</label>
-                        <span>{technician.currentJobs}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="technician-card">
-                  <h3>Contact Information</h3>
-                  <div className="contact-info">
-                    <div className="contact-item">
                       <RiMailLine />
                       <div>
                         <label>Email</label>
                         <span>{technician.email}</span>
                       </div>
                     </div>
-                    <div className="contact-item">
+                    <div className="technician-item">
                       <RiPhoneLine />
                       <div>
                         <label>Phone</label>
                         <span>{technician.phone}</span>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="technician-card">
-                  <h3>Work Details</h3>
-                  <div className="work-info">
-                    <div className="work-item">
-                      <label>Hourly Rate</label>
-                      <span>${technician.hourlyRate}/hr</span>
-                    </div>
-                    <div className="work-item">
-                      <label>Current Jobs</label>
-                      <span>{technician.currentJobs}</span>
                     </div>
                   </div>
                 </div>
@@ -867,7 +827,7 @@ const JobProfile: React.FC = () => {
                     className="btn-primary"
                   >
                     <RiEyeLine />
-                    View Technician Profile
+                    View Technician Details
                   </button>
                 </div>
               </div>

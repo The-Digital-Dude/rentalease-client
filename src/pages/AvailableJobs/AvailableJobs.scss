@@ -679,78 +679,84 @@
   }
 
   .summary-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
 
-    .summary-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+      .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
 
-      strong {
-        color: #374151;
-        font-weight: 600;
-        font-size: 0.875rem;
-      }
-
-      .priority-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-        margin-top: 0.25rem;
-
-        &.danger {
-          background: #fef2f2;
-          color: #dc2626;
-          border: 1px solid #fecaca;
+        &.full-width {
+          grid-column: 1 / -1;
         }
 
-        &.warning {
-          background: #fffbeb;
-          color: #d97706;
-          border: 1px solid #fed7aa;
+        strong {
+          color: #374151;
+          font-weight: 600;
+          font-size: 0.875rem;
         }
 
-        &.success {
-          background: #f0fdf4;
-          color: #16a34a;
-          border: 1px solid #bbf7d0;
-        }
-
-        &.secondary {
-          background: #f1f5f9;
-          color: #64748b;
-          border: 1px solid #cbd5e1;
-        }
-      }
-
-      .address-summary {
-        color: #4b5563;
-        font-size: 0.875rem;
-        line-height: 1.4;
-
-        .full-address {
+        .priority-badge {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
           margin-top: 0.25rem;
-          color: #6b7280;
-          font-size: 0.8rem;
-          font-style: italic;
-        }
-      }
 
-      .notes-summary {
-        color: #4b5563;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        background: #f9fafb;
-        padding: 0.75rem;
-        border-radius: 6px;
-        border-left: 3px solid #3b82f6;
-        margin-top: 0.25rem;
+          &.danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+          }
+
+          &.warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+          }
+
+          &.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+          }
+
+          &.secondary {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+          }
+        }
+
+        .address-summary {
+          color: #4b5563;
+          font-size: 0.875rem;
+          line-height: 1.4;
+
+          .full-address {
+            margin-top: 0.25rem;
+            color: #6b7280;
+            font-size: 0.8rem;
+            font-style: italic;
+          }
+        }
+
+        .notes-summary {
+          color: #4b5563;
+          font-size: 0.875rem;
+          line-height: 1.5;
+          background: #f9fafb;
+          padding: 0.75rem;
+          border-radius: 6px;
+          border-left: 3px solid #3b82f6;
+          margin-top: 0.25rem;
+        }
       }
     }
   }

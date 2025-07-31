@@ -57,7 +57,6 @@ export const routeConfig = (userType: UserType) => {
     region: RegionManagement,
     compliance: PropertyCompliance,
     payment: PaymentProperty,
-    technicianDashboard: TechnicianDashboard,
     availableJobs: AvailableJobs,
   };
 

@@ -293,53 +293,55 @@ const AvailableJobs = () => {
         </div>
 
         <div className="summary-content">
-          <div className="summary-item">
-            <strong>Job Type:</strong> {job.jobType}
-          </div>
-
-          <div className="summary-item">
-            <strong>Priority:</strong>
-            <span
-              className={`priority-badge ${getPriorityColor(job.priority)}`}
-            >
-              {job.priority}
-            </span>
-          </div>
-
-          <div className="summary-item">
-            <strong>Property Address:</strong>
-            <div className="address-summary">
-              {job.propertyAddress}
-              {job.propertyStreet && (
-                <div className="full-address">
-                  {job.propertyStreet}, {job.propertySuburb} {job.propertyState}{" "}
-                  {job.propertyPostcode}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="summary-item">
-            <strong>Property Type:</strong> {job.propertyType}
-          </div>
-
-          <div className="summary-item">
-            <strong>Due Date:</strong>{" "}
-            {new Date(job.dueDate).toLocaleDateString()}
-          </div>
-
-          {job.agencyName && (
+          <div className="summary-grid">
             <div className="summary-item">
-              <strong>Agency:</strong> {job.agencyName}
+              <strong>Job Type:</strong> {job.jobType}
             </div>
-          )}
 
-          {job.notes && (
             <div className="summary-item">
-              <strong>Notes:</strong>
-              <div className="notes-summary">{job.notes}</div>
+              <strong>Priority:</strong>
+              <span
+                className={`priority-badge ${getPriorityColor(job.priority)}`}
+              >
+                {job.priority}
+              </span>
             </div>
-          )}
+
+            <div className="summary-item full-width">
+              <strong>Property Address:</strong>
+              <div className="address-summary">
+                {job.propertyAddress}
+                {job.propertyStreet && (
+                  <div className="full-address">
+                    {job.propertyStreet}, {job.propertySuburb}{" "}
+                    {job.propertyState} {job.propertyPostcode}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="summary-item">
+              <strong>Property Type:</strong> {job.propertyType}
+            </div>
+
+            <div className="summary-item">
+              <strong>Due Date:</strong>{" "}
+              {new Date(job.dueDate).toLocaleDateString()}
+            </div>
+
+            {job.agencyName && (
+              <div className="summary-item">
+                <strong>Agency:</strong> {job.agencyName}
+              </div>
+            )}
+
+            {job.notes && (
+              <div className="summary-item full-width">
+                <strong>Notes:</strong>
+                <div className="notes-summary">{job.notes}</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -386,6 +388,7 @@ const AvailableJobs = () => {
         confirmText="Yes, Claim Job"
         cancelText="No, Cancel"
         confirmButtonType="primary"
+        size="large"
       />
 
       <div className="page-header">

@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   confirmButtonType?: "primary" | "danger";
+  size?: "small" | "medium" | "large";
 }
 
 const ConfirmationModal = ({
@@ -22,6 +23,7 @@ const ConfirmationModal = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmButtonType = "primary",
+  size = "medium",
 }: ConfirmationModalProps) => {
   const handleConfirm = () => {
     onConfirm();
@@ -29,7 +31,7 @@ const ConfirmationModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="small">
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size={size}>
       <div className="confirmation-modal">
         <div className="confirmation-message">
           {typeof message === "string" ? <p>{message}</p> : message}

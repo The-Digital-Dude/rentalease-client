@@ -1006,6 +1006,8 @@
 // Enhanced technician card details
 .technician-card {
   .technician-details {
+    display: flex;
+    flex-direction: column;
     .contact-info {
       font-family: monospace;
       font-size: 0.9rem;

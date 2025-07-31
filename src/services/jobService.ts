@@ -501,6 +501,45 @@ class JobService {
   }
 
   /**
+   * Claim a job as a technician
+   */
+  async claimJob(jobId: string): Promise<JobApiResponse> {
+    try {
+      const response: AxiosResponse<{
+        status: string;
+        message: string;
+        data: {
+          job: Job;
+          technician: {
+            id: string;
+            fullName: string;
+            currentJobs: number;
+            availabilityStatus: string;
+          };
+        };
+      }> = await api.patch(`/v1/jobs/${jobId}/claim`);
+
+      if (response.data.status === "success") {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data, // Return both job and technician data
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || "Failed to claim job",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to claim job",
+      };
+    }
+  }
+
+  /**
    * Get available jobs with comprehensive filtering
    */
   async getAvailableJobs(filters?: {

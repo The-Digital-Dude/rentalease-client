@@ -47,6 +47,7 @@ interface AvailableJobsState {
   error: string | null;
   filters: AvailableJobFilters;
   totalJobs: number;
+  claimingJobs: Record<string, boolean>; // Track which jobs are being claimed
 }
 
 // Initial state
@@ -63,6 +64,7 @@ const initialState: AvailableJobsState = {
     selectedStatus: "all",
   },
   totalJobs: 0,
+  claimingJobs: {},
 };
 
 // Async thunk to fetch available jobs
@@ -157,13 +159,17 @@ export const claimJob = createAsyncThunk(
   "availableJobs/claimJob",
   async (jobId: string, { rejectWithValue }) => {
     try {
-      // For now, just log the claim action
-      console.log(`Claiming job ${jobId}`);
+      const response = await jobService.claimJob(jobId);
 
-      // TODO: Implement actual job claiming API call
-      // const response = await jobService.assignJob(jobId, technicianId);
-
-      return { jobId };
+      if (response.success && response.data) {
+        return {
+          jobId,
+          message: response.message,
+          data: response.data,
+        };
+      } else {
+        return rejectWithValue(response.message || "Failed to claim job");
+      }
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to claim job");
     }
@@ -282,12 +288,15 @@ const availableJobsSlice = createSlice({
         state.error = action.payload as string;
       })
       // Claim job
-      .addCase(claimJob.pending, (state) => {
-        state.loading = true;
+      .addCase(claimJob.pending, (state, action) => {
+        // Set loading state for specific job
+        state.claimingJobs[action.meta.arg] = true;
         state.error = null;
       })
       .addCase(claimJob.fulfilled, (state, action) => {
-        state.loading = false;
+        // Remove loading state for specific job
+        delete state.claimingJobs[action.payload.jobId];
+
         // Remove the claimed job from the list
         state.jobs = state.jobs.filter(
           (job) => job.id !== action.payload.jobId
@@ -296,9 +305,13 @@ const availableJobsSlice = createSlice({
           (job) => job.id !== action.payload.jobId
         );
         state.totalJobs = state.jobs.length;
+        state.error = null;
       })
       .addCase(claimJob.rejected, (state, action) => {
-        state.loading = false;
+        // Remove loading state for specific job
+        if (action.meta.arg) {
+          delete state.claimingJobs[action.meta.arg];
+        }
         state.error = action.payload as string;
       });
   },

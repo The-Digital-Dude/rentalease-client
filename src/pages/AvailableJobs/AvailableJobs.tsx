@@ -10,6 +10,7 @@ import {
   RiUserAddLine,
   RiFilterLine,
   RiCloseLine,
+  RiLoader4Line,
 } from "react-icons/ri";
 import { useAppSelector, useAppDispatch } from "../../store";
 import {
@@ -19,15 +20,31 @@ import {
   clearFilters,
   type AvailableJob,
 } from "../../store/availableJobsSlice";
+import Toast from "../../components/Toast";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import "./AvailableJobs.scss";
 
 const AvailableJobs = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
-  const { filteredJobs, loading, error, filters, totalJobs } = useAppSelector(
-    (state) => state.availableJobs
-  );
+  const { filteredJobs, loading, error, filters, totalJobs, claimingJobs } =
+    useAppSelector((state) => state.availableJobs);
+
+  // Toast notification state
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
+
+  // Confirmation modal state
+  const [showClaimConfirmation, setShowClaimConfirmation] = useState(false);
+  const [jobToClaim, setJobToClaim] = useState<AvailableJob | null>(null);
 
   // Local state for form inputs
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
@@ -81,13 +98,58 @@ const AvailableJobs = () => {
     selectedPropertyType,
   ]);
 
-  const handleClaimJob = async (jobId: string) => {
+  const handleClaimJobClick = (job: AvailableJob) => {
+    setJobToClaim(job);
+    setShowClaimConfirmation(true);
+  };
+
+  const handleConfirmClaim = async () => {
+    if (!jobToClaim) return;
+
     try {
-      await dispatch(claimJob(jobId)).unwrap();
-      console.log(`Job ${jobId} claimed successfully`);
-    } catch (error) {
+      const result = await dispatch(claimJob(jobToClaim.id)).unwrap();
+
+      // Show success toast
+      setToast({
+        message: result.message || "Job claimed successfully!",
+        type: "success",
+        isVisible: true,
+      });
+
+      console.log(`Job ${jobToClaim.id} claimed successfully`);
+    } catch (error: any) {
+      // Show error toast
+      setToast({
+        message: error || "Failed to claim job",
+        type: "error",
+        isVisible: true,
+      });
+
       console.error("Failed to claim job:", error);
+    } finally {
+      setShowClaimConfirmation(false);
+      setJobToClaim(null);
     }
+  };
+
+  const handleCancelClaim = () => {
+    setShowClaimConfirmation(false);
+    setJobToClaim(null);
+  };
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" | "warning" | "info"
+  ) => {
+    setToast({
+      message,
+      type,
+      isVisible: true,
+    });
+  };
+
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
   };
 
   const handleViewJob = (jobId: string) => {
@@ -174,12 +236,6 @@ const AvailableJobs = () => {
             </div>
           )}
 
-          {job.description && (
-            <div className="job-description">
-              <p>{job.description}</p>
-            </div>
-          )}
-
           <div className="job-meta">
             <div className="job-property-type">
               <span className="property-type-badge">{job.propertyType}</span>
@@ -209,12 +265,81 @@ const AvailableJobs = () => {
           </button>
           <button
             className="btn btn-primary"
-            onClick={() => handleClaimJob(job.id)}
-            disabled={loading}
+            onClick={() => handleClaimJobClick(job)}
+            disabled={claimingJobs[job.id] || loading}
           >
-            <RiUserAddLine />
-            Claim Job
+            {claimingJobs[job.id] ? (
+              <>
+                <RiLoader4Line className="spinner" />
+                Claiming...
+              </>
+            ) : (
+              <>
+                <RiUserAddLine />
+                Claim Job
+              </>
+            )}
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderJobSummary = (job: AvailableJob) => {
+    return (
+      <div className="job-summary">
+        <div className="summary-header">
+          <h4>Job Summary</h4>
+        </div>
+
+        <div className="summary-content">
+          <div className="summary-item">
+            <strong>Job Type:</strong> {job.jobType}
+          </div>
+
+          <div className="summary-item">
+            <strong>Priority:</strong>
+            <span
+              className={`priority-badge ${getPriorityColor(job.priority)}`}
+            >
+              {job.priority}
+            </span>
+          </div>
+
+          <div className="summary-item">
+            <strong>Property Address:</strong>
+            <div className="address-summary">
+              {job.propertyAddress}
+              {job.propertyStreet && (
+                <div className="full-address">
+                  {job.propertyStreet}, {job.propertySuburb} {job.propertyState}{" "}
+                  {job.propertyPostcode}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="summary-item">
+            <strong>Property Type:</strong> {job.propertyType}
+          </div>
+
+          <div className="summary-item">
+            <strong>Due Date:</strong>{" "}
+            {new Date(job.dueDate).toLocaleDateString()}
+          </div>
+
+          {job.agencyName && (
+            <div className="summary-item">
+              <strong>Agency:</strong> {job.agencyName}
+            </div>
+          )}
+
+          {job.notes && (
+            <div className="summary-item">
+              <strong>Notes:</strong>
+              <div className="notes-summary">{job.notes}</div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -233,6 +358,36 @@ const AvailableJobs = () => {
 
   return (
     <div className="available-jobs">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+        duration={5000}
+      />
+
+      {/* Confirmation Modal for Job Claiming */}
+      <ConfirmationModal
+        isOpen={showClaimConfirmation}
+        onClose={handleCancelClaim}
+        onConfirm={handleConfirmClaim}
+        title="Confirm Job Claim"
+        message={
+          jobToClaim ? (
+            <>
+              <p>Are you sure you want to claim this job?</p>
+              {renderJobSummary(jobToClaim)}
+            </>
+          ) : (
+            "Are you sure you want to claim this job?"
+          )
+        }
+        confirmText="Yes, Claim Job"
+        cancelText="No, Cancel"
+        confirmButtonType="primary"
+      />
+
       <div className="page-header">
         <div className="header-content">
           <h1>Available Jobs</h1>
@@ -279,32 +434,23 @@ const AvailableJobs = () => {
         </div>
 
         <div className="filter-controls">
-          <div className="date-filter">
+          {/* <div className="date-range-filter">
             <RiCalendarLine />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              placeholder="Created Date"
-            />
-          </div>
-
-          <div className="date-range-filter">
-            <RiCalendarLine />
+            <b>From</b>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               placeholder="Start Date"
             />
-            <span>to</span>
+            <b>to</b>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               placeholder="End Date"
             />
-          </div>
+          </div> */}
 
           <div className="priority-filter">
             <RiFilterLine />
@@ -333,33 +479,6 @@ const AvailableJobs = () => {
               <option value="Repairs">Repairs</option>
               <option value="Pool Safety">Pool Safety</option>
               <option value="Routine Inspection">Routine Inspection</option>
-            </select>
-          </div>
-
-          <div className="region-filter">
-            <RiFilterLine />
-            <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-            >
-              <option value="all">All Regions</option>
-              <option value="North">North</option>
-              <option value="South">South</option>
-              <option value="East">East</option>
-              <option value="West">West</option>
-            </select>
-          </div>
-
-          <div className="property-type-filter">
-            <RiFilterLine />
-            <select
-              value={selectedPropertyType}
-              onChange={(e) => setSelectedPropertyType(e.target.value)}
-            >
-              <option value="all">All Property Types</option>
-              <option value="Residential">Residential</option>
-              <option value="Commercial">Commercial</option>
-              <option value="Industrial">Industrial</option>
             </select>
           </div>
 

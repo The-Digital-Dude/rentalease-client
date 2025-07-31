@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import Modal from "../Modal";
 import "./ConfirmationModal.scss";
 
@@ -6,7 +7,7 @@ interface ConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message: string;
+  message: string | ReactNode;
   confirmText?: string;
   cancelText?: string;
   confirmButtonType?: "primary" | "danger";
@@ -31,7 +32,7 @@ const ConfirmationModal = ({
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="small">
       <div className="confirmation-modal">
         <div className="confirmation-message">
-          <p>{message}</p>
+          {typeof message === "string" ? <p>{message}</p> : message}
         </div>
 
         <div className="confirmation-actions">

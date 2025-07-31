@@ -34,6 +34,7 @@ export { default as PropertyModals } from "./PropertyModals";
 export { AgencyCard } from "./AgencyCard";
 export { LoginForm } from "./LoginForm";
 export { default as NotificationBell } from "./NotificationBell";
+export { default as Toast } from "./Toast";
 
 // Export types
 export type { TabItem } from "./TabNavigation";
@@ -41,3 +42,4 @@ export type { FilterOption, FilterConfig } from "./SearchFilterBar";
 export type { Payment } from "./PaymentCard";
 export type { PropertyBilling } from "./BillingCard";
 export type { Property } from "./PropertyCard";
+export type { ToastProps } from "./Toast";

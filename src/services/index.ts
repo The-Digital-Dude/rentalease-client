@@ -3,7 +3,26 @@ export { default as authService } from "./authService";
 export { default as jobService } from "./jobService";
 export { agencyService } from "./agencyService";
 export { default as technicianService } from "./technicianService";
+export { default as staffService } from "./staffService";
 export { notificationService } from "./notificationService";
+
+// Re-export types from jobService
+export type {
+  Job,
+  CreateJobData,
+  UpdateJobData,
+  JobFilters,
+  JobApiResponse,
+} from "./jobService";
+
+// Re-export types from staffService
+export type {
+  Staff,
+  StaffFilters,
+  CreateStaffData,
+  UpdateStaffData,
+  StaffApiResponse,
+} from "./staffService";
 
 // Technician-related types
 export interface Technician {

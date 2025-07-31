@@ -1,0 +1,75 @@
+.my-jobs-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .page-header {
+    margin-bottom: 32px;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .header-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        border-radius: 12px;
+        color: white;
+        font-size: 1.5rem;
+      }
+
+      .header-text {
+        h1 {
+          margin: 0 0 4px 0;
+          font-size: 2rem;
+          font-weight: 700;
+          color: #111827;
+        }
+
+        p {
+          margin: 0;
+          color: #6b7280;
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  .page-content {
+    // The TechnicianJobTable component handles its own styling
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .my-jobs-page {
+    padding: 16px;
+
+    .page-header {
+      margin-bottom: 24px;
+
+      .header-content {
+        .header-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1.25rem;
+        }
+
+        .header-text {
+          h1 {
+            font-size: 1.5rem;
+          }
+
+          p {
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+  }
+}

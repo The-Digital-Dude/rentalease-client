@@ -24,7 +24,14 @@ export const allowedRoutes: Record<UserType, string[]> = {
   agency: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
   staff: ["dashboard", "devDashboard", "jobs", "contacts"],
   tenant: ["dashboard", "devDashboard", "contacts"],
-  technician: ["devDashboard", "dashboard", "availableJobs"],
+  technician: [
+    "devDashboard",
+    "dashboard",
+    "availableJobs",
+    "myJobs",
+    "activeJobs",
+    "overdueJobs",
+  ],
 };
 
 // Helper function to get the base route for a user type

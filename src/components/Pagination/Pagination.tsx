@@ -98,7 +98,7 @@ const Pagination: React.FC<PaginationProps> = ({
           disabled={currentPage === totalPages}
           aria-label="Next page"
         >
-          <RiChevronRightLine />
+          <RiArrowRightLine />
         </button>
       </div>
     </div>

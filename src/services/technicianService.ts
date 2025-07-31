@@ -244,6 +244,125 @@ class TechnicianService {
       };
     }
   }
+
+  /**
+   * Get my jobs (all jobs assigned to the authenticated technician)
+   */
+  async getMyJobs(filters?: {
+    jobType?: string;
+    status?: string;
+    priority?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technicians/my-jobs${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to fetch my jobs",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Get active jobs (claimed by technician, not completed, not overdue)
+   */
+  async getActiveJobs(filters?: {
+    jobType?: string;
+    priority?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technicians/active-jobs${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message: error.response?.data?.message || "Failed to fetch active jobs",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Get overdue jobs (assigned to technician, due date is behind, not completed)
+   */
+  async getOverdueJobs(filters?: {
+    jobType?: string;
+    priority?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technicians/overdue-jobs${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message:
+          error.response?.data?.message || "Failed to fetch overdue jobs",
+        data: {},
+      };
+    }
+  }
 }
 
 const technicianService = new TechnicianService();

@@ -5,7 +5,27 @@ import type { AxiosResponse } from "axios";
 export interface Job {
   id: string;
   job_id: string;
-  property: string | { id: string; fullAddress: string };
+  property:
+    | string
+    | {
+        _id: string;
+        fullAddress: string;
+        address?: {
+          street: string;
+          suburb: string;
+          state: string;
+          postcode: string;
+          fullAddress: string;
+        };
+        propertyType?: string;
+        agency?: {
+          _id: string;
+          companyName: string;
+          contactPerson: string;
+          email: string;
+          phone: string;
+        };
+      };
   jobType:
     | "Gas"
     | "Electrical"
@@ -476,6 +496,98 @@ class JobService {
       return {
         success: false,
         message: error.response?.data?.message || "Failed to assign job",
+      };
+    }
+  }
+
+  /**
+   * Get available jobs with comprehensive filtering
+   */
+  async getAvailableJobs(filters?: {
+    jobType?: string;
+    status?: string;
+    priority?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    property?: string;
+    region?: string;
+    propertyType?: string;
+    minPriority?: string;
+    maxPriority?: string;
+    estimatedDuration?: number;
+    costRange?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<JobApiResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      // Add all filters
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/jobs/available-jobs${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+
+      const response: AxiosResponse<{
+        status: string;
+        message: string;
+        data: {
+          jobs: Job[];
+          pagination: {
+            currentPage: number;
+            totalPages: number;
+            totalItems: number;
+            itemsPerPage: number;
+            hasNextPage: boolean;
+            hasPrevPage: boolean;
+          };
+          statistics: {
+            statusCounts: Record<string, number>;
+            jobTypeCounts: Record<string, number>;
+            priorityCounts: Record<string, number>;
+            totalAvailableJobs: number;
+          };
+          filters: {
+            availableJobTypes: string[];
+            availableStatuses: string[];
+            availablePriorities: string[];
+            availableSortFields: string[];
+            availableSortOrders: string[];
+          };
+        };
+      }> = await api.get(url);
+
+      if (response.data.status === "success") {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data.jobs,
+          pagination: response.data.data.pagination,
+          statistics: response.data.data.statistics,
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || "Failed to fetch available jobs",
+          data: [],
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch available jobs",
+        data: [],
       };
     }
   }

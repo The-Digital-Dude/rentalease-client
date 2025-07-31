@@ -23,6 +23,7 @@ const labelMap: Record<string, string> = {
   compliance: "Compliance",
   region: "Region Management",
   login: "Login",
+  availableJobs: "Available Jobs",
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

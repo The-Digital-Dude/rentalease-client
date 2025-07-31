@@ -13,4 +13,5 @@ export { default as PropertyCompliance } from "./PropertyCompliance";
 export { default as PaymentProperty } from "./PaymentProperty";
 export { default as PropertyProfile } from "./PropertyProfile";
 export { default as JobProfile } from "./JobProfile";
+export { default as AvailableJobs } from "./AvailableJobs";
 export { Login, AgentLogin, AdminLogin, PasswordReset } from "./Login";

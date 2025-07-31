@@ -33,6 +33,9 @@ const PropertyCompliance = lazy(
 const PaymentProperty = lazy(
   () => import("../pages/PaymentProperty/PaymentProperty")
 );
+const AvailableJobs = lazy(
+  () => import("../pages/AvailableJobs/AvailableJobs")
+);
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -55,6 +58,7 @@ export const routeConfig = (userType: UserType) => {
     compliance: PropertyCompliance,
     payment: PaymentProperty,
     technicianDashboard: TechnicianDashboard,
+    availableJobs: AvailableJobs,
   };
 
   // Generate routes based on user permissions

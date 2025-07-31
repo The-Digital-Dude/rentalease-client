@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
 import notificationReducer from "./notificationSlice";
+import availableJobsReducer from "./availableJobsSlice";
 
 // Create the store with the user reducer
 export const store = configureStore({
   reducer: {
     user: userReducer,
     notifications: notificationReducer,
+    availableJobs: availableJobsReducer,
   },
 });
 

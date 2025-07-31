@@ -1,6 +1,6 @@
 .technician-dashboard {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 
   .loading-container {
@@ -44,44 +44,195 @@
 
     .stats-overview {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
       margin-bottom: 2rem;
 
       .stat-card {
         background: white;
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         border: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
         gap: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #024974, #0369a1);
+        }
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        &.primary::before {
+          background: linear-gradient(90deg, #024974, #0369a1);
+        }
+
+        &.success::before {
+          background: linear-gradient(90deg, #059669, #10b981);
+        }
+
+        &.warning::before {
+          background: linear-gradient(90deg, #d97706, #f59e0b);
+        }
+
+        &.info::before {
+          background: linear-gradient(90deg, #2563eb, #3b82f6);
+        }
+
+        &.earnings::before {
+          background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+        }
+
+        &.efficiency::before {
+          background: linear-gradient(90deg, #dc2626, #ef4444);
+        }
 
         .stat-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #024974 0%, #0369a1 100%);
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
-          font-size: 1.5rem;
+          font-size: 1.75rem;
+          flex-shrink: 0;
+
+          .primary & {
+            background: linear-gradient(135deg, #024974 0%, #0369a1 100%);
+          }
+
+          .success & {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+          }
+
+          .warning & {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+          }
+
+          .info & {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+          }
+
+          .earnings & {
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+          }
+
+          .efficiency & {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+          }
         }
 
         .stat-content {
+          flex: 1;
+
           h3 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: #1a1a1a;
             margin: 0 0 0.25rem 0;
+            line-height: 1.2;
           }
 
           p {
             color: #6b7280;
             font-size: 0.875rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 500;
+          }
+
+          .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+
+            svg {
+              font-size: 0.875rem;
+            }
+
+            .primary & {
+              color: #059669;
+            }
+
+            .success & {
+              color: #059669;
+            }
+
+            .warning & {
+              color: #dc2626;
+            }
+
+            .info & {
+              color: #2563eb;
+            }
+
+            .earnings & {
+              color: #7c3aed;
+            }
+
+            .efficiency & {
+              color: #dc2626;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .charts-section {
+    margin-bottom: 2rem;
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+
+      .chart-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .chart-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid #f3f4f6;
+
+          h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
             margin: 0;
+          }
+
+          svg {
+            color: #024974;
+            font-size: 1.25rem;
           }
         }
       }
@@ -148,19 +299,19 @@
 
       .jobs-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
         gap: 1.5rem;
 
         .job-card {
           background: white;
-          border-radius: 12px;
+          border-radius: 16px;
           padding: 1.5rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           border: 1px solid #e5e7eb;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
 
           &:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
           }
 
@@ -184,7 +335,7 @@
 
             .job-status {
               .status-badge {
-                padding: 0.25rem 0.75rem;
+                padding: 0.375rem 0.875rem;
                 border-radius: 20px;
                 font-size: 0.75rem;
                 font-weight: 600;
@@ -249,10 +400,11 @@
               display: flex;
               justify-content: space-between;
               align-items: center;
+              margin-bottom: 1rem;
 
               .job-priority {
                 .priority-badge {
-                  padding: 0.25rem 0.75rem;
+                  padding: 0.375rem 0.875rem;
                   border-radius: 20px;
                   font-size: 0.75rem;
                   font-weight: 600;
@@ -289,6 +441,41 @@
 
                 svg {
                   color: #024974;
+                }
+              }
+            }
+
+            .job-rating {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.75rem;
+              padding: 0.75rem;
+              background: #f8fafc;
+              border-radius: 8px;
+
+              svg {
+                color: #f59e0b;
+                font-size: 1rem;
+              }
+
+              span {
+                color: #374151;
+                font-weight: 600;
+                font-size: 0.875rem;
+              }
+
+              .job-feedback {
+                margin-top: 0.5rem;
+                padding-top: 0.5rem;
+                border-top: 1px solid #e5e7eb;
+
+                p {
+                  color: #6b7280;
+                  font-size: 0.75rem;
+                  font-style: italic;
+                  margin: 0;
+                  line-height: 1.4;
                 }
               }
             }
@@ -361,6 +548,16 @@
 }
 
 // Responsive design
+@media (max-width: 1200px) {
+  .technician-dashboard {
+    .charts-section {
+      .chart-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      }
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .technician-dashboard {
     padding: 1rem;
@@ -374,22 +571,33 @@
 
       .stats-overview {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
+        gap: 1rem;
 
         .stat-card {
-          padding: 1rem;
+          padding: 1.25rem;
 
           .stat-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.25rem;
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
           }
 
           .stat-content {
             h3 {
-              font-size: 1.25rem;
+              font-size: 1.5rem;
             }
           }
+        }
+      }
+    }
+
+    .charts-section {
+      .chart-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+
+        .chart-card {
+          padding: 1rem;
         }
       }
     }

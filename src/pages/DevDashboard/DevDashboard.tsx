@@ -5,14 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import type { UserType } from "../../store/userSlice";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
-import TechnicianDashboard from "../TechnicianDashboard/TechnicianDashboard";
-import TenantDashboard from "../TenantDashboard/TenantDashboard";
-import StaffDashboard from "../StaffDashboard/StaffDashboard";
-import SuperUserDashboard from "../SuperUserDashboard/SuperUserDashboard";
-import AgencyDashboard from "../AgencyDashboard/AgencyDashboard";
-import "./Dashboard.scss";
+import "./DevDashboard.scss";
 
-const Dashboard = () => {
+const DevDashboard = () => {
   const { userType } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -23,40 +18,12 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  // Render different dashboards based on user type
-  const renderDashboardContent = () => {
-    switch (userType) {
-      case "technician":
-        return <TechnicianDashboard />;
-      case "tenant":
-        return <TenantDashboard />;
-      case "staff":
-        return <StaffDashboard />;
-      case "super_user":
-        return <SuperUserDashboard />;
-      case "agency":
-        return <AgencyDashboard />;
-      default:
-        // Default dashboard for unknown user types
-        return (
-          <>
-            <div className="content-card">
-              <h3>Welcome to RentaLease</h3>
-              <p>Your property management dashboard is coming soon.</p>
-            </div>
-            <RoleDisplay />
-            <RoleTestButtons />
-          </>
-        );
-    }
-  };
-
   return (
     <div className="page-container">
       <div className="page-header">
         <div className="header-content">
           <div className="header-info">
-            <h1>Dashboard</h1>
+            <h1>DevDashboard</h1>
             <p>Overview of your property management activities</p>
             <p className="current-path">
               Current URL: <code>{currentPath}</code>
@@ -72,9 +39,15 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
-      {renderDashboardContent()}
+      <div className="content-card">
+        <h3>Welcome to RentaLease</h3>
+        <p>Your property management dashboard is coming soon.</p>
+      </div>
+
+      <RoleDisplay />
+      <RoleTestButtons />
     </div>
   );
 };
 
-export default Dashboard;
+export default DevDashboard;

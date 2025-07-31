@@ -11,6 +11,7 @@ interface SidebarProps {
 
 const labelMap: Record<string, string> = {
   dashboard: "Dashboard",
+  devDashboard: "DevDashboard",
   agencies: "Agencies",
   jobs: "Jobs",
   properties: "Properties",

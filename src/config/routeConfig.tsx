@@ -4,6 +4,7 @@ import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 
 // Lazy load components
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
+const DevDashboard = lazy(() => import("../pages/DevDashboard/DevDashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
 const Technician = lazy(() => import("../pages/Technician/Technician"));
@@ -41,6 +42,7 @@ export const routeConfig = (userType: UserType) => {
   // Base route components mapping
   const routeComponents: Record<string, React.ComponentType> = {
     dashboard: Dashboard,
+    devDashboard: DevDashboard,
     properties: Properties,
     jobs: Jobs,
     technician: Technician,

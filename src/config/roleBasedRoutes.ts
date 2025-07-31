@@ -13,6 +13,7 @@ export const defaultRoutes: Record<UserType, string> = {
 export const allowedRoutes: Record<UserType, string[]> = {
   super_user: [
     "dashboard",
+    "devDashboard",
     "agencies",
     "properties",
     "jobs",
@@ -20,10 +21,16 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "staff",
     "reports",
   ],
-  agency: ["dashboard", "properties", "contacts", "reports"],
-  staff: ["dashboard", "jobs", "contacts"],
-  tenant: ["dashboard", "contacts"],
-  technician: ["dashboard", "jobs", "technician", "technicianDashboard"],
+  agency: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
+  staff: ["dashboard", "devDashboard", "jobs", "contacts"],
+  tenant: ["dashboard", "devDashboard", "contacts"],
+  technician: [
+    "dashboard",
+    "devDashboard",
+    "jobs",
+    "technician",
+    "technicianDashboard",
+  ],
 };
 
 // Helper function to get the base route for a user type

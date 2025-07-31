@@ -25,6 +25,7 @@ import {
 import PropertyProfile from "./pages/PropertyProfile";
 import AgencyProfile from "./pages/AgencyProfile";
 import JobProfile from "./pages/JobProfile";
+import DevDashboard from "./pages/DevDashboard";
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -90,6 +91,9 @@ const App = () => {
           <Route path="/login/agent" element={<AgentLogin />} />
           <Route path="/login/technician" element={<TechnicianLogin />} />
           <Route path="/password-reset" element={<PasswordReset />} />
+
+          {/* DevDashboard Route - Accessible to all users */}
+          <Route path="/dev-dashboard" element={<DevDashboard />} />
 
           {/* Protected Routes */}
           {userRoutes.map((route) => (

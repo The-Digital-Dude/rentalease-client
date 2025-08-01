@@ -1,34 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  RiArrowLeftLine,
-  RiEditLine,
-  RiToolsLine,
-  RiUser3Line,
-  RiShieldCheckLine,
-  RiMapPinLine,
-  RiPhoneLine,
-  RiMailLine,
-  RiCalendarLine,
-  RiMoneyDollarBoxLine,
-  RiFileListLine,
-  RiEyeLine,
-  RiBuildingLine,
-  RiTeamLine,
-  RiCheckboxCircleLine,
-  RiTimeLine,
-  RiAlertLine,
-  RiStarLine,
-  RiHomeLine,
-  RiInformationLine,
-  RiRefreshLine,
-  RiCheckLine,
-} from "react-icons/ri";
+import { RiAlertLine, RiRefreshLine, RiArrowLeftLine } from "react-icons/ri";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
-import { formatDateTime } from "../../utils";
 import { useAppSelector } from "../../store/hooks";
 import Toast from "../../components/Toast";
+import JobProfileHeader from "../../components/JobProfileHeader";
+import JobProfileStats from "../../components/JobProfileStats";
+import JobProfileTabs from "../../components/JobProfileTabs";
+import JobCompletionModal from "../../components/JobCompletionModal";
 import "./JobProfile.scss";
 
 interface JobProfileData {
@@ -77,11 +57,12 @@ interface JobProfileData {
 const JobProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.user);
+  const { userType } = useAppSelector((state) => state.user);
   const [jobData, setJobData] = useState<JobProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [completingJob, setCompletingJob] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "warning" | "info";
@@ -208,42 +189,63 @@ const JobProfile: React.FC = () => {
     navigate(`/staff/${technicianId}`);
   };
 
-  const handleCompleteJob = async () => {
+  const handleCompleteJob = () => {
+    setShowCompletionModal(true);
+  };
+
+  const handleCompletionSubmit = async (data: {
+    reportFile: File | null;
+    hasInvoice: boolean;
+    invoiceData?: {
+      description: string;
+      items: Array<{
+        id: string;
+        name: string;
+        quantity: number;
+        rate: number;
+        amount: number;
+      }>;
+      subtotal: number;
+      tax: number;
+      taxPercentage: number;
+      totalCost: number;
+      notes: string;
+    };
+  }) => {
     if (!id || !jobData) return;
 
     try {
       setCompletingJob(true);
       setError(null);
 
-      const response = await jobService.completeJob(id);
+      // Log the completion data (as requested, no API call)
+      console.log("Job Completion Data:", {
+        jobId: id,
+        reportFile: data.reportFile?.name,
+        hasInvoice: data.hasInvoice,
+        invoiceData: data.invoiceData,
+        submittedAt: new Date().toISOString(),
+      });
 
-      if (response.success && response.data) {
-        // Update the job data with the completed job information
-        const completedJob = response.data as any;
-        setJobData({
-          ...jobData,
-          job: {
-            ...jobData.job,
-            status: "Completed",
-            completedAt:
-              completedJob.completionDetails?.completedAt ||
-              new Date().toISOString(),
-          },
-        });
+      // Simulate successful completion
+      setJobData({
+        ...jobData,
+        job: {
+          ...jobData.job,
+          status: "Completed",
+          completedAt: new Date().toISOString(),
+        },
+      });
 
-        // Show success toast
-        setToast({
-          message: "Job completed successfully!",
-          type: "success",
-          isVisible: true,
-        });
-      } else {
-        setToast({
-          message: response.message || "Failed to complete job",
-          type: "error",
-          isVisible: true,
-        });
-      }
+      // Show success toast
+      setToast({
+        message: "Job completed successfully!",
+        type: "success",
+        isVisible: true,
+      });
+
+      // Close the modal
+      setShowCompletionModal(false);
     } catch (error: unknown) {
       console.error("Error completing job:", error);
       const errorMessage =
@@ -437,53 +439,6 @@ const JobProfile: React.FC = () => {
 
   const { job, property, technician, statistics } = jobData;
 
-  // Debug logging for technician assignment check
-  console.log("Job Profile Debug:", {
-    userType: user?.userType,
-    userId: user?.id,
-    technicianId: technician?.id,
-    jobStatus: job.status,
-    dueDate: job.dueDate,
-    isDueToday:
-      new Date(job.dueDate).toDateString() === new Date().toDateString(),
-    canComplete:
-      user?.userType === "technician" &&
-      technician?.id === user.id &&
-      job.status !== "Completed" &&
-      (job.status === "Scheduled" || job.status === "Pending") &&
-      new Date(job.dueDate).toDateString() === new Date().toDateString(),
-  });
-
-  const statsCards = [
-    {
-      title: "Job Status",
-      value: job.status,
-      change: statistics.isOverdue
-        ? `${Math.abs(statistics.daysUntilDue)} days overdue`
-        : `${statistics.daysUntilDue} days until due`,
-      changeType: statistics.isOverdue
-        ? "negative"
-        : statistics.daysUntilDue <= 1
-        ? "warning"
-        : "positive",
-      icon: RiCheckboxCircleLine,
-      color: "blue",
-    },
-    {
-      title: "Priority",
-      value: job.priority,
-      change: "Job priority level",
-      changeType: "neutral",
-      icon: RiStarLine,
-      color:
-        job.priority === "Urgent"
-          ? "red"
-          : job.priority === "High"
-          ? "orange"
-          : "green",
-    },
-  ];
-
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
@@ -514,6 +469,14 @@ const JobProfile: React.FC = () => {
         return "priority-medium";
     }
   };
+  // Get the unix time (ms) for 12am of the job's due date
+  const dueDateObj = new Date(job.dueDate);
+  dueDateObj.setHours(0, 0, 0, 0);
+  console.log(dueDateObj.getTime(), "Job due date 12am (unix time)");
+  console.log(new Date().getTime(), "Today's Date");
+
+  const canComplete =
+    userType === "technician" && dueDateObj.getTime() < new Date().getTime();
 
   return (
     <div className="page-container job-profile-page">
@@ -525,430 +488,43 @@ const JobProfile: React.FC = () => {
         onClose={closeToast}
       />
 
+      {/* Job Completion Modal */}
+      <JobCompletionModal
+        isOpen={showCompletionModal}
+        onClose={() => setShowCompletionModal(false)}
+        onSubmit={handleCompletionSubmit}
+        jobId={job.id}
+        dueDate={job.dueDate}
+        loading={completingJob}
+      />
+
       {/* Header */}
-      <div className="profile-header">
-        <button onClick={handleBack} className="back-btn">
-          <RiArrowLeftLine />
-          Back to Jobs
-        </button>
-        <div className="header-content">
-          <div className="job-info">
-            <h1>{job.job_id}</h1>
-            <p className="job-type">{job.jobType}</p>
-            <div className="job-meta">
-              <span
-                className={`status-badge ${getStatusBadgeClass(job.status)}`}
-              >
-                {job.status}
-              </span>
-              <span
-                className={`priority-badge ${getPriorityBadgeClass(
-                  job.priority
-                )}`}
-              >
-                {job.priority}
-              </span>
-            </div>
-          </div>
-          <div className="header-actions">
-            {/* Show Complete Job button only for technicians who are assigned to this job */}
-            {true && (
-              <button
-                onClick={handleCompleteJob}
-                className="btn-primary"
-                disabled={completingJob}
-              >
-                <RiCheckLine />
-                {completingJob ? "Completing..." : "Complete Job"}
-              </button>
-            )}
-            {/* <button onClick={handleEdit} className="btn-secondary">
-              <RiEditLine />
-              Edit Job
-            </button> */}
-          </div>
-        </div>
-      </div>
+      <JobProfileHeader
+        job={job}
+        onBack={handleBack}
+        onCompleteJob={handleCompleteJob}
+        completingJob={completingJob}
+        canComplete={canComplete}
+        getStatusBadgeClass={getStatusBadgeClass}
+        getPriorityBadgeClass={getPriorityBadgeClass}
+      />
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        {statsCards.map((stat, index) => (
-          <div key={index} className={`stat-card ${stat.color}`}>
-            <div className="stat-icon">
-              <stat.icon />
-            </div>
-            <div className="stat-content">
-              <h3>{stat.value}</h3>
-              <p className="stat-title">{stat.title}</p>
-              <span className={`stat-change ${stat.changeType}`}>
-                {stat.change}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <JobProfileStats job={job} statistics={statistics} />
 
-      {/* Tab Navigation */}
-      <div className="tab-navigation">
-        <button
-          className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
-          onClick={() => setActiveTab("overview")}
-        >
-          <RiInformationLine />
-          Overview
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "details" ? "active" : ""}`}
-          onClick={() => setActiveTab("details")}
-        >
-          <RiFileListLine />
-          Job Details
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "property" ? "active" : ""}`}
-          onClick={() => setActiveTab("property")}
-        >
-          <RiHomeLine />
-          Property
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "technician" ? "active" : ""}`}
-          onClick={() => setActiveTab("technician")}
-        >
-          <RiTeamLine />
-          Technician
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="tab-content">
-        {activeTab === "overview" && (
-          <div className="overview-content">
-            {/* Job Information */}
-            <div className="info-section">
-              <h2>Job Information</h2>
-              <div className="info-grid">
-                <div className="info-card">
-                  <h3>Basic Details</h3>
-                  <div className="detail-info">
-                    <div className="detail-item">
-                      <RiToolsLine />
-                      <div>
-                        <label>Job Type</label>
-                        <span>{job.jobType}</span>
-                      </div>
-                    </div>
-                    <div className="detail-item">
-                      <RiCalendarLine />
-                      <div>
-                        <label>Due Date</label>
-                        <span>{formatDateTime(job.dueDate)}</span>
-                      </div>
-                    </div>
-                    <div className="detail-item">
-                      <RiTimeLine />
-                      <div>
-                        <label>Created</label>
-                        <span>{formatDateTime(job.createdAt)}</span>
-                      </div>
-                    </div>
-                    <div className="detail-item">
-                      <RiMapPinLine />
-                      <div>
-                        <label>Property</label>
-                        <span>{property.address.fullAddress}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="info-card">
-                  <h3>Assignment Details</h3>
-                  <div className="assignment-info">
-                    <div className="assignment-item">
-                      <label>Assigned Technician</label>
-                      <span>
-                        {technician
-                          ? technician.firstName + " " + technician.lastName
-                          : "Unassigned"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Job Description */}
-            {job.description && (
-              <>
-                <div>
-                  {/* <div className="description-section">
-                    <h2>Job Description</h2>
-                    <div className="description-content">
-                      <p>{job.description}</p>
-                    </div>
-                  </div> */}
-                </div>
-              </>
-            )}
-
-            {/* Cost Breakdown */}
-            <div className="cost-section">
-              <h2>Cost Breakdown</h2>
-              <div className="cost-grid">
-                <div className="cost-card total">
-                  <h3>Material Cost</h3>
-                  <div className="cost-amount">${statistics.totalCost}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "details" && (
-          <div className="details-content">
-            <div className="section-header">
-              <h2>Job Details</h2>
-              <p>Complete job information and specifications</p>
-            </div>
-
-            <div className="details-grid">
-              <div className="detail-card">
-                <h3>Job Specifications</h3>
-                <div className="spec-list">
-                  <div className="spec-item">
-                    <label>Job ID</label>
-                    <span>{job.job_id}</span>
-                  </div>
-                  <div className="spec-item">
-                    <label>Job Type</label>
-                    <span>{job.jobType}</span>
-                  </div>
-                  <div className="spec-item">
-                    <label>Priority</label>
-                    <span
-                      className={`priority-badge ${getPriorityBadgeClass(
-                        job.priority
-                      )}`}
-                    >
-                      {job.priority}
-                    </span>
-                  </div>
-                  <div className="spec-item">
-                    <label>Status</label>
-                    <span
-                      className={`status-badge ${getStatusBadgeClass(
-                        job.status
-                      )}`}
-                    >
-                      {job.status}
-                    </span>
-                  </div>
-                  <div className="spec-item">
-                    <label>Due Date</label>
-                    <span>{formatDateTime(job.dueDate)}</span>
-                  </div>
-                  <div className="spec-item">
-                    <label>Created Date</label>
-                    <span>{formatDateTime(job.createdAt)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {job.description && (
-                <div className="detail-card full-width">
-                  <h3>Description</h3>
-                  <div className="description-text">{job.description}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "property" && (
-          <div className="property-content">
-            <div className="section-header">
-              <h2>Property Information</h2>
-              <p>Details about the property where this job is located</p>
-            </div>
-
-            <div className="property-details">
-              <div className="property-card">
-                <h3>Property Details</h3>
-                <div className="property-info">
-                  <div className="property-item">
-                    <RiMapPinLine />
-                    <div>
-                      <label>Address</label>
-                      <span>{property.address.fullAddress}</span>
-                    </div>
-                  </div>
-                  <div className="property-item">
-                    <RiBuildingLine />
-                    <div>
-                      <label>Property Type</label>
-                      <span>{property.propertyType}</span>
-                    </div>
-                  </div>
-                  <div className="property-item">
-                    <RiShieldCheckLine />
-                    <div>
-                      <label>Status</label>
-                      <span
-                        className={`status-badge ${getStatusBadgeClass(
-                          property.status
-                        )}`}
-                      >
-                        {property.status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="property-card">
-                <h3>Tenant Information</h3>
-                <div className="tenant-info">
-                  {property.currentTenant ? (
-                    <>
-                      <div className="contact-item">
-                        <RiUser3Line />
-                        <div>
-                          <label>Name</label>
-                          <span>{property.currentTenant.name}</span>
-                        </div>
-                      </div>
-                      <div className="contact-item">
-                        <RiMailLine />
-                        <div>
-                          <label>Email</label>
-                          <span>{property.currentTenant.email}</span>
-                        </div>
-                      </div>
-                      <div className="contact-item">
-                        <RiPhoneLine />
-                        <div>
-                          <label>Phone</label>
-                          <span>{property.currentTenant.phone}</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-data">
-                      No tenant information available
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="property-card">
-                <h3>Landlord Information</h3>
-                <div className="landlord-info">
-                  {property.currentLandlord ? (
-                    <>
-                      <div className="contact-item">
-                        <RiUser3Line />
-                        <div>
-                          <label>Name</label>
-                          <span>{property.currentLandlord.name}</span>
-                        </div>
-                      </div>
-                      <div className="contact-item">
-                        <RiMailLine />
-                        <div>
-                          <label>Email</label>
-                          <span>{property.currentLandlord.email}</span>
-                        </div>
-                      </div>
-                      <div className="contact-item">
-                        <RiPhoneLine />
-                        <div>
-                          <label>Phone</label>
-                          <span>{property.currentLandlord.phone}</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-data">
-                      No landlord information available
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="property-actions">
-              <button
-                onClick={() => handleViewProperty(property.id)}
-                className="btn-primary"
-              >
-                <RiEyeLine />
-                View Property Details
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "technician" && (
-          <div className="technician-content">
-            <div className="section-header">
-              <h2>Technician Information</h2>
-              <p>Details about the assigned technician</p>
-            </div>
-
-            {technician ? (
-              <div className="technician-details">
-                <div className="technician-card">
-                  <h3>Technician Details</h3>
-                  <div className="technician-info">
-                    <div className="technician-item">
-                      <RiUser3Line />
-                      <div>
-                        <label>Name</label>
-                        <span>
-                          {technician.firstName} {technician.lastName}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="technician-item">
-                      <RiMailLine />
-                      <div>
-                        <label>Email</label>
-                        <span>{technician.email}</span>
-                      </div>
-                    </div>
-                    <div className="technician-item">
-                      <RiPhoneLine />
-                      <div>
-                        <label>Phone</label>
-                        <span>{technician.phone}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="technician-actions">
-                  <button
-                    onClick={() => handleViewTechnician(technician.id)}
-                    className="btn-primary"
-                  >
-                    <RiEyeLine />
-                    View Technician Details
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="no-technician">
-                <div className="no-data-card">
-                  <RiTeamLine />
-                  <h3>No Technician Assigned</h3>
-                  <p>This job has not been assigned to a technician yet.</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Tabs */}
+      <JobProfileTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        job={job}
+        property={property}
+        technician={technician}
+        statistics={statistics}
+        onViewProperty={handleViewProperty}
+        onViewTechnician={handleViewTechnician}
+        getStatusBadgeClass={getStatusBadgeClass}
+        getPriorityBadgeClass={getPriorityBadgeClass}
+      />
     </div>
   );
 };

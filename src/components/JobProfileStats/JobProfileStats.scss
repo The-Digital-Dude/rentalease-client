@@ -1,0 +1,120 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.blue {
+    border-left: 4px solid #3b82f6;
+  }
+
+  &.red {
+    border-left: 4px solid #ef4444;
+  }
+
+  &.orange {
+    border-left: 4px solid #f97316;
+  }
+
+  &.green {
+    border-left: 4px solid #10b981;
+  }
+
+  .stat-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      font-size: 1.5rem;
+      color: white;
+    }
+  }
+
+  &.blue .stat-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  }
+
+  &.red .stat-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+
+  &.orange .stat-icon {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  }
+
+  &.green .stat-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  .stat-content {
+    flex: 1;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem 0;
+      color: #111827;
+    }
+
+    .stat-title {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0 0 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .stat-change {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+
+      &.positive {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      &.negative {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      &.warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      &.neutral {
+        background: #f3f4f6;
+        color: #374151;
+      }
+    }
+  }
+}

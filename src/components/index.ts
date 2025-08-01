@@ -36,6 +36,10 @@ export { LoginForm } from "./LoginForm";
 export { default as NotificationBell } from "./NotificationBell";
 export { default as Toast } from "./Toast";
 export { default as TechnicianJobTable } from "./TechnicianJobTable";
+export { default as JobProfileHeader } from "./JobProfileHeader";
+export { default as JobProfileStats } from "./JobProfileStats";
+export { default as JobProfileTabs } from "./JobProfileTabs";
+export { default as JobCompletionModal } from "./JobCompletionModal";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

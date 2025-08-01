@@ -218,34 +218,49 @@ const JobProfile: React.FC = () => {
       setCompletingJob(true);
       setError(null);
 
-      // Log the completion data (as requested, no API call)
-      console.log("Job Completion Data:", {
-        jobId: id,
-        reportFile: data.reportFile?.name,
+      // Call the job service to complete the job with report file and invoice data
+      const completionResult = await jobService.completeJob(id, {
+        reportFile: data.reportFile || undefined,
         hasInvoice: data.hasInvoice,
         invoiceData: data.invoiceData,
-        submittedAt: new Date().toISOString(),
       });
 
-      // Simulate successful completion
-      setJobData({
-        ...jobData,
-        job: {
-          ...jobData.job,
-          status: "Completed",
-          completedAt: new Date().toISOString(),
-        },
-      });
+      if (completionResult.success) {
+        // Update the job data with the completed job
+        const responseData = completionResult.data as {
+          job: Job;
+          technician: {
+            id: string;
+            fullName: string;
+            currentJobs: number;
+            availabilityStatus: string;
+          };
+        };
 
-      // Show success toast
-      setToast({
-        message: "Job completed successfully!",
-        type: "success",
-        isVisible: true,
-      });
+        if (responseData?.job) {
+          setJobData({
+            ...jobData,
+            job: responseData.job,
+          });
+        }
 
-      // Close the modal
-      setShowCompletionModal(false);
+        // Show success toast
+        setToast({
+          message: completionResult.message || "Job completed successfully!",
+          type: "success",
+          isVisible: true,
+        });
+
+        // Close the modal
+        setShowCompletionModal(false);
+      } else {
+        // Show error toast
+        setToast({
+          message: completionResult.message || "Failed to complete job",
+          type: "error",
+          isVisible: true,
+        });
+      }
     } catch (error: unknown) {
       console.error("Error completing job:", error);
       const errorMessage =
@@ -476,7 +491,9 @@ const JobProfile: React.FC = () => {
   console.log(new Date().getTime(), "Today's Date");
 
   const canComplete =
-    userType === "technician" && dueDateObj.getTime() < new Date().getTime();
+    userType === "technician" &&
+    dueDateObj.getTime() < new Date().getTime() &&
+    job.status !== "Completed";
 
   return (
     <div className="page-container job-profile-page">

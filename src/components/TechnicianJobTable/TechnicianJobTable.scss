@@ -357,13 +357,16 @@
             }
           }
 
-          &.empty-state {
+          td.empty-state {
+            position: absolute;
+            left: 50%;
+            transform: translateX(50%);
+
             .empty-content {
               display: flex;
               flex-direction: column;
               align-items: center;
               gap: 12px;
-              padding: 48px 24px;
               color: #6b7280;
 
               .empty-icon {

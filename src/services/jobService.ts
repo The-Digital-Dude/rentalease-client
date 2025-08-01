@@ -680,8 +680,48 @@ class JobService {
   /**
    * Complete a job (technician only)
    */
-  async completeJob(jobId: string): Promise<JobApiResponse> {
+  async completeJob(
+    jobId: string,
+    completionData?: {
+      reportFile?: File;
+      hasInvoice?: boolean;
+      invoiceData?: {
+        description: string;
+        items: Array<{
+          id: string;
+          name: string;
+          quantity: number;
+          rate: number;
+          amount: number;
+        }>;
+        subtotal: number;
+        tax: number;
+        taxPercentage: number;
+        totalCost: number;
+        notes: string;
+      };
+    }
+  ): Promise<JobApiResponse> {
     try {
+      // Create FormData for file upload
+      const formData = new FormData();
+
+      // Add report file if provided
+      if (completionData?.reportFile) {
+        formData.append("reportFile", completionData.reportFile);
+      }
+
+      // Add invoice data if provided
+      if (completionData?.hasInvoice && completionData?.invoiceData) {
+        formData.append("hasInvoice", "true");
+        formData.append(
+          "invoiceData",
+          JSON.stringify(completionData.invoiceData)
+        );
+      } else {
+        formData.append("hasInvoice", "false");
+      }
+
       const response: AxiosResponse<{
         status: "success" | "error";
         message: string;
@@ -702,7 +742,11 @@ class JobService {
             dueDate: string;
           };
         };
-      }> = await api.patch(`/v1/jobs/${jobId}/complete`);
+      }> = await api.patch(`/v1/jobs/${jobId}/complete`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       if (response.data.status === "success") {
         return {

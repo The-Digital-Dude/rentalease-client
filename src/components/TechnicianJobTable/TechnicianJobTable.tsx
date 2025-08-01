@@ -260,26 +260,6 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
               </select>
             </div>
           </div>
-          <div className="filter-row">
-            <div className="filter-group">
-              <label>Start Date</label>
-              <input
-                type="date"
-                value={localFilters.startDate}
-                onChange={(e) =>
-                  handleFilterChange("startDate", e.target.value)
-                }
-              />
-            </div>
-            <div className="filter-group">
-              <label>End Date</label>
-              <input
-                type="date"
-                value={localFilters.endDate}
-                onChange={(e) => handleFilterChange("endDate", e.target.value)}
-              />
-            </div>
-          </div>
         </div>
       )}
 
@@ -289,7 +269,6 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
             <tr>
               <th>Job ID</th>
               <th>Type</th>
-              <th>Property</th>
               <th>Due Date</th>
               <th>Status</th>
               <th>Priority</th>
@@ -299,7 +278,7 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
           <tbody>
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="empty-state">
+                <td colSpan={6} className="empty-state">
                   <div className="empty-content">
                     <RiBriefcaseLine className="empty-icon" />
                     <p>No jobs found</p>
@@ -320,16 +299,6 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
                       {getJobTypeIcon(job.jobType)}
                     </span>
                     <span className="job-type-text">{job.jobType}</span>
-                  </td>
-                  <td className="property">
-                    <div className="property-info">
-                      <RiMapPinLine className="property-icon" />
-                      <span className="property-address">
-                        {typeof job.property === "string"
-                          ? job.property
-                          : job.property.fullAddress}
-                      </span>
-                    </div>
                   </td>
                   <td className="due-date">
                     <div className="due-date-info">

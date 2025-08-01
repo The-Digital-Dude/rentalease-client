@@ -26,6 +26,7 @@ const OverdueJobs: React.FC = () => {
   } | null>(null);
   const [filters, setFilters] = useState({
     jobType: "",
+    status: "",
     priority: "",
     search: "",
     startDate: "",

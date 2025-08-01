@@ -363,6 +363,46 @@ class TechnicianService {
       };
     }
   }
+
+  /**
+   * Get completed jobs (assigned to technician, status is completed)
+   */
+  async getCompletedJobs(filters?: {
+    jobType?: string;
+    priority?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technicians/completed-jobs${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message:
+          error.response?.data?.message || "Failed to fetch completed jobs",
+        data: {},
+      };
+    }
+  }
 }
 
 const technicianService = new TechnicianService();

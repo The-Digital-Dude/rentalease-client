@@ -47,6 +47,7 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
   getStatusBadgeClass,
   getPriorityBadgeClass,
 }) => {
+  console.log(job, technician, "Job and technician");
   return (
     <>
       {/* Tab Navigation */}

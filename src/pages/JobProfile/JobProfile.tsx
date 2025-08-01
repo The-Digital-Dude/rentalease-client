@@ -22,10 +22,13 @@ import {
   RiHomeLine,
   RiInformationLine,
   RiRefreshLine,
+  RiCheckLine,
 } from "react-icons/ri";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
 import { formatDateTime } from "../../utils";
+import { useAppSelector } from "../../store/hooks";
+import Toast from "../../components/Toast";
 import "./JobProfile.scss";
 
 interface JobProfileData {
@@ -74,9 +77,20 @@ interface JobProfileData {
 const JobProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.user);
   const [jobData, setJobData] = useState<JobProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completingJob, setCompletingJob] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+    isVisible: boolean;
+  }>({
+    message: "",
+    type: "info",
+    isVisible: false,
+  });
   const [activeTab, setActiveTab] = useState<
     "overview" | "details" | "property" | "technician"
   >("overview");
@@ -192,6 +206,60 @@ const JobProfile: React.FC = () => {
 
   const handleViewTechnician = (technicianId: string) => {
     navigate(`/staff/${technicianId}`);
+  };
+
+  const handleCompleteJob = async () => {
+    if (!id || !jobData) return;
+
+    try {
+      setCompletingJob(true);
+      setError(null);
+
+      const response = await jobService.completeJob(id);
+
+      if (response.success && response.data) {
+        // Update the job data with the completed job information
+        const completedJob = response.data as any;
+        setJobData({
+          ...jobData,
+          job: {
+            ...jobData.job,
+            status: "Completed",
+            completedAt:
+              completedJob.completionDetails?.completedAt ||
+              new Date().toISOString(),
+          },
+        });
+
+        // Show success toast
+        setToast({
+          message: "Job completed successfully!",
+          type: "success",
+          isVisible: true,
+        });
+      } else {
+        setToast({
+          message: response.message || "Failed to complete job",
+          type: "error",
+          isVisible: true,
+        });
+      }
+    } catch (error: unknown) {
+      console.error("Error completing job:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to complete job";
+      setToast({
+        message: errorMessage,
+        type: "error",
+        isVisible: true,
+      });
+    } finally {
+      setCompletingJob(false);
+    }
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
   };
 
   if (loading) {
@@ -369,6 +437,23 @@ const JobProfile: React.FC = () => {
 
   const { job, property, technician, statistics } = jobData;
 
+  // Debug logging for technician assignment check
+  console.log("Job Profile Debug:", {
+    userType: user?.userType,
+    userId: user?.id,
+    technicianId: technician?.id,
+    jobStatus: job.status,
+    dueDate: job.dueDate,
+    isDueToday:
+      new Date(job.dueDate).toDateString() === new Date().toDateString(),
+    canComplete:
+      user?.userType === "technician" &&
+      technician?.id === user.id &&
+      job.status !== "Completed" &&
+      (job.status === "Scheduled" || job.status === "Pending") &&
+      new Date(job.dueDate).toDateString() === new Date().toDateString(),
+  });
+
   const statsCards = [
     {
       title: "Job Status",
@@ -432,6 +517,14 @@ const JobProfile: React.FC = () => {
 
   return (
     <div className="page-container job-profile-page">
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
+
       {/* Header */}
       <div className="profile-header">
         <button onClick={handleBack} className="back-btn">
@@ -457,12 +550,23 @@ const JobProfile: React.FC = () => {
               </span>
             </div>
           </div>
-          {/* <div className="header-actions">
-            <button onClick={handleEdit} className="btn-secondary">
+          <div className="header-actions">
+            {/* Show Complete Job button only for technicians who are assigned to this job */}
+            {true && (
+              <button
+                onClick={handleCompleteJob}
+                className="btn-primary"
+                disabled={completingJob}
+              >
+                <RiCheckLine />
+                {completingJob ? "Completing..." : "Complete Job"}
+              </button>
+            )}
+            {/* <button onClick={handleEdit} className="btn-secondary">
               <RiEditLine />
               Edit Job
-            </button>
-          </div> */}
+            </button> */}
+          </div>
         </div>
       </div>
 
@@ -801,7 +905,9 @@ const JobProfile: React.FC = () => {
                       <RiUser3Line />
                       <div>
                         <label>Name</label>
-                        <span>{technician.firstName} {technician.lastName}</span>
+                        <span>
+                          {technician.firstName} {technician.lastName}
+                        </span>
                       </div>
                     </div>
                     <div className="technician-item">

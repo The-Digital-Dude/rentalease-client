@@ -134,6 +134,32 @@
             transform: translateY(-1px);
           }
         }
+
+        .btn-primary {
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #059669;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 600;
+
+          &:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+          }
+        }
       }
     }
   }

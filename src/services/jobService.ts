@@ -676,6 +676,58 @@ class JobService {
       };
     }
   }
+
+  /**
+   * Complete a job (technician only)
+   */
+  async completeJob(jobId: string): Promise<JobApiResponse> {
+    try {
+      const response: AxiosResponse<{
+        status: "success" | "error";
+        message: string;
+        data: {
+          job: Job;
+          technician: {
+            id: string;
+            fullName: string;
+            currentJobs: number;
+            availabilityStatus: string;
+          };
+          completionDetails: {
+            completedAt: string;
+            completedBy: {
+              id: string;
+              fullName: string;
+            };
+            dueDate: string;
+          };
+        };
+      }> = await api.patch(`/v1/jobs/${jobId}/complete`);
+
+      if (response.data.status === "success") {
+        return {
+          success: true,
+          message: response.data.message,
+          data: {
+            job: response.data.data.job,
+            technician: response.data.data.technician,
+          },
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || "Failed to complete job",
+          data: null,
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to complete job",
+        data: null,
+      };
+    }
+  }
 }
 
 // Create and export a singleton instance

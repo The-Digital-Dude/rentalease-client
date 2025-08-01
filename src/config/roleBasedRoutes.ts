@@ -32,6 +32,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "activeJobs",
     "overdueJobs",
     "completedJobs",
+    "myPayments",
   ],
 };
 

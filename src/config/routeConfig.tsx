@@ -40,6 +40,7 @@ const MyJobs = lazy(() => import("../pages/Technician/MyJobs"));
 const ActiveJobs = lazy(() => import("../pages/Technician/ActiveJobs"));
 const OverdueJobs = lazy(() => import("../pages/Technician/OverdueJobs"));
 const CompletedJobs = lazy(() => import("../pages/Technician/CompletedJobs"));
+const MyPayments = lazy(() => import("../pages/Technician/MyPayments"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -66,6 +67,7 @@ export const routeConfig = (userType: UserType) => {
     activeJobs: ActiveJobs,
     overdueJobs: OverdueJobs,
     completedJobs: CompletedJobs,
+    myPayments: MyPayments,
   };
 
   // Generate routes based on user permissions

@@ -28,6 +28,7 @@ const labelMap: Record<string, string> = {
   activeJobs: "Active Jobs",
   overdueJobs: "Overdue Jobs",
   completedJobs: "Completed Jobs",
+  myPayments: "My Payments",
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

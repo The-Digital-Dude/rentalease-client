@@ -403,6 +403,45 @@ class TechnicianService {
       };
     }
   }
+
+  /**
+   * Get technician payments
+   */
+  async getMyPayments(filters?: {
+    status?: string;
+    jobType?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<any> {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+
+      const url = `/v1/technician-payments/my-payments${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      const response = await api.get(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
+        message:
+          error.response?.data?.message || "Failed to fetch payments",
+        data: {},
+      };
+    }
+  }
 }
 
 const technicianService = new TechnicianService();

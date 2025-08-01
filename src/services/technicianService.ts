@@ -436,8 +436,24 @@ class TechnicianService {
     } catch (error: any) {
       return {
         status: "error",
+        message: error.response?.data?.message || "Failed to fetch payments",
+        data: {},
+      };
+    }
+  }
+
+  /**
+   * Get technician dashboard data
+   */
+  async getDashboardData(): Promise<any> {
+    try {
+      const response = await api.get("/v1/technicians/dashboard");
+      return response.data;
+    } catch (error: any) {
+      return {
+        status: "error",
         message:
-          error.response?.data?.message || "Failed to fetch payments",
+          error.response?.data?.message || "Failed to fetch dashboard data",
         data: {},
       };
     }

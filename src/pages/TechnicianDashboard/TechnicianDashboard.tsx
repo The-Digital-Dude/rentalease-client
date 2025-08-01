@@ -17,6 +17,27 @@ import {
   RiAwardLine,
   RiBarChartLine,
   RiPieChartLine,
+  RiMoneyDollarCircleLine,
+  RiArrowUpLine as RiTrendingUpLine,
+  RiArrowDownLine as RiTrendingDownLine,
+  RiEyeLine,
+  RiPlayLine,
+  RiPauseLine,
+  RiRefreshLine,
+  RiFilterLine,
+  RiSearchLine,
+  RiNotificationLine,
+  RiSettingsLine,
+  RiDownloadLine,
+  RiShareLine,
+  RiMoreLine,
+  RiHomeLine,
+  RiUserLine,
+  RiShieldCheckLine,
+  RiTimerLine,
+  RiCheckboxCircleLine,
+  RiErrorWarningLine,
+  RiInformationLine,
 } from "react-icons/ri";
 import {
   BarChart,
@@ -35,23 +56,90 @@ import {
   Area,
   RadialBarChart,
   RadialBar,
+  ComposedChart,
+  Scatter,
+  ScatterChart,
+  ZAxis,
+  Legend,
 } from "recharts";
 import { useAppSelector } from "../../store";
+import technicianService from "../../services/technicianService";
 import "./TechnicianDashboard.scss";
+
+// Utility function to check authentication
+const checkAuth = () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    throw new Error("No authentication token found. Please log in again.");
+  }
+  return token;
+};
+
+// Types based on the API response
+interface DashboardData {
+  quickStats: {
+    totalJobs: number;
+    activeJobs: number;
+    scheduledJobs: number;
+    completedJobs: number;
+    overdueJobs: number;
+  };
+  jobStatusDistribution: Array<{
+    status: string;
+    count: number;
+    percentage: number;
+  }>;
+  weeklyProgress: Array<{
+    day: string;
+    completed: number;
+    scheduled: number;
+  }>;
+  recentJobs: Array<{
+    id: string;
+    job_id: string;
+    jobType: string;
+    status: string;
+    dueDate: string;
+    updatedAt: string;
+    property: {
+      street: string;
+      suburb: string;
+      state: string;
+      postcode: string;
+      fullAddress: string;
+    };
+  }>;
+  paymentStats: {
+    totalPayments: number;
+    pendingPayments: number;
+    totalAmount: number;
+    pendingAmount: number;
+  };
+  lastUpdated: string;
+}
 
 interface TechnicianJob {
   id: string;
+  job_id: string;
   propertyAddress: string;
   jobType: string;
   priority: string;
   status: string;
   assignedDate: string;
+  dueDate: string;
   estimatedDuration: string;
   description: string;
   completedAt?: string;
   actualDuration?: string;
   rating?: number;
   feedback?: string;
+  property: {
+    street: string;
+    suburb: string;
+    state: string;
+    postcode: string;
+    fullAddress: string;
+  };
 }
 
 interface JobStats {
@@ -65,19 +153,26 @@ interface JobStats {
   averageRating: number;
   totalEarnings: number;
   efficiencyScore: number;
+  onTimeCompletionRate: number;
+  customerSatisfactionScore: number;
 }
 
 interface ChartData {
   name: string;
   value: number;
   fill?: string;
+  color?: string;
 }
 
 const TechnicianDashboard = () => {
   const { user } = useAppSelector((state) => state.user);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [jobs, setJobs] = useState<TechnicianJob[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("active");
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState<JobStats>({
     totalJobs: 0,
     activeJobs: 0,
@@ -89,150 +184,107 @@ const TechnicianDashboard = () => {
     averageRating: 0,
     totalEarnings: 0,
     efficiencyScore: 0,
+    onTimeCompletionRate: 0,
+    customerSatisfactionScore: 0,
   });
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
+    try {
+      setRefreshing(true);
+      setError(null);
+
+      // Check if user is authenticated
+      const token = checkAuth();
+      console.log(
+        "Fetching dashboard data with token:",
+        token.substring(0, 20) + "..."
+      );
+
+      const result = await technicianService.getDashboardData();
+
+      if (result.status === "success") {
+        setDashboardData(result.data);
+
+        // Transform recent jobs to match our interface
+        const transformedJobs: TechnicianJob[] = result.data.recentJobs.map(
+          (job: any) => ({
+            id: job.id,
+            job_id: job.job_id,
+            propertyAddress: job.property.fullAddress,
+            jobType: job.jobType,
+            priority: "Medium", // Default since not in API
+            status: job.status,
+            assignedDate: job.updatedAt,
+            dueDate: job.dueDate,
+            estimatedDuration: "2 hours", // Default since not in API
+            description: `${job.jobType} service at ${job.property.fullAddress}`,
+            property: job.property,
+          })
+        );
+
+        setJobs(transformedJobs);
+
+        // Calculate enhanced statistics
+        const quickStats = result.data.quickStats;
+        const paymentStats = result.data.paymentStats;
+
+        const enhancedStats: JobStats = {
+          totalJobs: quickStats.totalJobs,
+          activeJobs: quickStats.activeJobs,
+          completedJobs: quickStats.completedJobs,
+          overdueJobs: quickStats.overdueJobs,
+          scheduledJobs: quickStats.scheduledJobs,
+          averageCompletionTime: 2.1, // Mock data
+          completionRate:
+            quickStats.totalJobs > 0
+              ? (quickStats.completedJobs / quickStats.totalJobs) * 100
+              : 0,
+          averageRating: 4.8, // Mock data
+          totalEarnings: paymentStats.totalAmount,
+          efficiencyScore: calculateEfficiencyScore(quickStats, paymentStats),
+          onTimeCompletionRate: 95, // Mock data
+          customerSatisfactionScore: 4.9, // Mock data
+        };
+
+        setStats(enhancedStats);
+      } else {
+        throw new Error(result.message || "Failed to fetch dashboard data");
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch dashboard data:", error);
+      setError(error.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const calculateEfficiencyScore = (quickStats: any, paymentStats: any) => {
+    const completionRate =
+      quickStats.totalJobs > 0
+        ? (quickStats.completedJobs / quickStats.totalJobs) * 100
+        : 0;
+    const overduePenalty = quickStats.overdueJobs * 10;
+    const paymentEfficiency =
+      paymentStats.totalPayments > 0
+        ? (paymentStats.pendingPayments / paymentStats.totalPayments) * 100
+        : 0;
+
+    return Math.max(
+      0,
+      Math.min(100, completionRate - overduePenalty + paymentEfficiency)
+    );
+  };
 
   useEffect(() => {
-    // Simulate fetching technician's jobs
-    const fetchTechnicianJobs = async () => {
-      setLoading(true);
-      try {
-        // TODO: Replace with actual API call
-        const mockJobs: TechnicianJob[] = [
-          {
-            id: "1",
-            propertyAddress: "123 Main St, Sydney NSW 2000",
-            jobType: "Plumbing Repair",
-            priority: "High",
-            status: "In Progress",
-            assignedDate: "2024-01-15",
-            estimatedDuration: "2 hours",
-            description: "Fix leaking tap in kitchen",
-            actualDuration: "1.5 hours",
-            rating: 5,
-            feedback: "Excellent work, very professional",
-          },
-          {
-            id: "2",
-            propertyAddress: "456 Oak Ave, Melbourne VIC 3000",
-            jobType: "Electrical Work",
-            priority: "Medium",
-            status: "Scheduled",
-            assignedDate: "2024-01-16",
-            estimatedDuration: "3 hours",
-            description: "Replace faulty light switch",
-          },
-          {
-            id: "3",
-            propertyAddress: "789 Pine Rd, Brisbane QLD 4000",
-            jobType: "Gas Safety Check",
-            priority: "Urgent",
-            status: "Completed",
-            assignedDate: "2024-01-14",
-            estimatedDuration: "1 hour",
-            description: "Annual gas safety inspection",
-            completedAt: "2024-01-14T15:30:00Z",
-            actualDuration: "1.2 hours",
-            rating: 4,
-            feedback: "Good service, thorough inspection",
-          },
-          {
-            id: "4",
-            propertyAddress: "321 Elm St, Perth WA 6000",
-            jobType: "Smoke Alarm Installation",
-            priority: "High",
-            status: "Overdue",
-            assignedDate: "2024-01-10",
-            estimatedDuration: "2 hours",
-            description: "Install new smoke alarms",
-          },
-          {
-            id: "5",
-            propertyAddress: "654 Maple Dr, Adelaide SA 5000",
-            jobType: "Pool Safety Inspection",
-            priority: "Medium",
-            status: "Completed",
-            assignedDate: "2024-01-12",
-            estimatedDuration: "2.5 hours",
-            description: "Pool safety compliance check",
-            completedAt: "2024-01-12T14:15:00Z",
-            actualDuration: "2.3 hours",
-            rating: 5,
-            feedback: "Very thorough inspection, highly recommended",
-          },
-        ];
-        setJobs(mockJobs);
-
-        // Calculate statistics
-        const totalJobs = mockJobs.length;
-        const activeJobs = mockJobs.filter(
-          (j) => j.status === "In Progress"
-        ).length;
-        const completedJobs = mockJobs.filter(
-          (j) => j.status === "Completed"
-        ).length;
-        const overdueJobs = mockJobs.filter(
-          (j) => j.status === "Overdue"
-        ).length;
-        const scheduledJobs = mockJobs.filter(
-          (j) => j.status === "Scheduled"
-        ).length;
-
-        const completedJobsWithDuration = mockJobs.filter(
-          (j) => j.status === "Completed" && j.actualDuration
-        );
-        const averageCompletionTime =
-          completedJobsWithDuration.length > 0
-            ? completedJobsWithDuration.reduce((acc, job) => {
-                const estimated = parseFloat(
-                  job.estimatedDuration.split(" ")[0]
-                );
-                const actual = parseFloat(job.actualDuration!.split(" ")[0]);
-                return acc + (estimated - actual);
-              }, 0) / completedJobsWithDuration.length
-            : 0;
-
-        const completionRate =
-          totalJobs > 0 ? (completedJobs / totalJobs) * 100 : 0;
-
-        const ratedJobs = mockJobs.filter((j) => j.rating);
-        const averageRating =
-          ratedJobs.length > 0
-            ? ratedJobs.reduce((acc, job) => acc + (job.rating || 0), 0) /
-              ratedJobs.length
-            : 0;
-
-        const totalEarnings = completedJobs * 85; // Mock hourly rate
-        const efficiencyScore = Math.min(
-          100,
-          Math.max(
-            0,
-            completionRate * 0.4 +
-              averageRating * 20 +
-              (averageCompletionTime > 0 ? 20 : 0)
-          )
-        );
-
-        setStats({
-          totalJobs,
-          activeJobs,
-          completedJobs,
-          overdueJobs,
-          scheduledJobs,
-          averageCompletionTime,
-          completionRate,
-          averageRating,
-          totalEarnings,
-          efficiencyScore,
-        });
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTechnicianJobs();
+    fetchDashboardData();
   }, []);
+
+  const handleRefresh = () => {
+    fetchDashboardData();
+  };
 
   const handleJobStatusUpdate = async (jobId: string, newStatus: string) => {
     try {
@@ -280,42 +332,68 @@ const TechnicianDashboard = () => {
   };
 
   // Chart data preparation
-  const jobTypeData = jobs.reduce((acc, job) => {
-    acc[job.jobType] = (acc[job.jobType] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const jobStatusChartData: ChartData[] =
+    dashboardData?.jobStatusDistribution.map((item) => ({
+      name: item.status,
+      value: item.count,
+      fill:
+        getStatusColor(item.status) === "success"
+          ? "#10b981"
+          : getStatusColor(item.status) === "warning"
+          ? "#f59e0b"
+          : getStatusColor(item.status) === "info"
+          ? "#3b82f6"
+          : getStatusColor(item.status) === "danger"
+          ? "#ef4444"
+          : "#6b7280",
+    })) || [];
 
-  const jobTypeChartData: ChartData[] = Object.entries(jobTypeData).map(
-    ([type, count]) => ({
-      name: type,
-      value: count,
-    })
-  );
+  const weeklyProgressData = dashboardData?.weeklyProgress || [];
 
-  const statusChartData: ChartData[] = [
-    { name: "Completed", value: stats.completedJobs, fill: "#10b981" },
-    { name: "Active", value: stats.activeJobs, fill: "#f59e0b" },
-    { name: "Scheduled", value: stats.scheduledJobs, fill: "#3b82f6" },
-    { name: "Overdue", value: stats.overdueJobs, fill: "#ef4444" },
+  const performanceMetricsData = [
+    {
+      name: "Completion Rate",
+      value: stats.completionRate,
+      target: 90,
+      color: "#10b981",
+    },
+    {
+      name: "On-Time Rate",
+      value: stats.onTimeCompletionRate,
+      target: 95,
+      color: "#3b82f6",
+    },
+    {
+      name: "Customer Satisfaction",
+      value: stats.customerSatisfactionScore * 20,
+      target: 80,
+      color: "#f59e0b",
+    },
+    {
+      name: "Efficiency Score",
+      value: stats.efficiencyScore,
+      target: 85,
+      color: "#8b5cf6",
+    },
   ];
 
-  const weeklyProgressData = [
-    { day: "Mon", completed: 3, scheduled: 2 },
-    { day: "Tue", completed: 5, scheduled: 1 },
-    { day: "Wed", completed: 2, scheduled: 4 },
-    { day: "Thu", completed: 4, scheduled: 3 },
-    { day: "Fri", completed: 6, scheduled: 2 },
-    { day: "Sat", completed: 1, scheduled: 0 },
-    { day: "Sun", completed: 0, scheduled: 1 },
+  const earningsTrendData = [
+    { month: "Jan", earnings: 1200, jobs: 15 },
+    { month: "Feb", earnings: 1400, jobs: 18 },
+    { month: "Mar", earnings: 1100, jobs: 14 },
+    { month: "Apr", earnings: 1600, jobs: 20 },
+    { month: "May", earnings: 1800, jobs: 22 },
+    { month: "Jun", earnings: 2000, jobs: 25 },
   ];
 
-  const performanceData = [
-    { metric: "Completion Rate", value: stats.completionRate, target: 90 },
-    { metric: "Avg Rating", value: stats.averageRating * 20, target: 80 },
-    { metric: "Efficiency", value: stats.efficiencyScore, target: 85 },
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884D8",
+    "#82ca9d",
   ];
-
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
   const renderJobCard = (job: TechnicianJob) => (
     <div key={job.id} className="job-card">
@@ -323,6 +401,7 @@ const TechnicianDashboard = () => {
         <div className="job-type">
           <RiBriefcaseLine />
           <span>{job.jobType}</span>
+          <span className="job-id">#{job.job_id}</span>
         </div>
         <div className="job-status">
           <span className={`status-badge ${getStatusColor(job.status)}`}>
@@ -352,6 +431,12 @@ const TechnicianDashboard = () => {
             <span>{job.estimatedDuration}</span>
           </div>
         </div>
+        <div className="job-dates">
+          <div className="due-date">
+            <RiCalendarLine />
+            <span>Due: {new Date(job.dueDate).toLocaleDateString()}</span>
+          </div>
+        </div>
         {job.rating && (
           <div className="job-rating">
             <RiStarLine />
@@ -372,8 +457,12 @@ const TechnicianDashboard = () => {
               className="btn btn-primary"
               onClick={() => handleJobStatusUpdate(job.id, "In Progress")}
             >
-              <RiLoaderLine />
+              <RiPlayLine />
               Start Job
+            </button>
+            <button className="btn btn-secondary">
+              <RiEyeLine />
+              View Details
             </button>
           </>
         )}
@@ -387,13 +476,19 @@ const TechnicianDashboard = () => {
               Complete
             </button>
             <button
-              className="btn btn-secondary"
+              className="btn btn-warning"
               onClick={() => handleJobStatusUpdate(job.id, "Scheduled")}
             >
-              <RiCloseLine />
+              <RiPauseLine />
               Pause
             </button>
           </>
+        )}
+        {job.status === "Completed" && (
+          <button className="btn btn-info">
+            <RiEyeLine />
+            View Details
+          </button>
         )}
       </div>
     </div>
@@ -402,8 +497,12 @@ const TechnicianDashboard = () => {
   const filteredJobs = jobs.filter((job) => {
     if (activeTab === "active") {
       return job.status === "In Progress" || job.status === "Scheduled";
+    } else if (activeTab === "completed") {
+      return job.status === "Completed";
+    } else if (activeTab === "overdue") {
+      return job.status === "Overdue";
     }
-    return job.status === "Completed";
+    return true;
   });
 
   if (loading) {
@@ -417,12 +516,49 @@ const TechnicianDashboard = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="technician-dashboard">
+        <div className="error-container">
+          <RiErrorWarningLine className="error-icon" />
+          <h3>Error Loading Dashboard</h3>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={handleRefresh}>
+            <RiRefreshLine />
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="technician-dashboard">
       <div className="dashboard-header">
         <div className="welcome-section">
-          <h1>Welcome back, {user?.name || "Technician"}!</h1>
-          <p>Your performance overview and job management dashboard</p>
+          <div className="welcome-content">
+            <h1>Welcome back, {user?.name || "Technician"}!</h1>
+            <p>Your performance overview and job management dashboard</p>
+            <div className="last-updated">
+              <RiInformationLine />
+              <span>
+                Last updated:{" "}
+                {dashboardData
+                  ? new Date(dashboardData.lastUpdated).toLocaleString()
+                  : "N/A"}
+              </span>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button
+              className="btn btn-secondary"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RiRefreshLine className={refreshing ? "spinning" : ""} />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
 
         {/* Enhanced Statistics Cards */}
@@ -432,11 +568,25 @@ const TechnicianDashboard = () => {
               <RiBriefcaseLine />
             </div>
             <div className="stat-content">
+              <h3>{stats.totalJobs}</h3>
+              <p>Total Jobs</p>
+              <div className="stat-trend positive">
+                <RiTrendingUpLine />
+                <span>+{stats.completedJobs} completed</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-card active">
+            <div className="stat-icon">
+              <RiPlayLine />
+            </div>
+            <div className="stat-content">
               <h3>{stats.activeJobs}</h3>
               <p>Active Jobs</p>
-              <div className="stat-trend">
-                <RiArrowUpLine />
-                <span>+12% this week</span>
+              <div className="stat-trend neutral">
+                <RiLoaderLine />
+                <span>In progress</span>
               </div>
             </div>
           </div>
@@ -448,9 +598,9 @@ const TechnicianDashboard = () => {
             <div className="stat-content">
               <h3>{stats.completedJobs}</h3>
               <p>Completed Jobs</p>
-              <div className="stat-trend">
-                <RiArrowUpLine />
-                <span>+8% this week</span>
+              <div className="stat-trend positive">
+                <RiTrendingUpLine />
+                <span>+{stats.completionRate.toFixed(1)}% rate</span>
               </div>
             </div>
           </div>
@@ -462,69 +612,104 @@ const TechnicianDashboard = () => {
             <div className="stat-content">
               <h3>{stats.overdueJobs}</h3>
               <p>Overdue Jobs</p>
-              <div className="stat-trend">
-                <RiArrowDownLine />
-                <span>-5% this week</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card info">
-            <div className="stat-icon">
-              <RiStarLine />
-            </div>
-            <div className="stat-content">
-              <h3>{stats.averageRating.toFixed(1)}</h3>
-              <p>Avg Rating</p>
-              <div className="stat-trend">
-                <RiArrowUpLine />
-                <span>+0.3 this week</span>
+              <div className="stat-trend negative">
+                <RiTrendingDownLine />
+                <span>Needs attention</span>
               </div>
             </div>
           </div>
 
           <div className="stat-card earnings">
             <div className="stat-icon">
-              <RiAwardLine />
+              <RiMoneyDollarCircleLine />
             </div>
             <div className="stat-content">
               <h3>${stats.totalEarnings}</h3>
-              <p>Total Earnings</p>
-              <div className="stat-trend">
-                <RiArrowUpLine />
-                <span>+15% this week</span>
+              <p style={{ paddingBottom: 0 }}>Total Earnings</p>
+              <div className="stat-trend neutral">
+                <RiMoneyDollarCircleLine />
+                <span>All Time Earnings</span>
               </div>
             </div>
           </div>
 
-          <div className="stat-card efficiency">
+          <div className="stat-card pending">
             <div className="stat-icon">
-              <RiSpeedLine />
+              <RiClockLine />
             </div>
             <div className="stat-content">
-              <h3>{stats.efficiencyScore.toFixed(0)}%</h3>
-              <p>Efficiency Score</p>
-              <div className="stat-trend">
-                <RiArrowUpLine />
-                <span>+3% this week</span>
+              <h3>${dashboardData?.paymentStats?.pendingAmount || 0}</h3>
+              <p>Pending Payments</p>
+              <div className="stat-trend neutral">
+                <RiClockLine />
+                <span>
+                  {dashboardData?.paymentStats?.pendingPayments || 0} pending
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts Section */}
+      {/* Enhanced Charts Section */}
       <div className="charts-section">
         <div className="chart-grid">
-          <div className="chart-card">
+          <div className="chart-card large">
+            <div className="chart-header">
+              <h3>Weekly Job Progress</h3>
+              <div className="chart-actions">
+                <RiBarChartLine />
+                <button className="chart-btn">
+                  <RiMoreLine />
+                </button>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={weeklyProgressData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="day" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                <Legend />
+                <Bar
+                  dataKey="completed"
+                  fill="#10b981"
+                  name="Completed"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="scheduled"
+                  fill="#3b82f6"
+                  name="Scheduled"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="#059669"
+                  strokeWidth={3}
+                  dot={{ fill: "#059669", strokeWidth: 2, r: 4 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="chart-card large">
             <div className="chart-header">
               <h3>Job Status Distribution</h3>
               <RiPieChartLine />
             </div>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={statusChartData}
+                  data={jobStatusChartData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -535,75 +720,77 @@ const TechnicianDashboard = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusChartData.map((entry, index) => (
+                  {jobStatusChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
               </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>Weekly Progress</h3>
-              <RiBarChartLine />
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={weeklyProgressData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="completed" fill="#10b981" name="Completed" />
-                <Bar dataKey="scheduled" fill="#3b82f6" name="Scheduled" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>Performance Metrics</h3>
-              <RiArrowUpLine />
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <RadialBarChart
-                cx="50%"
-                cy="50%"
-                innerRadius="20%"
-                outerRadius="80%"
-                data={performanceData}
-              >
-                <RadialBar dataKey="value" />
-                <Tooltip />
-              </RadialBarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>Job Types</h3>
-              <RiBarChartLine />
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={jobTypeChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#024974" />
-              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
+      {/* Payment Overview */}
+      {dashboardData?.paymentStats && (
+        <div className="payment-overview">
+          <div className="section-header">
+            <h2>Payment Overview</h2>
+            <button className="btn btn-outline">
+              <RiEyeLine />
+              View All Payments
+            </button>
+          </div>
+          <div className="payment-cards">
+            <div className="payment-card">
+              <div className="payment-icon">
+                <RiMoneyDollarCircleLine />
+              </div>
+              <div className="payment-content">
+                <h3>${dashboardData.paymentStats.totalAmount}</h3>
+                <p>Total Earnings</p>
+                <span className="payment-count">
+                  {dashboardData.paymentStats.totalPayments} payments
+                </span>
+              </div>
+            </div>
+            <div className="payment-card pending">
+              <div className="payment-icon">
+                <RiClockLine />
+              </div>
+              <div className="payment-content">
+                <h3>${dashboardData.paymentStats.pendingAmount}</h3>
+                <p>Pending Payments</p>
+                <span className="payment-count">
+                  {dashboardData.paymentStats.pendingPayments} pending
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-content">
         <div className="tab-navigation">
+          <button
+            className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
+          >
+            <RiBarChartLine />
+            Overview
+          </button>
           <button
             className={`tab-btn ${activeTab === "active" ? "active" : ""}`}
             onClick={() => setActiveTab("active")}
           >
+            <RiPlayLine />
             Active Jobs (
             {
               jobs.filter(
@@ -616,12 +803,31 @@ const TechnicianDashboard = () => {
             className={`tab-btn ${activeTab === "completed" ? "active" : ""}`}
             onClick={() => setActiveTab("completed")}
           >
+            <RiCheckLine />
             Completed ({jobs.filter((j) => j.status === "Completed").length})
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "overdue" ? "active" : ""}`}
+            onClick={() => setActiveTab("overdue")}
+          >
+            <RiAlertLine />
+            Overdue ({jobs.filter((j) => j.status === "Overdue").length})
           </button>
         </div>
 
         <div className="jobs-container">
-          {filteredJobs.length === 0 ? (
+          {activeTab === "overview" ? (
+            <div className="overview-content">
+              <div className="recent-jobs-section">
+                <div className="section-header">
+                  <h3>Recent Jobs</h3>
+                </div>
+                <div className="jobs-grid">
+                  {jobs.slice(0, 6).map(renderJobCard)}
+                </div>
+              </div>
+            </div>
+          ) : filteredJobs.length === 0 ? (
             <div className="empty-state">
               <RiBriefcaseLine />
               <h3>No {activeTab} jobs</h3>

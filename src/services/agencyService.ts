@@ -386,4 +386,20 @@ export const agencyService = {
       };
     }
   },
+
+  // Get agency dashboard data
+  getDashboardData: async (): Promise<{
+    status: string;
+    message: string;
+    data: any;
+  }> => {
+    try {
+      const response = await api.get("/v1/agency/auth/dashboard");
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch dashboard data"
+      );
+    }
+  },
 };

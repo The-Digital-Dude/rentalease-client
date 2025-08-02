@@ -60,7 +60,11 @@ const PropertyProfile: React.FC = () => {
         // Fetch jobs for this property using the property id as a filter
         const response = await jobService.getJobs({ property: id, limit: 100 });
         if (response.success && Array.isArray(response.data)) {
-          setJobs(response.data);
+          // Type guard to ensure we have Job objects
+          const jobsData = response.data.filter(
+            (item: any) => item.job_id && item.property && item.jobType
+          ) as Job[];
+          setJobs(jobsData);
         } else {
           setJobsError(response.message || "Failed to load jobs");
         }

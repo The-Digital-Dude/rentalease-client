@@ -28,10 +28,6 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
 }) => {
   return (
     <div className="profile-header">
-      <button onClick={onBack} className="back-btn">
-        <RiArrowLeftLine />
-        Back to Jobs
-      </button>
       <div className="header-content">
         <div className="job-info">
           <h1>{job.job_id}</h1>

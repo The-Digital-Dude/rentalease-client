@@ -65,12 +65,12 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         <p className="developer-credit">
           Developed By{" "}
           <a
-            href="https://rokoautomation.com"
+            href="https://rokoautomations.com"
             target="_blank"
             rel="noopener noreferrer"
             className="roko-link"
           >
-            Roko Automation
+            Roko Automations
           </a>
         </p>
       </div>

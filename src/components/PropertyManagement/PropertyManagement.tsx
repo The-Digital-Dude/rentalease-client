@@ -73,7 +73,9 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
   }, [properties]);
 
   const uniqueBedrooms = useMemo(() => {
-    const bedrooms = properties.map((p) => p.bedrooms).filter(Boolean);
+    const bedrooms = properties
+      .map((p) => p.bedrooms)
+      .filter((b): b is number => b !== undefined);
     return [...new Set(bedrooms)].sort((a, b) => a - b);
   }, [properties]);
 
@@ -87,6 +89,35 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
       compliance.electricalSafety?.status === "Overdue" ||
       compliance.smokeAlarms?.status === "Overdue" ||
       compliance.poolSafety?.status === "Overdue" ||
+      compliance.gasCompliance?.status === "Due Soon" ||
+      compliance.electricalSafety?.status === "Due Soon" ||
+      compliance.smokeAlarms?.status === "Due Soon" ||
+      compliance.poolSafety?.status === "Due Soon"
+    );
+  };
+
+  // Helper function to check if property has overdue compliance issues
+  const hasOverdueCompliance = (property: Property) => {
+    const compliance = property.complianceSchedule;
+    if (!compliance) return false;
+
+    return (
+      compliance.gasCompliance?.status === "Overdue" ||
+      compliance.electricalSafety?.status === "Overdue" ||
+      compliance.smokeAlarms?.status === "Overdue" ||
+      compliance.poolSafety?.status === "Overdue"
+    );
+  };
+
+  // Helper function to check if property has due soon compliance issues (but not overdue)
+  const hasDueSoonCompliance = (property: Property) => {
+    const compliance = property.complianceSchedule;
+    if (!compliance) return false;
+
+    const hasOverdue = hasOverdueCompliance(property);
+    if (hasOverdue) return false;
+
+    return (
       compliance.gasCompliance?.status === "Due Soon" ||
       compliance.electricalSafety?.status === "Due Soon" ||
       compliance.smokeAlarms?.status === "Due Soon" ||
@@ -174,17 +205,17 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
         property.address.fullAddress
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        property.propertyManager
+        (property.propertyManager || "")
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         property.currentTenant?.name
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         property.currentLandlord?.name
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         property.agency?.companyName
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(searchTerm.toLowerCase());
 
       const matchesRegion =
@@ -209,10 +240,9 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
       const matchesComplianceStatus =
         complianceStatusFilter === "all" ||
         (complianceStatusFilter === "overdue" &&
-          property.hasOverdueCompliance) ||
+          hasOverdueCompliance(property)) ||
         (complianceStatusFilter === "dueSoon" &&
-          hasComplianceIssues(property) &&
-          !property.hasOverdueCompliance) ||
+          hasDueSoonCompliance(property)) ||
         (complianceStatusFilter === "compliant" &&
           !hasComplianceIssues(property));
 
@@ -300,62 +330,6 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
             value: state,
             label: state,
           })),
-        },
-        {
-          id: "agency",
-          placeholder: "All Agencies",
-          value: agencyFilter,
-          onChange: setAgencyFilter,
-          options: uniqueAgencies.map((agency) => ({
-            value: agency,
-            label: agency,
-          })),
-        },
-        {
-          id: "propertyManager",
-          placeholder: "All Property Managers",
-          value: propertyManagerFilter,
-          onChange: setPropertyManagerFilter,
-          options: uniquePropertyManagers.map((manager) => ({
-            value: manager,
-            label: manager,
-          })),
-        },
-        {
-          id: "complianceStatus",
-          placeholder: "All Compliance Status",
-          value: complianceStatusFilter,
-          onChange: setComplianceStatusFilter,
-          options: [
-            { value: "overdue", label: "Overdue" },
-            { value: "dueSoon", label: "Due Soon" },
-            { value: "compliant", label: "Compliant" },
-          ],
-        },
-        {
-          id: "complianceType",
-          placeholder: "All Compliance Types",
-          value: complianceTypeFilter,
-          onChange: setComplianceTypeFilter,
-          options: [
-            { value: "gas", label: "Gas Compliance" },
-            { value: "electrical", label: "Electrical Safety" },
-            { value: "smoke", label: "Smoke Alarms" },
-            { value: "pool", label: "Pool Safety" },
-          ],
-        },
-        {
-          id: "dateRange",
-          placeholder: "All Time",
-          value: dateRangeFilter,
-          onChange: setDateRangeFilter,
-          options: [
-            { value: "last7days", label: "Last 7 Days" },
-            { value: "last30days", label: "Last 30 Days" },
-            { value: "last90days", label: "Last 90 Days" },
-            { value: "last6months", label: "Last 6 Months" },
-            { value: "lastyear", label: "Last Year" },
-          ],
         },
       ]
     : [];

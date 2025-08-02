@@ -7,7 +7,8 @@ export type UserType =
   | "agency"
   | "staff"
   | "tenant"
-  | "technician";
+  | "technician"
+  | "property_manager";
 
 // Define the user state interface
 export interface UserState {

@@ -3,6 +3,7 @@ import {
   RiShieldUserLine,
   RiArrowRightLine,
   RiToolsLine,
+  RiBuilding2Line,
 } from "react-icons/ri";
 import { Link } from "react-router-dom";
 import "./Login.scss";
@@ -33,6 +34,22 @@ const Login = () => {
               <p>
                 Access your agent dashboard, manage properties, and handle
                 client requests
+              </p>
+            </div>
+            <div className="option-arrow">
+              <RiArrowRightLine />
+            </div>
+          </Link>
+
+          <Link to="/login/property-manager" className="login-option-card">
+            <div className="option-icon property-manager">
+              <RiBuilding2Line />
+            </div>
+            <div className="option-content">
+              <h3>Property Manager Login</h3>
+              <p>
+                Access property management portal, oversee properties, and manage
+                property operations
               </p>
             </div>
             <div className="option-arrow">

@@ -19,6 +19,7 @@ import {
   Login,
   AdminLogin,
   AgentLogin,
+  PropertyManagerLogin,
   TechnicianLogin,
   PasswordReset,
 } from "./pages/Login";
@@ -68,6 +69,7 @@ const App = () => {
       (location.pathname === "/login" ||
         location.pathname === "/login/admin" ||
         location.pathname === "/login/agent" ||
+        location.pathname === "/login/property-manager" ||
         location.pathname === "/login/technician") &&
       !location.pathname.startsWith("/password-reset")
     ) {
@@ -89,6 +91,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/login/admin" element={<AdminLogin />} />
           <Route path="/login/agent" element={<AgentLogin />} />
+          <Route path="/login/property-manager" element={<PropertyManagerLogin />} />
           <Route path="/login/technician" element={<TechnicianLogin />} />
           <Route path="/password-reset" element={<PasswordReset />} />
 

@@ -51,30 +51,7 @@ const Dashboard = () => {
     }
   };
 
-  return (
-    <div className="page-container">
-      <div className="page-header">
-        <div className="header-content">
-          <div className="header-info">
-            <h1>Dashboard</h1>
-            <p>Overview of your property management activities</p>
-            <p className="current-path">
-              Current URL: <code>{currentPath}</code>
-            </p>
-          </div>
-          <button
-            className="dashboard-logout-button"
-            onClick={handleLogout}
-            title="Logout"
-          >
-            <RiLogoutBoxLine />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
-      {renderDashboardContent()}
-    </div>
-  );
+  return <div className="page-container">{renderDashboardContent()}</div>;
 };
 
 export default Dashboard;

@@ -36,7 +36,9 @@ export interface BackendApiResponse {
 
 // Backend response format
 export interface BackendLoginResponse {
-  status: string;
+  status?: string;
+  success?: boolean;
+  message?: string;
   data: {
     superUser?: {
       id: string;
@@ -67,6 +69,7 @@ export interface BackendLoginResponse {
       id: string;
       name: string;
       email: string;
+      fullName?: string; // Added for property manager
       contactPerson?: string; // Added for property manager
       companyName?: string; // Added for property manager
     };
@@ -102,7 +105,7 @@ class AuthService {
     const typeMapping: Record<string, string> = {
       superUser: "super_user",
       admin: "super_user",
-      propertyManager: "agency",
+      propertyManager: "property_manager",
       staff: "staff",
       tenant: "tenant",
       agent: "agency", // Agents are now mapped to agency type
@@ -124,8 +127,10 @@ class AuthService {
       // Determine the correct endpoint based on user type
       let endpoint = "/v1/auth/login"; // Default for admin/superUser
 
-      if (userType === "agent" || userType === "propertyManager") {
+      if (userType === "agent") {
         endpoint = "/v1/agency/auth/login";
+      } else if (userType === "propertyManager") {
+        endpoint = "/api/property-manager/auth/login";
       } else if (userType === "technician") {
         endpoint = "/v1/technician/auth/login";
       }
@@ -137,7 +142,12 @@ class AuthService {
       });
 
       // Check if login was successful
-      if (response.data.status === "success" && response.data.data?.token) {
+      // Handle both old format (status: "success") and new PropertyManager format (success: true)
+      const isSuccess =
+        response.data.status === "success" || response.data.success === true;
+      const hasToken = response.data.data?.token || response.data.data?.token;
+
+      if (isSuccess && hasToken) {
         // Extract user data based on what's present in the response
         let user: { id: string; email: string; name: string } | null = null;
         let mappedUserType = "staff"; // default
@@ -167,6 +177,7 @@ class AuthService {
             id: responseData.propertyManager.id,
             email: responseData.propertyManager.email,
             name:
+              responseData.propertyManager.fullName ||
               responseData.propertyManager.contactPerson ||
               responseData.propertyManager.companyName ||
               "Property Manager",
@@ -190,7 +201,7 @@ class AuthService {
         // Transform backend response to frontend format
         const transformedResponse: LoginResponse = {
           success: true,
-          message: "Login successful",
+          message: response.data.message || "Login successful",
           data: {
             user: {
               id: user.id,
@@ -203,7 +214,8 @@ class AuthService {
         };
 
         // Store token in localStorage
-        localStorage.setItem("authToken", response.data.data.token);
+        const token = response.data.data.token;
+        localStorage.setItem("authToken", token);
         localStorage.setItem(
           "userData",
           JSON.stringify(transformedResponse.data!.user)
@@ -267,8 +279,10 @@ class AuthService {
       let endpoint = "/v1/auth/forgot-password";
 
       // Use different endpoint for property managers
-      if (userType === "propertyManager" || userType === "agent") {
+      if (userType === "agent") {
         endpoint = "/v1/agency/auth/forgot-password";
+      } else if (userType === "propertyManager") {
+        endpoint = "/api/property-manager/auth/forgot-password";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {
@@ -310,8 +324,10 @@ class AuthService {
       let endpoint = "/v1/auth/verify-otp";
 
       // Use different endpoint for property managers
-      if (userType === "propertyManager" || userType === "agent") {
+      if (userType === "agent") {
         endpoint = "/v1/agency/auth/verify-otp";
+      } else if (userType === "propertyManager") {
+        endpoint = "/api/property-manager/auth/verify-otp";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {
@@ -357,8 +373,10 @@ class AuthService {
       let endpoint = "/v1/auth/reset-password";
 
       // Use different endpoint for property managers
-      if (userType === "propertyManager" || userType === "agent") {
+      if (userType === "agent") {
         endpoint = "/v1/agency/auth/reset-password";
+      } else if (userType === "propertyManager") {
+        endpoint = "/api/property-manager/auth/reset-password";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {

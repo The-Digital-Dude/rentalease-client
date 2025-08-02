@@ -9,7 +9,7 @@ import { defaultRoutes } from "../../config/roleBasedRoutes";
 import "./LoginForm.scss";
 
 interface LoginFormProps {
-  userType: "admin" | "agent" | "technician";
+  userType: "admin" | "agent" | "technician" | "propertyManager";
   title: string;
   subtitle: string;
   icon: React.ReactNode;

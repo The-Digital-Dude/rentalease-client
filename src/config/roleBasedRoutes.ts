@@ -7,6 +7,7 @@ export const defaultRoutes: Record<UserType, string> = {
   staff: "/dashboard",
   tenant: "/dashboard",
   technician: "/dashboard",
+  property_manager: "/dashboard",
 };
 
 // Define the allowed routes for each user type
@@ -34,6 +35,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "completedJobs",
     "myPayments",
   ],
+  property_manager: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
 };
 
 // Helper function to get the base route for a user type

@@ -21,6 +21,7 @@ const TenantDashboard = lazy(
   () => import("../pages/TenantDashboard/TenantDashboard")
 );
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
+const AgencyJobs = lazy(() => import("../pages/AgencyJobs/AgencyJobs"));
 const Contacts = lazy(
   () => import("../pages/ContactsCommunication/ContactsCommunication")
 );
@@ -61,6 +62,7 @@ export const routeConfig = (userType: UserType) => {
     staff: StaffDashboard,
     tenant: TenantDashboard,
     agencies: Agencies,
+    agencyJobs: AgencyJobs,
     contacts: Contacts,
     reports: Reports,
     region: RegionManagement,

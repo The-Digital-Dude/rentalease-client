@@ -402,4 +402,20 @@ export const agencyService = {
       );
     }
   },
+
+  // Get agency jobs with filters and pagination
+  getJobs: async (
+    queryParams: string
+  ): Promise<{
+    status: string;
+    message: string;
+    data: any;
+  }> => {
+    try {
+      const response = await api.get(`/v1/jobs?${queryParams}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Failed to fetch jobs");
+    }
+  },
 };

@@ -13,6 +13,7 @@ const labelMap: Record<string, string> = {
   dashboard: "Dashboard",
   devDashboard: "DevDashboard",
   agencies: "Agencies",
+  agencyJobs: "Jobs",
   jobs: "Jobs",
   properties: "Properties",
   technician: "Technicians",

@@ -28,6 +28,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "properties",
     "contacts",
     "propertyManagerManagement",
+    "agencyJobs",
   ],
   staff: ["dashboard", "jobs", "contacts"],
   tenant: ["dashboard", "contacts"],

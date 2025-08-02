@@ -2,6 +2,7 @@ export { default as Dashboard } from "./Dashboard";
 export { default as DevDashboard } from "./DevDashboard";
 export { default as SuperUserDashboard } from "./SuperUserDashboard";
 export { default as AgencyDashboard } from "./AgencyDashboard";
+export { default as AgencyJobs } from "./AgencyJobs";
 export { default as Agencies } from "./Agencies";
 export { default as JobManagement } from "./JobManagement";
 export { default as Properties } from "./Properties";

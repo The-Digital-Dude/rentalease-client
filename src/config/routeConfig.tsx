@@ -8,6 +8,9 @@ const DevDashboard = lazy(() => import("../pages/DevDashboard/DevDashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
 const Technician = lazy(() => import("../pages/Technician/Technician"));
+const PropertyManagerManagement = lazy(
+  () => import("../pages/PropertyManagerManagement/PropertyManagerManagement")
+);
 const TechnicianDashboard = lazy(
   () => import("../pages/TechnicianDashboard/TechnicianDashboard")
 );
@@ -54,6 +57,7 @@ export const routeConfig = (userType: UserType) => {
     properties: Properties,
     jobs: Jobs,
     technician: Technician,
+    propertyManagerManagement: PropertyManagerManagement,
     staff: StaffDashboard,
     tenant: TenantDashboard,
     agencies: Agencies,

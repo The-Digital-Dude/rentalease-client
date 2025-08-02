@@ -130,7 +130,7 @@ class AuthService {
       if (userType === "agent") {
         endpoint = "/v1/agency/auth/login";
       } else if (userType === "propertyManager") {
-        endpoint = "/api/property-manager/auth/login";
+        endpoint = "/v1/property-manager/auth/login";
       } else if (userType === "technician") {
         endpoint = "/v1/technician/auth/login";
       }
@@ -282,7 +282,7 @@ class AuthService {
       if (userType === "agent") {
         endpoint = "/v1/agency/auth/forgot-password";
       } else if (userType === "propertyManager") {
-        endpoint = "/api/property-manager/auth/forgot-password";
+        endpoint = "/v1/property-manager/auth/forgot-password";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {
@@ -327,7 +327,7 @@ class AuthService {
       if (userType === "agent") {
         endpoint = "/v1/agency/auth/verify-otp";
       } else if (userType === "propertyManager") {
-        endpoint = "/api/property-manager/auth/verify-otp";
+        endpoint = "/v1/property-manager/auth/verify-otp";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {
@@ -376,7 +376,7 @@ class AuthService {
       if (userType === "agent") {
         endpoint = "/v1/agency/auth/reset-password";
       } else if (userType === "propertyManager") {
-        endpoint = "/api/property-manager/auth/reset-password";
+        endpoint = "/v1/property-manager/auth/reset-password";
       }
 
       const response = await api.post<BackendApiResponse>(endpoint, {

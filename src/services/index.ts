@@ -3,6 +3,7 @@ export { default as authService } from "./authService";
 export { default as jobService } from "./jobService";
 export { agencyService } from "./agencyService";
 export { default as technicianService } from "./technicianService";
+export { default as propertyManagerService } from "./propertyManagerService";
 export { default as staffService } from "./staffService";
 export { notificationService } from "./notificationService";
 
@@ -23,6 +24,18 @@ export type {
   UpdateStaffData,
   StaffApiResponse,
 } from "./staffService";
+
+// Re-export types from propertyManagerService
+export type {
+  PropertyManager,
+  AssignedProperty,
+  PropertyManagerFilters,
+  CreatePropertyManagerData,
+  UpdatePropertyManagerData,
+  PropertyManagerApiResponse,
+  AssignPropertyManagerData,
+  BulkAssignPropertyManagerData,
+} from "./propertyManagerService";
 
 // Technician-related types
 export interface Technician {

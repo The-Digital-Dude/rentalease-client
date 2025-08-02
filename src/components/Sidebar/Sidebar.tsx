@@ -16,6 +16,7 @@ const labelMap: Record<string, string> = {
   jobs: "Jobs",
   properties: "Properties",
   technician: "Technicians",
+  propertyManagerManagement: "Property Managers",
   staff: "My Staff",
   contacts: "Contacts",
   reports: "Reports",
@@ -60,6 +61,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           );
         })}
       </nav>
+      <div className="sidebar-footer">
+        <p className="developer-credit">
+          Developed By{" "}
+          <a
+            href="https://rokoautomation.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="roko-link"
+          >
+            Roko Automation
+          </a>
+        </p>
+      </div>
     </aside>
   );
 };

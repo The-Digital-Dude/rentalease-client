@@ -22,7 +22,14 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "staff",
     "reports",
   ],
-  agency: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
+  agency: [
+    "dashboard",
+    "devDashboard",
+    "properties",
+    "contacts",
+    "reports",
+    "propertyManagerManagement",
+  ],
   staff: ["dashboard", "devDashboard", "jobs", "contacts"],
   tenant: ["dashboard", "devDashboard", "contacts"],
   technician: [
@@ -35,7 +42,13 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "completedJobs",
     "myPayments",
   ],
-  property_manager: ["dashboard", "devDashboard", "properties", "contacts", "reports"],
+  property_manager: [
+    "dashboard",
+    "devDashboard",
+    "properties",
+    "contacts",
+    "reports",
+  ],
 };
 
 // Helper function to get the base route for a user type

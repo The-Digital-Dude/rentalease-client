@@ -56,6 +56,8 @@ export interface Property {
     email?: string;
     phone?: string;
   };
+  propertyManager?: string;
+  rentAmount?: number;
   currentTenant: PropertyTenant;
   currentLandlord: PropertyLandlord;
   complianceSchedule?: ComplianceSchedule;

@@ -1,6 +1,6 @@
-import React from 'react';
-import { RiSearchLine, RiFilterLine } from 'react-icons/ri';
-import './SearchFilterBar.scss';
+import React from "react";
+import { RiSearchLine, RiFilterLine, RiCloseLine } from "react-icons/ri";
+import "./SearchFilterBar.scss";
 
 export interface FilterOption {
   value: string;
@@ -21,6 +21,7 @@ interface SearchFilterBarProps {
   searchPlaceholder?: string;
   filters?: FilterConfig[];
   className?: string;
+  onClearAll?: () => void;
 }
 
 const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
@@ -28,8 +29,18 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   onSearchChange,
   searchPlaceholder = "Search...",
   filters = [],
-  className = ''
+  className = "",
+  onClearAll,
 }) => {
+  const hasActiveFilters =
+    searchValue || filters.some((filter) => filter.value !== "all");
+
+  const handleClearAll = () => {
+    onSearchChange("");
+    filters.forEach((filter) => filter.onChange("all"));
+    onClearAll?.();
+  };
+
   return (
     <div className={`search-filter-bar ${className}`}>
       <div className="search-box">
@@ -60,10 +71,21 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
               </select>
             </div>
           ))}
+
+          {hasActiveFilters && (
+            <button
+              className="clear-filters-btn"
+              onClick={handleClearAll}
+              title="Clear all filters"
+            >
+              <RiCloseLine />
+              Clear All
+            </button>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default SearchFilterBar; 
+export default SearchFilterBar;

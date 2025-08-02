@@ -298,9 +298,18 @@ class PropertyManagerService {
   ): Promise<PropertyManagerApiResponse> {
     try {
       const response: AxiosResponse<PropertyManagerApiResponse> =
-        await api.post("/v1/property-managers", data);
+        await api.post("/v1/property-manager/auth/register", data);
 
-      return response.data;
+      // Normalize the response - if HTTP status is 2xx, treat as success
+      const normalizedResponse = {
+        ...response.data,
+        success:
+          response.status >= 200 && response.status < 300
+            ? true
+            : response.data.success,
+      };
+
+      return normalizedResponse;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Failed to create PropertyManager"
@@ -317,7 +326,16 @@ class PropertyManagerService {
       const response: AxiosResponse<PropertyManagerApiResponse> =
         await api.patch(`/v1/property-managers/${id}`, updateData);
 
-      return response.data;
+      // Normalize the response - if HTTP status is 2xx, treat as success
+      const normalizedResponse = {
+        ...response.data,
+        success:
+          response.status >= 200 && response.status < 300
+            ? true
+            : response.data.success,
+      };
+
+      return normalizedResponse;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Failed to update PropertyManager"

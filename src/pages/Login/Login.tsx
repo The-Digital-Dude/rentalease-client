@@ -30,9 +30,9 @@ const Login = () => {
               <RiUser3Line />
             </div>
             <div className="option-content">
-              <h3>Agent Login</h3>
+              <h3>Agency Login</h3>
               <p>
-                Access your agent dashboard, manage properties, and handle
+                Access your Agency dashboard, manage properties, and handle
                 client requests
               </p>
             </div>
@@ -48,8 +48,8 @@ const Login = () => {
             <div className="option-content">
               <h3>Property Manager Login</h3>
               <p>
-                Access property management portal, oversee properties, and manage
-                property operations
+                Access property management portal, oversee properties, and
+                manage property operations
               </p>
             </div>
             <div className="option-arrow">

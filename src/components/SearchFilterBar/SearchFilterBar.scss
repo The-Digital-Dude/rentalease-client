@@ -112,6 +112,37 @@
         }
       }
     }
+
+    .clear-filters-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ef4444;
+      border-radius: 0.5rem;
+      background: white;
+      color: #ef4444;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+
+      &:hover {
+        background: #ef4444;
+        color: white;
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      @media (max-width: 768px) {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   }
 
   // Responsive adjustments
@@ -119,10 +150,10 @@
     .filters-container {
       flex-direction: column;
       gap: 0.5rem;
-      
+
       .filter-box {
         min-width: 0;
       }
     }
   }
-} 
+}

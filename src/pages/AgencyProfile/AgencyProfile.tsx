@@ -33,7 +33,7 @@ const AgencyProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "properties" | "jobs" | "staff"
+    "overview" | "properties" | "jobs" | "technicians"
   >("overview");
 
   useEffect(() => {
@@ -104,7 +104,7 @@ const AgencyProfile: React.FC = () => {
     );
   }
 
-  const { agency, statistics, properties, jobs, staff } = agencyData;
+  const { agency, statistics, properties, jobs, technicians } = agencyData;
 
   // Calculate new properties this month
   const now = new Date();
@@ -137,9 +137,9 @@ const AgencyProfile: React.FC = () => {
       color: "green",
     },
     {
-      title: "Active Staff",
-      value: statistics.totalStaff,
-      change: `${statistics.staffAvailability.available} available`,
+      title: "Active Technicians",
+      value: statistics.totalTechnicians,
+      change: `${statistics.technicianAvailability.available} available`,
       changeType: "positive",
       icon: RiTeamLine,
       color: "purple",
@@ -260,11 +260,11 @@ const AgencyProfile: React.FC = () => {
           Jobs ({statistics.totalJobs})
         </button>
         <button
-          className={`tab-btn ${activeTab === "staff" ? "active" : ""}`}
-          onClick={() => setActiveTab("staff")}
+          className={`tab-btn ${activeTab === "technicians" ? "active" : ""}`}
+          onClick={() => setActiveTab("technicians")}
         >
           <RiTeamLine />
-          Staff ({statistics.totalStaff})
+          Technicians ({statistics.totalTechnicians})
         </button>
       </div>
 
@@ -396,22 +396,25 @@ const AgencyProfile: React.FC = () => {
                 </div>
 
                 <div className="performance-card">
-                  <h3>Staff Availability</h3>
+                  <h3>Technician Availability</h3>
                   <div className="status-list">
                     <div className="status-item">
                       <span className="status-dot available"></span>
                       <span>
-                        Available: {statistics.staffAvailability.available}
+                        Available: {statistics.technicianAvailability.available}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot busy"></span>
-                      <span>Busy: {statistics.staffAvailability.busy}</span>
+                      <span>
+                        Busy: {statistics.technicianAvailability.busy}
+                      </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot unavailable"></span>
                       <span>
-                        Unavailable: {statistics.staffAvailability.unavailable}
+                        Unavailable:{" "}
+                        {statistics.technicianAvailability.unavailable}
                       </span>
                     </div>
                   </div>
@@ -582,11 +585,11 @@ const AgencyProfile: React.FC = () => {
           </div>
         )}
 
-        {activeTab === "staff" && (
-          <div className="staff-content">
+        {activeTab === "technicians" && (
+          <div className="technicians-content">
             <div className="section-header">
-              <h2>Staff Members ({staff.length})</h2>
-              <p>Agency staff and their current status</p>
+              <h2>Technicians ({technicians.length})</h2>
+              <p>Agency technicians and their current status</p>
             </div>
 
             <div className="table-container">
@@ -603,7 +606,7 @@ const AgencyProfile: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {staff.map((member) => (
+                  {technicians.map((member) => (
                     <tr key={member.id}>
                       <td>
                         <strong>{member.fullName}</strong>

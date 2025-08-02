@@ -158,7 +158,9 @@ const PropertyManagerManagementPage = () => {
         setError(response.message || "Failed to fetch PropertyManagers");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to fetch PropertyManagers");
+      const errorMessage = err.message || "Failed to fetch PropertyManagers";
+      setError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -251,6 +253,7 @@ const PropertyManagerManagementPage = () => {
     });
     setFormErrors({});
     setIsSubmitting(false);
+    setEditingPropertyManager(null);
   };
 
   // Handle edit PropertyManager
@@ -314,6 +317,7 @@ const PropertyManagerManagementPage = () => {
     e.preventDefault();
 
     if (!validateForm()) {
+      toast.error("❌ Please fix the form errors before submitting.");
       return;
     }
 
@@ -340,9 +344,14 @@ const PropertyManagerManagementPage = () => {
           updateData
         );
 
+        console.log(response, "response...");
+
         if (response.success) {
           toast.success(
-            `✅ PropertyManager ${formData.firstName} ${formData.lastName} updated successfully!`
+            `✅ ${
+              response.message ||
+              `PropertyManager ${formData.firstName} ${formData.lastName} updated successfully!`
+            }`
           );
           closeModals();
           fetchPropertyManagers(); // Refresh the property manager list
@@ -373,11 +382,30 @@ const PropertyManagerManagementPage = () => {
 
         if (response.success) {
           toast.success(
-            `✅ PropertyManager ${formData.firstName} ${formData.lastName} created successfully!`
+            `✅ ${
+              response.message ||
+              `PropertyManager ${formData.firstName} ${formData.lastName} created successfully!`
+            }`
           );
           resetForm();
           setActiveTab("directory");
-          fetchPropertyManagers(); // Refresh the property manager list
+          // Refresh the property manager list with current filters
+          fetchPropertyManagers({
+            page: 1,
+            limit: pagination.itemsPerPage,
+            search: searchTerm,
+            ...(filterBy !== "all" && {
+              ...(filterBy === "active" ||
+              filterBy === "inactive" ||
+              filterBy === "suspended" ||
+              filterBy === "pending"
+                ? {
+                    status:
+                      filterBy.charAt(0).toUpperCase() + filterBy.slice(1),
+                  }
+                : { availabilityStatus: filterBy }),
+            }),
+          });
         } else {
           throw new Error(
             response.message || "Failed to create PropertyManager"
@@ -386,14 +414,14 @@ const PropertyManagerManagementPage = () => {
       }
     } catch (err: any) {
       console.error("Error saving PropertyManager:", err);
-      toast.error(
-        `❌ ${
-          err.response?.data?.message ||
-          `Failed to ${
-            editingPropertyManager ? "update" : "create"
-          } PropertyManager. Please try again.`
-        }`
-      );
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        `Failed to ${
+          editingPropertyManager ? "update" : "create"
+        } PropertyManager. Please try again.`;
+
+      toast.error(`❌ ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -516,14 +544,10 @@ const PropertyManagerManagementPage = () => {
       label: "Directory",
       icon: RiBuilding2Line,
     },
-    {
-      id: "calendar",
-      label: "Calendar",
-      icon: RiCalendarLine,
-    },
+
     {
       id: "add",
-      label: "Add PropertyManager",
+      label: "Add Property Manager",
       icon: RiUserAddLine,
     },
   ];
@@ -580,9 +604,6 @@ const PropertyManagerManagementPage = () => {
               </optgroup>
             </select>
           </div>
-          <button className="btn-primary" onClick={() => setActiveTab("add")}>
-            <RiUserAddLine /> Add PropertyManager
-          </button>
         </div>
       </div>
 
@@ -597,7 +618,14 @@ const PropertyManagerManagementPage = () => {
         <div className="error-state">
           <RiErrorWarningLine className="error-icon" />
           <p>{error}</p>
-          <button onClick={() => fetchPropertyManagers()}>Try Again</button>
+          <button
+            onClick={() => {
+              toast.success("🔄 Reloading property managers...");
+              fetchPropertyManagers();
+            }}
+          >
+            Try Again
+          </button>
         </div>
       )}
 

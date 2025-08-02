@@ -13,6 +13,7 @@ import propertyService, {
   type Property,
   type CreatePropertyData,
 } from "../../services/propertyService";
+import toast from "react-hot-toast";
 import {
   RiHomeLine,
   RiUser3Line,
@@ -57,6 +58,7 @@ const Properties = () => {
       console.error("Error loading properties:", error);
       setError(error.message || "Failed to load properties");
       setProperties([]);
+      toast.error("Failed to load properties. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -106,17 +108,20 @@ const Properties = () => {
         if (response.status === "success") {
           setIsFormModalOpen(false);
           await loadProperties();
+          toast.success("Property updated successfully!");
         }
       } else {
         const response = await propertyService.createProperty(propertyData);
         if (response.status === "success") {
           setIsFormModalOpen(false);
           await loadProperties();
+          toast.success("Property created successfully!");
         }
       }
     } catch (error: any) {
       console.error("Error submitting property:", error);
       setError(error.message || "Failed to save property");
+      toast.error("Failed to save property.");
     } finally {
       setIsSubmitting(false);
     }
@@ -136,10 +141,12 @@ const Properties = () => {
         setIsDeleteModalOpen(false);
         setDeletingProperty(null);
         await loadProperties();
+        toast.success("Property deleted successfully!");
       }
     } catch (error: any) {
       console.error("Error deleting property:", error);
       setError(error.message || "Failed to delete property");
+      toast.error("Failed to delete property.");
     } finally {
       setIsSubmitting(false);
     }

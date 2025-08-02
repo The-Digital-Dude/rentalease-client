@@ -14,7 +14,7 @@ export const defaultRoutes: Record<UserType, string> = {
 export const allowedRoutes: Record<UserType, string[]> = {
   super_user: [
     "dashboard",
-    "devDashboard",
+    // "devDashboard",
     "agencies",
     "properties",
     "jobs",
@@ -24,17 +24,16 @@ export const allowedRoutes: Record<UserType, string[]> = {
   ],
   agency: [
     "dashboard",
-    "devDashboard",
+    // "devDashboard",
     "properties",
     "contacts",
-    "reports",
     "propertyManagerManagement",
   ],
-  staff: ["dashboard", "devDashboard", "jobs", "contacts"],
-  tenant: ["dashboard", "devDashboard", "contacts"],
+  staff: ["dashboard", "jobs", "contacts"],
+  tenant: ["dashboard", "contacts"],
   technician: [
     "devDashboard",
-    "dashboard",
+    // "dashboard",
     "availableJobs",
     "myJobs",
     "activeJobs",
@@ -44,7 +43,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
   ],
   property_manager: [
     "dashboard",
-    "devDashboard",
+    // "devDashboard",
     "properties",
     "contacts",
     "reports",

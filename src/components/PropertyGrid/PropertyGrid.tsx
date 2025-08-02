@@ -1,11 +1,11 @@
-import React from 'react';
-import SearchFilterBar from '../SearchFilterBar';
-import PropertyCard from '../PropertyCard';
-import EmptyState from '../EmptyState';
-import type { Property } from '../PropertyCard/PropertyCard';
-import type { FilterConfig } from '../SearchFilterBar';
-import { RiHomeLine } from 'react-icons/ri';
-import './PropertyGrid.scss';
+import React from "react";
+import SearchFilterBar from "../SearchFilterBar";
+import PropertyCard from "../PropertyCard";
+import EmptyState from "../EmptyState";
+import type { Property } from "../PropertyCard/PropertyCard";
+import type { FilterConfig } from "../SearchFilterBar";
+import { RiHomeLine } from "react-icons/ri";
+import "./PropertyGrid.scss";
 
 interface PropertyGridProps {
   properties: Property[];
@@ -23,6 +23,7 @@ interface PropertyGridProps {
     onClick: () => void;
   };
   className?: string;
+  onClearAll?: () => void;
 }
 
 const PropertyGrid: React.FC<PropertyGridProps> = ({
@@ -37,7 +38,8 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({
   emptyStateTitle = "No Properties Found",
   emptyStateDescription = "No properties found matching your criteria.",
   emptyStateAction,
-  className = ''
+  className = "",
+  onClearAll,
 }) => {
   return (
     <div className={`property-grid-container ${className}`}>
@@ -46,6 +48,7 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({
         onSearchChange={onSearchChange}
         searchPlaceholder={searchPlaceholder}
         filters={filters}
+        onClearAll={onClearAll}
       />
 
       {properties.length > 0 ? (
@@ -72,4 +75,4 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({
   );
 };
 
-export default PropertyGrid; 
+export default PropertyGrid;

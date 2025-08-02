@@ -20,6 +20,9 @@ export interface Property {
     email?: string;
     phone?: string;
   };
+  propertyManager?: string;
+  bedrooms?: number;
+  rentAmount?: number;
   region:
     | "Sydney Metro"
     | "Melbourne Metro"

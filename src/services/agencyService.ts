@@ -55,7 +55,7 @@ export interface AgencyProfile {
   statistics: {
     totalProperties: number;
     totalJobs: number;
-    totalStaff: number;
+    totalPropertyManagers: number;
     jobStatusCounts: {
       pending: number;
       scheduled: number;
@@ -67,7 +67,7 @@ export interface AgencyProfile {
       inactive: number;
       maintenance: number;
     };
-    staffAvailability: {
+    propertyManagerAvailability: {
       available: number;
       busy: number;
       unavailable: number;
@@ -139,13 +139,13 @@ export interface AgencyProfile {
     completedAt?: string;
     createdAt?: string;
   }>;
-  staff: Array<{
+  propertyManagers: Array<{
     id: string;
     fullName: string;
-    tradeType: string;
+    email: string;
+    phone: string;
     availabilityStatus: string;
-    currentJobs: number;
-    hourlyRate: number;
+    assignedPropertiesCount: number;
     status: string;
     createdAt?: string;
   }>;

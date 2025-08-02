@@ -33,7 +33,7 @@ const AgencyProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "properties" | "jobs" | "technicians"
+    "overview" | "properties" | "jobs" | "propertyManagers"
   >("overview");
 
   useEffect(() => {
@@ -89,13 +89,13 @@ const AgencyProfile: React.FC = () => {
     );
   }
 
-  if (error || !agencyData) {
+  if (error) {
     return (
       <div className="page-container">
         <div className="error-state">
           <RiAlertLine />
           <h3>Error Loading Agency</h3>
-          <p>{error || "Agency not found"}</p>
+          <p>{error}</p>
           <button onClick={handleBack} className="btn-primary">
             Back to Agencies
           </button>
@@ -104,7 +104,28 @@ const AgencyProfile: React.FC = () => {
     );
   }
 
-  const { agency, statistics, properties, jobs, technicians } = agencyData;
+  if (!agencyData) {
+    return (
+      <div className="page-container">
+        <div className="error-state">
+          <RiAlertLine />
+          <h3>Agency Not Found</h3>
+          <p>The requested agency could not be found.</p>
+          <button onClick={handleBack} className="btn-primary">
+            Back to Agencies
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    agency,
+    statistics,
+    properties = [],
+    jobs = [],
+    propertyManagers = [],
+  } = agencyData;
 
   // Calculate new properties this month
   const now = new Date();
@@ -122,7 +143,7 @@ const AgencyProfile: React.FC = () => {
   const statsCards = [
     {
       title: "Total Properties",
-      value: statistics.totalProperties,
+      value: statistics?.totalProperties || 0,
       change: `+${newPropertiesThisMonth} this month`,
       changeType: newPropertiesThisMonth > 0 ? "positive" : "neutral",
       icon: RiHomeLine,
@@ -130,24 +151,30 @@ const AgencyProfile: React.FC = () => {
     },
     {
       title: "Total Jobs",
-      value: statistics.totalJobs,
-      change: `${statistics.jobStatusCounts.completed} completed`,
+      value: statistics?.totalJobs || 0,
+      change: `${statistics?.jobStatusCounts?.completed || 0} completed`,
       changeType: "positive",
       icon: RiToolsLine,
       color: "green",
     },
     {
-      title: "Active Technicians",
-      value: statistics.totalTechnicians,
-      change: `${statistics.technicianAvailability.available} available`,
+      title: "Property Managers",
+      value: statistics?.totalPropertyManagers || 0,
+      change: `${
+        statistics?.propertyManagerAvailability?.available || 0
+      } available`,
       changeType: "positive",
       icon: RiTeamLine,
       color: "purple",
     },
     {
       title: "Job Value",
-      value: `$${statistics.financials.totalJobValue.toLocaleString()}`,
-      change: `$${statistics.financials.averageJobValue.toFixed(0)} avg`,
+      value: `$${(
+        statistics?.financials?.totalJobValue || 0
+      ).toLocaleString()}`,
+      change: `$${(statistics?.financials?.averageJobValue || 0).toFixed(
+        0
+      )} avg`,
       changeType: "neutral",
       icon: RiMoneyDollarBoxLine,
       color: "orange",
@@ -198,15 +225,21 @@ const AgencyProfile: React.FC = () => {
         </button>
         <div className="header-content">
           <div className="agency-info">
-            <h1>{agency.companyName}</h1>
-            <p className="agency-region">{agency.region}</p>
+            <h1>{agency?.companyName || "Unknown Agency"}</h1>
+            <p className="agency-region">
+              {agency?.region || "Unknown Region"}
+            </p>
             <div className="agency-meta">
               <span
-                className={`status-badge ${getStatusBadgeClass(agency.status)}`}
+                className={`status-badge ${getStatusBadgeClass(
+                  agency?.status
+                )}`}
               >
-                {agency.status}
+                {agency?.status || "Unknown"}
               </span>
-              <span className="compliance-level">{agency.compliance}</span>
+              <span className="compliance-level">
+                {agency?.compliance || "Unknown"}
+              </span>
             </div>
           </div>
           <div className="header-actions">
@@ -250,21 +283,23 @@ const AgencyProfile: React.FC = () => {
           onClick={() => setActiveTab("properties")}
         >
           <RiHomeLine />
-          Properties ({statistics.totalProperties})
+          Properties ({statistics?.totalProperties || 0})
         </button>
         <button
           className={`tab-btn ${activeTab === "jobs" ? "active" : ""}`}
           onClick={() => setActiveTab("jobs")}
         >
           <RiToolsLine />
-          Jobs ({statistics.totalJobs})
+          Jobs ({statistics?.totalJobs || 0})
         </button>
         <button
-          className={`tab-btn ${activeTab === "technicians" ? "active" : ""}`}
-          onClick={() => setActiveTab("technicians")}
+          className={`tab-btn ${
+            activeTab === "propertyManagers" ? "active" : ""
+          }`}
+          onClick={() => setActiveTab("propertyManagers")}
         >
           <RiTeamLine />
-          Technicians ({statistics.totalTechnicians})
+          Property Managers ({statistics?.totalPropertyManagers || 0})
         </button>
       </div>
 
@@ -283,28 +318,28 @@ const AgencyProfile: React.FC = () => {
                       <RiUser3Line />
                       <div>
                         <label>Contact Person</label>
-                        <span>{agency.contactPerson}</span>
+                        <span>{agency?.contactPerson || "N/A"}</span>
                       </div>
                     </div>
                     <div className="contact-item">
                       <RiMailLine />
                       <div>
                         <label>Email</label>
-                        <span>{agency.email}</span>
+                        <span>{agency?.email || "N/A"}</span>
                       </div>
                     </div>
                     <div className="contact-item">
                       <RiPhoneLine />
                       <div>
                         <label>Phone</label>
-                        <span>{agency.phone}</span>
+                        <span>{agency?.phone || "N/A"}</span>
                       </div>
                     </div>
                     <div className="contact-item">
                       <RiMapPinLine />
                       <div>
                         <label>Region</label>
-                        <span>{agency.region}</span>
+                        <span>{agency?.region || "N/A"}</span>
                       </div>
                     </div>
                   </div>
@@ -315,22 +350,22 @@ const AgencyProfile: React.FC = () => {
                   <div className="business-info">
                     <div className="business-item">
                       <label>ABN</label>
-                      <span>{agency.abn}</span>
+                      <span>{agency?.abn || "N/A"}</span>
                     </div>
                     <div className="business-item">
                       <label>Compliance Package</label>
-                      <span>{agency.compliance}</span>
+                      <span>{agency?.compliance || "N/A"}</span>
                     </div>
                     <div className="business-item">
                       <label>Outstanding Amount</label>
                       <span className="amount">
-                        ${agency.outstandingAmount?.toLocaleString() || 0}
+                        ${(agency?.outstandingAmount || 0).toLocaleString()}
                       </span>
                     </div>
                     <div className="business-item">
                       <label>Joined Date</label>
                       <span>
-                        {agency.joinedDate
+                        {agency?.joinedDate
                           ? formatDateTime(agency.joinedDate)
                           : "N/A"}
                       </span>
@@ -349,23 +384,27 @@ const AgencyProfile: React.FC = () => {
                   <div className="status-list">
                     <div className="status-item">
                       <span className="status-dot pending"></span>
-                      <span>Pending: {statistics.jobStatusCounts.pending}</span>
+                      <span>
+                        Pending: {statistics?.jobStatusCounts?.pending || 0}
+                      </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot scheduled"></span>
                       <span>
-                        Scheduled: {statistics.jobStatusCounts.scheduled}
+                        Scheduled: {statistics?.jobStatusCounts?.scheduled || 0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot completed"></span>
                       <span>
-                        Completed: {statistics.jobStatusCounts.completed}
+                        Completed: {statistics?.jobStatusCounts?.completed || 0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot overdue"></span>
-                      <span>Overdue: {statistics.jobStatusCounts.overdue}</span>
+                      <span>
+                        Overdue: {statistics?.jobStatusCounts?.overdue || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -376,45 +415,50 @@ const AgencyProfile: React.FC = () => {
                     <div className="status-item">
                       <span className="status-dot active"></span>
                       <span>
-                        Active: {statistics.propertyStatusCounts.active}
+                        Active: {statistics?.propertyStatusCounts?.active || 0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot inactive"></span>
                       <span>
-                        Inactive: {statistics.propertyStatusCounts.inactive}
+                        Inactive:{" "}
+                        {statistics?.propertyStatusCounts?.inactive || 0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot maintenance"></span>
                       <span>
                         Maintenance:{" "}
-                        {statistics.propertyStatusCounts.maintenance}
+                        {statistics?.propertyStatusCounts?.maintenance || 0}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="performance-card">
-                  <h3>Technician Availability</h3>
+                  <h3>Property Manager Availability</h3>
                   <div className="status-list">
                     <div className="status-item">
                       <span className="status-dot available"></span>
                       <span>
-                        Available: {statistics.technicianAvailability.available}
+                        Available:{" "}
+                        {statistics?.propertyManagerAvailability?.available ||
+                          0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot busy"></span>
                       <span>
-                        Busy: {statistics.technicianAvailability.busy}
+                        Busy:{" "}
+                        {statistics?.propertyManagerAvailability?.busy || 0}
                       </span>
                     </div>
                     <div className="status-item">
                       <span className="status-dot unavailable"></span>
                       <span>
                         Unavailable:{" "}
-                        {statistics.technicianAvailability.unavailable}
+                        {statistics?.propertyManagerAvailability?.unavailable ||
+                          0}
                       </span>
                     </div>
                   </div>
@@ -585,11 +629,11 @@ const AgencyProfile: React.FC = () => {
           </div>
         )}
 
-        {activeTab === "technicians" && (
-          <div className="technicians-content">
+        {activeTab === "propertyManagers" && (
+          <div className="property-managers-content">
             <div className="section-header">
-              <h2>Technicians ({technicians.length})</h2>
-              <p>Agency technicians and their current status</p>
+              <h2>Property Managers ({propertyManagers.length})</h2>
+              <p>Agency property managers and their current status</p>
             </div>
 
             <div className="table-container">
@@ -597,50 +641,48 @@ const AgencyProfile: React.FC = () => {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Trade Type</th>
+                    <th>Email</th>
+                    <th>Phone</th>
                     <th>Availability</th>
-                    <th>Current Jobs</th>
-                    <th>Hourly Rate</th>
+                    <th>Assigned Properties</th>
                     <th>Status</th>
                     <th>Joined</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {technicians.map((member) => (
-                    <tr key={member.id}>
+                  {propertyManagers.map((manager) => (
+                    <tr key={manager.id}>
                       <td>
-                        <strong>{member.fullName}</strong>
+                        <strong>{manager.fullName}</strong>
                       </td>
-                      <td>{member.tradeType}</td>
+                      <td>{manager.email}</td>
+                      <td>{manager.phone}</td>
                       <td>
                         <span
                           className={`status-badge ${getStatusBadgeClass(
-                            member.availabilityStatus
+                            manager.availabilityStatus
                           )}`}
                         >
-                          {member.availabilityStatus}
+                          {manager.availabilityStatus}
                         </span>
                       </td>
                       <td>
-                        <span className="jobs-count">{member.currentJobs}</span>
-                      </td>
-                      <td>
-                        <span className="hourly-rate">
-                          ${member.hourlyRate}/hr
+                        <span className="properties-count">
+                          {manager.assignedPropertiesCount}
                         </span>
                       </td>
                       <td>
                         <span
                           className={`status-badge ${getStatusBadgeClass(
-                            member.status
+                            manager.status
                           )}`}
                         >
-                          {member.status}
+                          {manager.status}
                         </span>
                       </td>
                       <td>
-                        {member.createdAt
-                          ? formatDateTime(member.createdAt)
+                        {manager.createdAt
+                          ? formatDateTime(manager.createdAt)
                           : "N/A"}
                       </td>
                     </tr>

@@ -1,0 +1,103 @@
+.user-profile {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  margin: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    .user-avatar {
+      transform: scale(1.05);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+    margin-right: 0.75rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #1e293b;
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 0.6875rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .user-profile {
+    margin: 0.5rem;
+    padding: 0.625rem;
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 0.8125rem;
+      margin-right: 0.625rem;
+    }
+
+    .user-info {
+      .user-name {
+        font-size: 0.8125rem;
+      }
+
+      .user-role {
+        font-size: 0.6875rem;
+      }
+
+      .user-email {
+        font-size: 0.625rem;
+      }
+    }
+  }
+}

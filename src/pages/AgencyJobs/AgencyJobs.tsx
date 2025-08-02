@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
   RiSearchLine,
@@ -100,6 +101,7 @@ interface JobsResponse {
 }
 
 const AgencyJobs = () => {
+  const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.user);
   const [jobs, setJobs] = useState<AgencyJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,6 +277,10 @@ const AgencyJobs = () => {
     });
   };
 
+  const handleViewJob = (jobId: string) => {
+    navigate(`/jobs/${jobId}`);
+  };
+
   if (loading) {
     return (
       <div className="agency-jobs">
@@ -319,10 +325,6 @@ const AgencyJobs = () => {
             >
               <RiRefreshLine className={refreshing ? "spinning" : ""} />
               {refreshing ? "Refreshing..." : "Refresh"}
-            </button>
-            <button className="btn btn-primary">
-              <RiDownloadLine />
-              Export
             </button>
           </div>
         </div>
@@ -534,7 +536,6 @@ const AgencyJobs = () => {
                   )}
                 </th>
                 <th>Technician</th>
-                <th>Cost</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -561,7 +562,7 @@ const AgencyJobs = () => {
                     <div className="property-info">
                       <div className="property-address">
                         <RiMapPinLine />
-                        <span>{job.property.address.fullAddress}</span>
+                        <span>{job.property.address.street}</span>
                       </div>
                       <div className="property-type">
                         {job.property.address.state}{" "}
@@ -604,30 +605,15 @@ const AgencyJobs = () => {
                       <span className="no-technician">Unassigned</span>
                     )}
                   </td>
-                  <td>
-                    {job.totalCost && job.totalCost > 0 ? (
-                      <div className="cost-info">
-                        <span className="total-cost">
-                          {formatCurrency(job.totalCost)}
-                        </span>
-                        <div className="cost-breakdown">
-                          <span>Total cost</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="no-cost">Not set</span>
-                    )}
-                  </td>
+
                   <td>
                     <div className="actions">
-                      <button className="action-btn view" title="View Details">
+                      <button
+                        className="action-btn view"
+                        title="View Details"
+                        onClick={() => handleViewJob(job.id)}
+                      >
                         <RiEyeLine />
-                      </button>
-                      <button className="action-btn edit" title="Edit Job">
-                        <RiEditLine />
-                      </button>
-                      <button className="action-btn more" title="More Options">
-                        <RiMoreLine />
                       </button>
                     </div>
                   </td>

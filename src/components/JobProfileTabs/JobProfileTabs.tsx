@@ -139,17 +139,6 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Cost Breakdown */}
-            <div className="cost-section">
-              <h2>Cost Breakdown</h2>
-              <div className="cost-grid">
-                <div className="cost-card total">
-                  <h3>Material Cost</h3>
-                  <div className="cost-amount">${statistics.totalCost}</div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -203,12 +192,12 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                 </div>
               </div>
 
-              {job.description && (
+              {/* {job.description && (
                 <div className="detail-card full-width">
                   <h3>Description</h3>
                   <div className="description-text">{job.description}</div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         )}

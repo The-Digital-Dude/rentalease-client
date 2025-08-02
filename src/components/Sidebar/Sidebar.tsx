@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAppSelector } from "../../store";
 import { allowedRoutes } from "../../config/roleBasedRoutes";
 import type { UserType } from "../../store/userSlice";
+import { UserProfile } from "../UserProfile";
 import "./Sidebar.scss";
 
 interface SidebarProps {
@@ -62,6 +63,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           );
         })}
       </nav>
+      <UserProfile />
       <div className="sidebar-footer">
         <p className="developer-credit">
           Developed By{" "}

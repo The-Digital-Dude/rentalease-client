@@ -34,6 +34,7 @@
     gap: 0.25rem;
     overflow-y: auto;
     flex: 1;
+    margin-bottom: 0.5rem;
 
     .nav-link {
       display: flex;
@@ -61,7 +62,7 @@
   }
 
   .sidebar-footer {
-    padding: 1rem 0.75rem;
+    padding: 0.75rem 0.75rem;
     border-top: 1px solid #e2e8f0;
     background: #f8fafc;
     flex-shrink: 0;

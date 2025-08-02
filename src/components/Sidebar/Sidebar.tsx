@@ -17,6 +17,7 @@ const labelMap: Record<string, string> = {
   agencyJobs: "Jobs",
   jobs: "Jobs",
   properties: "Properties",
+  propertyAssignment: "Property Assignment",
   technician: "Technicians",
   propertyManagerManagement: "Property Managers",
   staff: "My Staff",

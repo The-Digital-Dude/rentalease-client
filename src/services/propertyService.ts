@@ -148,6 +148,54 @@ export interface PropertyFilters {
   sortOrder?: "asc" | "desc";
 }
 
+export interface PropertyManager {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  status: string;
+  availabilityStatus: string;
+  assignedPropertiesCount: number;
+}
+
+export interface AssignedPropertyManager {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  availabilityStatus: string;
+  status: string;
+}
+
+export interface AvailablePropertyManagersResponse {
+  status: "success" | "error";
+  message?: string;
+  data: {
+    propertyManagers: PropertyManager[];
+    totalCount: number;
+  };
+}
+
+export interface AssignmentSummary {
+  propertyId: string;
+  fullAddress: string;
+  fullName?: string | null;
+  assignedPropertyManager?: AssignedPropertyManager;
+  assignmentStatus: "Assigned" | "Unassigned";
+}
+
+export interface AssignmentSummaryResponse {
+  status: "success" | "error";
+  message?: string;
+  data: AssignmentSummary;
+}
+
+export interface AssignPropertyManagerData {
+  propertyManagerId: string;
+  role?: "Primary" | "Secondary";
+}
+
 // Property Service Class
 class PropertyService {
   private baseUrl = "/v1/properties";
@@ -344,7 +392,55 @@ class PropertyService {
     const today = new Date();
     const inspection = new Date(inspectionDate);
     const diffTime = inspection.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    return diffWeeks;
+  }
+
+  // Property Manager Assignment Methods
+  async getAvailablePropertyManagers(): Promise<AvailablePropertyManagersResponse> {
+    try {
+      const response: AxiosResponse<AvailablePropertyManagersResponse> =
+        await api.get(`${this.baseUrl}/available-property-managers`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch available property managers"
+      );
+    }
+  }
+
+  async getAssignmentSummary(
+    propertyId: string
+  ): Promise<AssignmentSummaryResponse> {
+    try {
+      const response: AxiosResponse<AssignmentSummaryResponse> = await api.get(
+        `${this.baseUrl}/${propertyId}/assignment-summary`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch assignment summary"
+      );
+    }
+  }
+
+  async assignPropertyManager(
+    propertyId: string,
+    assignmentData: AssignPropertyManagerData
+  ): Promise<{ status: string; message: string }> {
+    try {
+      const response: AxiosResponse<{ status: string; message: string }> =
+        await api.post(
+          `${this.baseUrl}/${propertyId}/assign-property-manager`,
+          assignmentData
+        );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to assign property manager"
+      );
+    }
   }
 }
 

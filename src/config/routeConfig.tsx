@@ -6,6 +6,7 @@ import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const DevDashboard = lazy(() => import("../pages/DevDashboard/DevDashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
+const PropertyAssignment = lazy(() => import("../pages/PropertyAssignment/PropertyAssignment"));
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
 const Technician = lazy(() => import("../pages/Technician/Technician"));
 const PropertyManagerManagement = lazy(
@@ -56,6 +57,7 @@ export const routeConfig = (userType: UserType) => {
     dashboard: Dashboard,
     devDashboard: DevDashboard,
     properties: Properties,
+    propertyAssignment: PropertyAssignment,
     jobs: Jobs,
     technician: Technician,
     propertyManagerManagement: PropertyManagerManagement,

@@ -26,6 +26,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "dashboard",
     // "devDashboard",
     "properties",
+    "propertyAssignment",
     "contacts",
     "propertyManagerManagement",
     "agencyJobs",

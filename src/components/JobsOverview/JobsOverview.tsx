@@ -7,11 +7,12 @@ import {
   RiMoreLine,
   RiEdit2Line,
   RiEyeLine,
+  RiLoader4Line,
 } from "react-icons/ri";
 import "./JobsOverview.scss";
 import JobFormModal, { type JobFormData } from "../JobFormModal";
 import type { ComponentJob } from "../../utils/jobAdapter";
-import type { ComponentTechnician } from "../../utils/staffAdapter";
+import type { ComponentTechnician } from "../../utils/technicianAdapter";
 
 interface JobsOverviewProps {
   filteredJobs: ComponentJob[];
@@ -34,6 +35,8 @@ interface JobsOverviewProps {
   technicians: ComponentTechnician[];
   onJobUpdate: (updatedJob: ComponentJob) => void;
   properties: { id: string; fullAddress: string }[];
+  isAssigningJob?: boolean;
+  assigningJobId?: string | null;
 }
 
 const JobsOverview: React.FC<JobsOverviewProps> = ({
@@ -54,6 +57,8 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   technicians,
   onJobUpdate,
   properties,
+  isAssigningJob = false,
+  assigningJobId = null,
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<ComponentJob | null>(null);
@@ -198,11 +203,15 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
             {filteredJobs.map((job) => (
               <tr
                 key={job.id}
-                className={
+                className={`${
                   isOverdue(job.dueDate) && job.status !== "Completed"
                     ? "overdue-row"
                     : ""
-                }
+                } ${
+                  isAssigningJob && assigningJobId === job.id
+                    ? "assigning-row"
+                    : ""
+                }`}
               >
                 <td className="job-id-cell">{job.job_id}</td>
                 <td className="address-cell">{job.propertyAddress}</td>
@@ -222,7 +231,14 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                 <td className="technician-cell">
                   <div className="technician-cell-items">
                     <RiUserLine />
-                    {job.assignedTechnician || "Unassigned"}
+                    {isAssigningJob && assigningJobId === job.id ? (
+                      <div className="loading-indicator">
+                        <RiLoader4Line className="spinner" />
+                        <span>Assigning...</span>
+                      </div>
+                    ) : (
+                      job.assignedTechnician || "Unassigned"
+                    )}
                   </div>
                 </td>
                 <td>
@@ -252,7 +268,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                   >
                     <RiEdit2Line />
                   </button>
-                  <button
+                  {/* <button
                     className="action-btn"
                     onClick={() =>
                       setShowActionMenu(
@@ -261,7 +277,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                     }
                   >
                     <RiMoreLine />
-                  </button>
+                  </button> */}
                   {showActionMenu === job.id && (
                     <div className="action-menu">
                       <button onClick={() => handleEditClick(job)}>

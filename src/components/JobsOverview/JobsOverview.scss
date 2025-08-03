@@ -380,6 +380,40 @@
   }
 }
 
+// Loading states
+.assigning-row {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    color: #3b82f6;
+    animation: spin 1s linear infinite;
+  }
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // Responsive table
 @media (max-width: 768px) {
   .jobs-table-container {

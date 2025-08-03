@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../Modal";
+import type { ComponentTechnician } from "../../utils/technicianAdapter";
 import "./JobFormModal.scss";
 
 export interface JobFormData {
@@ -12,14 +13,6 @@ export interface JobFormData {
   status?: "Pending" | "Scheduled" | "Completed" | "Overdue";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
-}
-
-interface Technician {
-  id: string;
-  name: string;
-  specialties: string[];
-  availability: "Available" | "Busy" | "Off Duty";
-  currentJobs: number;
 }
 
 interface Property {
@@ -37,7 +30,7 @@ interface JobFormModalProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => void;
-  technicians: Technician[];
+  technicians: ComponentTechnician[];
   properties: Property[];
   mode: "create" | "edit";
 }
@@ -170,8 +163,9 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
                 })
                 .map((technician) => (
                   <option key={technician.id} value={technician.id}>
-                    {technician.name} ({technician.currentJobs} jobs) -{" "}
-                    {technician.availability}
+                    {technician.name} - {technician.email} (
+                    {technician.currentJobs}/{technician.maxJobs} jobs,{" "}
+                    {technician.experience}y exp) - {technician.availability}
                   </option>
                 ))}
             </select>

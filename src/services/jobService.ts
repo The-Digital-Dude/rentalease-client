@@ -112,7 +112,10 @@ export interface JobsResponse {
     };
     statistics: {
       statusCounts: Record<string, number>;
-      totalJobs: number;
+      totalJobs?: number;
+      jobTypeCounts?: Record<string, number>;
+      priorityCounts?: Record<string, number>;
+      totalAvailableJobs?: number;
     };
   };
 }
@@ -176,7 +179,10 @@ export interface JobApiResponse {
   };
   statistics?: {
     statusCounts: Record<string, number>;
-    totalJobs: number;
+    totalJobs?: number;
+    jobTypeCounts?: Record<string, number>;
+    priorityCounts?: Record<string, number>;
+    totalAvailableJobs?: number;
   };
 }
 

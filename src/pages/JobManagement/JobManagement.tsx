@@ -6,18 +6,19 @@ import {
   JobAllocationTool,
   JobsOverview,
 } from "../../components";
-import { jobService, staffService } from "../../services";
+import { jobService } from "../../services";
+import technicianService from "../../services/technicianService";
 import propertyService from "../../services/propertyService";
 import type {
   Job as ServiceJob,
   CreateJobData,
 } from "../../services/jobService";
-import type { Staff as ServiceStaff } from "../../services/staffService";
+import type { Technician as ServiceTechnician } from "../../services/technicianService";
 import type { Property } from "../../services/propertyService";
 import type { ComponentJob } from "../../utils/jobAdapter";
 import { adaptServiceJobToComponentJob } from "../../utils/jobAdapter";
-import type { ComponentTechnician } from "../../utils/staffAdapter";
-import { adaptServiceStaffToComponentTechnician } from "../../utils/staffAdapter";
+import type { ComponentTechnician } from "../../utils/technicianAdapter";
+import { adaptServiceTechnicianToComponentTechnician } from "../../utils/technicianAdapter";
 import "./JobManagement.scss";
 
 interface JobFormData {
@@ -51,6 +52,8 @@ const JobManagement = () => {
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAssigningJob, setIsAssigningJob] = useState(false);
+  const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -65,7 +68,7 @@ const JobManagement = () => {
       const [jobsResponse, techResponse, propertiesResponse] =
         await Promise.all([
           jobService.getJobs(),
-          staffService.getStaff(),
+          technicianService.getTechnicians(),
           propertyService.getProperties({ limit: 100 }),
         ]);
 
@@ -76,10 +79,11 @@ const JobManagement = () => {
 
       let componentTechnicians: ComponentTechnician[] = [];
 
-      if (techResponse.success && techResponse.data) {
-        const staffData = techResponse.data as ServiceStaff[];
-        componentTechnicians = staffData.map(
-          adaptServiceStaffToComponentTechnician
+      if (techResponse.status === "success" && techResponse.data.technicians) {
+        const technicianData = techResponse.data
+          .technicians as ServiceTechnician[];
+        componentTechnicians = technicianData.map(
+          adaptServiceTechnicianToComponentTechnician
         );
         setTechnicians(componentTechnicians);
       } else {
@@ -223,6 +227,9 @@ const JobManagement = () => {
       }
 
       try {
+        setIsAssigningJob(true);
+        setAssigningJobId(draggedJob.id);
+
         // Use the new assignJob endpoint
         const response = await jobService.assignJob(
           draggedJob.id,
@@ -251,6 +258,9 @@ const JobManagement = () => {
         }
       } catch (err) {
         setError("Failed to assign job");
+      } finally {
+        setIsAssigningJob(false);
+        setAssigningJobId(null);
       }
     }
     setDraggedJob(null);
@@ -324,6 +334,9 @@ const JobManagement = () => {
   const handleUpdateJob = async (updatedJob: ComponentJob) => {
     try {
       setError(null);
+      setIsAssigningJob(true);
+      setAssigningJobId(updatedJob.id);
+
       const updatePayload: any = {
         jobType: updatedJob.jobType,
         dueDate: updatedJob.dueDate,
@@ -343,6 +356,9 @@ const JobManagement = () => {
       }
     } catch (err) {
       setError("Failed to update job");
+    } finally {
+      setIsAssigningJob(false);
+      setAssigningJobId(null);
     }
   };
 
@@ -389,6 +405,8 @@ const JobManagement = () => {
         handleDragStart={handleDragStart}
         handleDragOver={handleDragOver}
         handleDrop={handleDrop}
+        isAssigningJob={isAssigningJob}
+        assigningJobId={assigningJobId}
       />
 
       {/* Jobs Overview */}
@@ -410,6 +428,8 @@ const JobManagement = () => {
         technicians={technicians}
         onJobUpdate={handleUpdateJob}
         properties={properties}
+        isAssigningJob={isAssigningJob}
+        assigningJobId={assigningJobId}
       />
 
       {/* Create Job Form Modal */}

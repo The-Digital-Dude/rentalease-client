@@ -1,5 +1,5 @@
 import type { Job as ServiceJob } from "../services/jobService";
-import type { ComponentTechnician } from "./staffAdapter";
+import type { ComponentTechnician } from "./technicianAdapter";
 
 export interface ComponentJob {
   id: string;
@@ -37,12 +37,26 @@ export const adaptServiceJobToComponentJob = (
       }
     } else {
       const technicianObj = serviceJob.assignedTechnician as {
-        fullName: string;
+        fullName?: string;
+        firstName?: string;
+        lastName?: string;
+        name?: string;
       };
-      assignedTechnicianName = technicianObj.fullName;
+
+      // Try to get the name from various possible fields
+      if (technicianObj.fullName) {
+        assignedTechnicianName = technicianObj.fullName;
+      } else if (technicianObj.firstName && technicianObj.lastName) {
+        assignedTechnicianName = `${technicianObj.firstName} ${technicianObj.lastName}`;
+      } else if (technicianObj.name) {
+        assignedTechnicianName = technicianObj.name;
+      } else {
+        assignedTechnicianName = "Unknown Technician";
+      }
+
       if (technicians) {
         const technician = technicians.find(
-          (tech) => tech.name === technicianObj.fullName
+          (tech) => tech.name === assignedTechnicianName
         );
         assignedTechnicianId = technician?.id || "";
       }

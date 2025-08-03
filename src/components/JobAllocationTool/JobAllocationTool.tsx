@@ -1,9 +1,9 @@
 import React from "react";
-import { RiDragDropLine, RiUserLine } from "react-icons/ri";
+import { RiDragDropLine, RiUserLine, RiLoader4Line } from "react-icons/ri";
 import { formatDateTime } from "../../utils";
 import "./JobAllocationTool.scss";
 import type { ComponentJob } from "../../utils/jobAdapter";
-import type { ComponentTechnician } from "../../utils/staffAdapter";
+import type { ComponentTechnician } from "../../utils/technicianAdapter";
 
 interface JobAllocationToolProps {
   jobs: ComponentJob[];
@@ -12,6 +12,8 @@ interface JobAllocationToolProps {
   handleDragStart: (e: React.DragEvent, job: ComponentJob) => void;
   handleDragOver: (e: React.DragEvent) => void;
   handleDrop: (e: React.DragEvent, technicianId: string) => void;
+  isAssigningJob?: boolean;
+  assigningJobId?: string | null;
 }
 
 const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
@@ -21,6 +23,8 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
   handleDragStart,
   handleDragOver,
   handleDrop,
+  isAssigningJob = false,
+  assigningJobId = null,
 }) => {
   const pendingJobs = jobs.filter((job) => job.status === "Pending");
 
@@ -40,8 +44,10 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
             {pendingJobs.map((job) => (
               <div
                 key={job.id}
-                className="draggable-job"
-                draggable
+                className={`draggable-job ${
+                  isAssigningJob && assigningJobId === job.id ? "assigning" : ""
+                }`}
+                draggable={!isAssigningJob}
                 onDragStart={(e) => handleDragStart(e, job)}
               >
                 <div className="job-header">
@@ -63,46 +69,88 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                     {job.priority}
                   </span>
                 </div>
+                {isAssigningJob && assigningJobId === job.id && (
+                  <div className="loading-overlay">
+                    <RiLoader4Line className="spinner" />
+                    <span>Assigning...</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
 
         <div className="technicians-grid">
-          {technicians.map((technician) => (
-            <div
-              key={technician.id}
-              className={`technician-card ${technician.availability
-                .toLowerCase()
-                .replace(" ", "-")}`}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, technician.id)}
-            >
-              <div className="technician-header">
-                <h4>{technician.name}</h4>
-                <span
-                  className={`availability ${technician.availability
-                    .toLowerCase()
-                    .replace(" ", "-")}`}
-                >
-                  {technician.availability}
-                </span>
-              </div>
-              <div className="technician-info">
-                <div className="specialties">
-                  {technician.specialties.map((specialty) => (
-                    <span key={specialty} className="specialty-tag">
-                      {specialty}
-                    </span>
-                  ))}
+          <h3>Available Technicians</h3>
+          {technicians.map((technician) => {
+            console.log(technician, "technician");
+            return (
+              <div
+                key={technician.id}
+                className={`technician-card ${technician.availability
+                  .toLowerCase()
+                  .replace(" ", "-")} ${isAssigningJob ? "assigning" : ""}`}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, technician.id)}
+              >
+                <div className="technician-header">
+                  <h4>{technician.name}</h4>
+                  <span
+                    className={`availability ${technician.availability
+                      .toLowerCase()
+                      .replace(" ", "-")}`}
+                  >
+                    {technician.availability}
+                  </span>
                 </div>
-                <div className="workload">
-                  <RiUserLine />
-                  {technician.currentJobs} active jobs
+                <div className="technician-info">
+                  <div className="contact-info">
+                    <div className="email">{technician.email}</div>
+                    <div className="phone">{technician.phone}</div>
+                  </div>
+
+                  <div className="specialties">
+                    {technician.specialties.length > 0 ? (
+                      technician.specialties.map((specialty) => (
+                        <span key={specialty} className="specialty-tag">
+                          {specialty}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="specialty-tag">General</span>
+                    )}
+                  </div>
+
+                  <div className="stats">
+                    <div className="workload">
+                      <RiUserLine />
+                      {technician.currentJobs}/{technician.maxJobs} active jobs
+                    </div>
+                    <div className="experience">
+                      {technician.experience} years experience
+                    </div>
+                    {technician.completedJobs > 0 && (
+                      <div className="completed-jobs">
+                        {technician.completedJobs} completed
+                      </div>
+                    )}
+                    {technician.averageRating > 0 && (
+                      <div className="rating">
+                        ⭐ {technician.averageRating.toFixed(1)} (
+                        {technician.totalRatings})
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {isAssigningJob && (
+                  <div className="loading-overlay">
+                    <RiLoader4Line className="spinner" />
+                    <span>Processing...</span>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

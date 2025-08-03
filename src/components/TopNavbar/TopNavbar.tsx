@@ -35,8 +35,11 @@ const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
             <RiMenuLine />
           </button>
           <div className="navbar-logo">
-            <span className="logo-icon">RL</span>
-            <span className="logo-text">Rentalease</span>
+            <img
+              src="/rentalease-logo.png"
+              alt="RentalEase Logo"
+              className="logo-image"
+            />
           </div>
         </div>
         <div className="navbar-actions">

@@ -22,7 +22,7 @@ const labelMap: Record<string, string> = {
   propertyManagerManagement: "Property Managers",
   staff: "My Staff",
   contacts: "Contacts",
-  reports: "Reports",
+  // reports: "Reports",
   payment: "Payment",
   compliance: "Compliance",
   region: "Region Management",

@@ -1,0 +1,28 @@
+.public-layout {
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  .public-content {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .public-layout {
+    padding: 0.5rem;
+
+    .public-content {
+      border-radius: 8px;
+    }
+  }
+}

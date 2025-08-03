@@ -1,9 +1,11 @@
 import React from "react";
-import { RiArrowLeftLine, RiCheckLine } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
+import { RiArrowLeftLine, RiCheckLine, RiCalendarLine } from "react-icons/ri";
 import "./JobProfileHeader.scss";
 
 interface JobProfileHeaderProps {
   job: {
+    id: string;
     job_id: string;
     jobType: string;
     status: string;
@@ -26,6 +28,24 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
   getStatusBadgeClass,
   getPriorityBadgeClass,
 }) => {
+  const navigate = useNavigate();
+
+  const handleBookInspection = () => {
+    // Determine compliance type based on job type
+    let complianceType = "inspection";
+    if (job.jobType === "Gas") {
+      complianceType = "gas";
+    } else if (job.jobType === "Electrical") {
+      complianceType = "electrical";
+    } else if (job.jobType === "Smoke") {
+      complianceType = "smoke";
+    } else if (job.jobType === "Pool Safety") {
+      complianceType = "pool-safety";
+    }
+    
+    navigate(`/book-inspection/${job.id}/${complianceType}`);
+  };
+
   return (
     <div className="profile-header">
       <div className="header-content">
@@ -46,6 +66,13 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
           </div>
         </div>
         <div className="header-actions">
+          <button
+            onClick={handleBookInspection}
+            className="btn-secondary"
+          >
+            <RiCalendarLine />
+            Book Inspection
+          </button>
           {canComplete && (
             <button
               onClick={onCompleteJob}

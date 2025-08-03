@@ -11,7 +11,7 @@ import { restoreAuthState } from "./store/userSlice";
 import { routeConfig } from "./config/routeConfig";
 import { defaultRoutes } from "./config/roleBasedRoutes";
 import type { UserType } from "./store/userSlice";
-import { AppLayout } from "./components";
+import { AppLayout, PublicLayout } from "./components";
 import "./App.css";
 
 // Import pages
@@ -26,6 +26,7 @@ import {
 import PropertyProfile from "./pages/PropertyProfile";
 import AgencyProfile from "./pages/AgencyProfile";
 import JobProfile from "./pages/JobProfile";
+import InspectionBooking from "./pages/InspectionBooking";
 import DevDashboard from "./pages/DevDashboard";
 
 // Loading component for Suspense fallback
@@ -84,55 +85,80 @@ const App = () => {
   const userRoutes = userType ? routeConfig(userType as UserType) : [];
 
   return (
-    <AppLayout>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/login/admin" element={<AdminLogin />} />
-          <Route path="/login/agent" element={<AgentLogin />} />
-          <Route path="/login/property-manager" element={<PropertyManagerLogin />} />
-          <Route path="/login/technician" element={<TechnicianLogin />} />
-          <Route path="/password-reset" element={<PasswordReset />} />
+    <Routes>
+      {/* Public Routes - No Authentication Required */}
+      <Route
+        path="/book-inspection/:propertyId/:complienceType"
+        element={
+          <PublicLayout>
+            <InspectionBooking />
+          </PublicLayout>
+        }
+      />
 
-          {/* DevDashboard Route - Accessible to all users */}
-          <Route path="/dev-dashboard" element={<DevDashboard />} />
+      {/* Protected Routes - Require Authentication */}
+      <Route
+        path="/*"
+        element={
+          <AppLayout>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/login/admin" element={<AdminLogin />} />
+                <Route path="/login/agent" element={<AgentLogin />} />
+                <Route
+                  path="/login/property-manager"
+                  element={<PropertyManagerLogin />}
+                />
+                <Route path="/login/technician" element={<TechnicianLogin />} />
+                <Route path="/password-reset" element={<PasswordReset />} />
 
-          {/* Protected Routes */}
-          {userRoutes.map((route) => (
-            <Route
-              key={route.path}
-              path={route.path}
-              element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  {route.element}
-                </Suspense>
-              }
-            />
-          ))}
+                {/* DevDashboard Route - Accessible to all users */}
+                <Route path="/dev-dashboard" element={<DevDashboard />} />
 
-          {/* Property Profile Route */}
-          <Route path="/properties/:id" element={<PropertyProfile />} />
+                {/* Protected Routes */}
+                {userRoutes.map((route) => (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        {route.element}
+                      </Suspense>
+                    }
+                  />
+                ))}
 
-          {/* Agency Profile Route */}
-          <Route path="/agencies/:id" element={<AgencyProfile />} />
+                {/* Property Profile Route */}
+                <Route path="/properties/:id" element={<PropertyProfile />} />
 
-          {/* Job Profile Route */}
-          <Route path="/jobs/:id" element={<JobProfile />} />
+                {/* Agency Profile Route */}
+                <Route path="/agencies/:id" element={<AgencyProfile />} />
 
-          {/* Default Route */}
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to={userType ? defaultRoutes[userType as UserType] : "/login"}
-                replace
-              />
-            }
-          />
-        </Routes>
-      </Suspense>
-    </AppLayout>
+                {/* Job Profile Route */}
+                <Route path="/jobs/:id" element={<JobProfile />} />
+
+                {/* Default Route */}
+                <Route
+                  path="/"
+                  element={
+                    <Navigate
+                      to={
+                        userType
+                          ? defaultRoutes[userType as UserType]
+                          : "/login"
+                      }
+                      replace
+                    />
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </AppLayout>
+        }
+      />
+    </Routes>
   );
 };
 

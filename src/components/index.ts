@@ -42,6 +42,7 @@ export { default as JobProfileStats } from "./JobProfileStats";
 export { default as JobProfileTabs } from "./JobProfileTabs";
 export { default as JobCompletionModal } from "./JobCompletionModal";
 export { UserProfile } from "./UserProfile";
+export { PublicLayout } from "./PublicLayout";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

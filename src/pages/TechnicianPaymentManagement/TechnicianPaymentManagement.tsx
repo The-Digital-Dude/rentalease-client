@@ -17,6 +17,8 @@ import {
   RiPieChartLine,
   RiBarChartLine,
   RiCalendarLine,
+  RiInformationLine,
+  RiCheckboxCircleLine,
 } from "react-icons/ri";
 import {
   BarChart,
@@ -107,6 +109,12 @@ const TechnicianPaymentManagement: React.FC = () => {
   const [selectedPayment, setSelectedPayment] =
     useState<TechnicianPayment | null>(null);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState<{
+    paymentId: string;
+    newStatus: string;
+    paymentData?: TechnicianPayment;
+  } | null>(null);
 
   const fetchPayments = useCallback(async () => {
     setLoading(currentPage === 1);
@@ -212,17 +220,26 @@ const TechnicianPaymentManagement: React.FC = () => {
       );
 
       if (response.data.status === "success") {
-        // Update the local state
+        // Update the local state with the returned payment data
+        const updatedPayment = response.data.data.payment;
         setPayments((prev) =>
           prev.map((payment) =>
             payment.id === paymentId
-              ? { ...payment, status: newStatus as any, notes }
+              ? {
+                  ...payment,
+                  status: updatedPayment.status,
+                  notes: updatedPayment.notes,
+                  paymentDate: updatedPayment.paymentDate,
+                }
               : payment
           )
         );
 
         // Refresh stats
         fetchPayments();
+        
+        // Show success message
+        alert(`Payment successfully marked as ${newStatus}!`);
       } else {
         throw new Error(
           response.data.message || "Failed to update payment status"
@@ -236,6 +253,24 @@ const TechnicianPaymentManagement: React.FC = () => {
           "Failed to update payment status"
       );
     }
+  };
+
+  const showPaymentConfirmation = (paymentId: string, newStatus: string, paymentData: TechnicianPayment) => {
+    setPendingPaymentAction({ paymentId, newStatus, paymentData });
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmPaymentUpdate = () => {
+    if (pendingPaymentAction) {
+      handleUpdatePaymentStatus(pendingPaymentAction.paymentId, pendingPaymentAction.newStatus);
+      setShowConfirmDialog(false);
+      setPendingPaymentAction(null);
+    }
+  };
+
+  const handleCancelPaymentUpdate = () => {
+    setShowConfirmDialog(false);
+    setPendingPaymentAction(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -633,7 +668,7 @@ const TechnicianPaymentManagement: React.FC = () => {
                           <button
                             className="btn btn-sm btn-success"
                             onClick={() =>
-                              handleUpdatePaymentStatus(payment.id, "Paid")
+                              showPaymentConfirmation(payment.id, "Paid", payment)
                             }
                             title="Mark as Paid"
                           >
@@ -762,7 +797,7 @@ const TechnicianPaymentManagement: React.FC = () => {
                 <button
                   className="btn btn-success"
                   onClick={() => {
-                    handleUpdatePaymentStatus(selectedPayment.id, "Paid");
+                    showPaymentConfirmation(selectedPayment.id, "Paid", selectedPayment);
                     setShowPaymentDetails(false);
                   }}
                 >
@@ -775,6 +810,89 @@ const TechnicianPaymentManagement: React.FC = () => {
                 onClick={() => setShowPaymentDetails(false)}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Confirmation Dialog */}
+      {showConfirmDialog && pendingPaymentAction && (
+        <div
+          className="modal-overlay"
+          onClick={handleCancelPaymentUpdate}
+        >
+          <div className="modal-content confirmation-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Confirm Payment Update</h3>
+              <button
+                className="modal-close"
+                onClick={handleCancelPaymentUpdate}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="confirmation-content">
+                <div className="confirmation-icon">
+                  <RiCheckboxCircleLine />
+                </div>
+                <div className="confirmation-details">
+                  <h4>Mark Payment as {pendingPaymentAction.newStatus}?</h4>
+                  <p>Are you sure you want to mark this payment as {pendingPaymentAction.newStatus.toLowerCase()}?</p>
+                  
+                  {pendingPaymentAction.paymentData && (
+                    <div className="payment-summary">
+                      <div className="summary-item">
+                        <span className="label">Payment:</span>
+                        <span className="value">{pendingPaymentAction.paymentData.paymentNumber}</span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="label">Technician:</span>
+                        <span className="value">
+                          {pendingPaymentAction.paymentData.technicianId.firstName} {pendingPaymentAction.paymentData.technicianId.lastName}
+                        </span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="label">Amount:</span>
+                        <span className="value amount">
+                          {formatCurrency(pendingPaymentAction.paymentData.amount)}
+                        </span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="label">Job Type:</span>
+                        <span className="value">{pendingPaymentAction.paymentData.jobType}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="confirmation-note">
+                    <RiInformationLine />
+                    <span>
+                      This action will set the payment date to <strong>{new Date().toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}</strong> and cannot be undone.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-secondary"
+                onClick={handleCancelPaymentUpdate}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-success"
+                onClick={handleConfirmPaymentUpdate}
+              >
+                <RiCheckLine />
+                Confirm Payment
               </button>
             </div>
           </div>

@@ -69,6 +69,8 @@ const InspectionBooking: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookedJobDetails, setBookedJobDetails] = useState<any>(null);
   const [formData, setFormData] = useState<BookingFormData>({
     selectedDate: "",
     selectedShift: "morning",
@@ -243,22 +245,21 @@ const InspectionBooking: React.FC = () => {
         throw new Error(responseData.message || "Failed to book inspection");
       }
 
+      // Set booking success state and show confirmation
+      setBookingSuccess(true);
+      setBookedJobDetails({
+        jobId: responseData.data?.job?.job_id || 'N/A',
+        jobType: getDisplayComplianceType(complienceType),
+        scheduledDate: formData.selectedDate,
+        scheduledShift: formData.selectedShift,
+        propertyAddress: jobData?.complianceData?.propertyAddress || 'N/A'
+      });
+
       setToast({
         message: "Inspection booked successfully!",
         type: "success",
         isVisible: true,
       });
-
-      // Show success message and stay on the page
-      // In a real implementation, you might redirect to a confirmation page
-      setTimeout(() => {
-        setToast({
-          message:
-            "Thank you for booking your inspection. You will receive a confirmation email shortly.",
-          type: "info",
-          isVisible: true,
-        });
-      }, 2000);
     } catch (err) {
       console.error("Error booking inspection:", err);
       setToast({
@@ -274,6 +275,22 @@ const InspectionBooking: React.FC = () => {
   // Helper function to ensure date is in YYYY-MM-DD format
   const ensureDateFormat = (dateString: string): string => {
     return dateString.split("T")[0];
+  };
+
+  // Helper function to get display name for compliance type
+  const getDisplayComplianceType = (complianceType: string) => {
+    switch (complianceType) {
+      case "gasCompliance":
+        return "Gas Compliance";
+      case "electricalSafety":
+        return "Electrical Safety";
+      case "smokeAlarms":
+        return "Smoke Alarms";
+      case "poolSafety":
+        return "Pool Safety";
+      default:
+        return "Compliance Inspection";
+    }
   };
 
   // Helper function to format compliance type for display
@@ -340,6 +357,110 @@ const InspectionBooking: React.FC = () => {
   }
 
   const availableDates = getAvailableDates(jobData.dueDate);
+
+  // Show success confirmation screen if booking was successful
+  if (bookingSuccess && bookedJobDetails) {
+    return (
+      <div className="inspection-booking-page">
+        <div className="booking-header">
+          <div className="header-content">
+            <div className="logo-section">
+              <img src="/rentalease-logo.png" alt="RentalEase" className="logo" />
+              <span className="app-name">RentalEase</span>
+            </div>
+          </div>
+          <h1>Booking Confirmed!</h1>
+        </div>
+
+        <div className="booking-container">
+          <div className="success-confirmation">
+            <div className="success-icon">
+              <RiCheckLine size={64} />
+            </div>
+            
+            <h2>Your Inspection Has Been Booked Successfully!</h2>
+            
+            <div className="booking-details-card">
+              <h3>Booking Details</h3>
+              <div className="booking-info">
+                <div className="info-row">
+                  <strong>Job ID:</strong>
+                  <span className="job-id">{bookedJobDetails.jobId}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Property:</strong>
+                  <span>{bookedJobDetails.propertyAddress}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Inspection Type:</strong>
+                  <span>{bookedJobDetails.jobType}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Scheduled Date:</strong>
+                  <span>{formatDateForDisplay(bookedJobDetails.scheduledDate)}</span>
+                </div>
+                <div className="info-row">
+                  <strong>Time Slot:</strong>
+                  <span className="shift-badge">
+                    {bookedJobDetails.scheduledShift === 'morning' ? 'Morning (9:00 AM - 12:00 PM)' : 
+                     bookedJobDetails.scheduledShift === 'afternoon' ? 'Afternoon (2:00 PM - 5:00 PM)' : 
+                     bookedJobDetails.scheduledShift === 'evening' ? 'Evening (5:00 PM - 8:00 PM)' : 
+                     'Full Day'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="next-steps">
+              <h3>What Happens Next?</h3>
+              <div className="steps-list">
+                <div className="step">
+                  <div className="step-number">1</div>
+                  <div className="step-content">
+                    <strong>Confirmation Email</strong>
+                    <p>You will receive a confirmation email with all the details within the next few minutes.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <div className="step-number">2</div>
+                  <div className="step-content">
+                    <strong>Technician Assignment</strong>
+                    <p>A qualified technician will be assigned to your job and will contact you before the inspection.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <div className="step-number">3</div>
+                  <div className="step-content">
+                    <strong>Inspection Day</strong>
+                    <p>The technician will arrive during your selected time slot to complete the inspection.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="contact-info">
+              <p><strong>Questions?</strong> Contact your property manager or our support team.</p>
+            </div>
+
+            <button 
+              className="btn-primary close-window" 
+              onClick={() => window.close()}
+            >
+              Close Window
+            </button>
+          </div>
+        </div>
+
+        {toast.isVisible && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast({ ...toast, isVisible: false })}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="inspection-booking-page">

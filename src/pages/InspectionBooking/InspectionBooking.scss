@@ -1,35 +1,30 @@
 .inspection-booking-page {
   width: 100%;
   padding: 2rem;
-  background: #fff;
+  background: #f9fafb;
   min-height: 100vh;
 
   .booking-header {
     margin-bottom: 2rem;
-
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
-
       .logo-section {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-
         .logo {
           height: 32px;
           width: auto;
         }
-
         .app-name {
           font-size: 1.25rem;
-          font-weight: 600;
+          font-weight: 700;
           color: #2c3e50;
         }
       }
-
       .btn-back {
         display: flex;
         align-items: center;
@@ -41,19 +36,17 @@
         color: #6c757d;
         cursor: pointer;
         transition: all 0.2s ease;
-
         &:hover {
           background: #e9ecef;
           color: #495057;
         }
       }
     }
-
     h1 {
       margin: 0;
       color: #2c3e50;
       font-size: 2rem;
-      font-weight: 600;
+      font-weight: 700;
     }
   }
 
@@ -369,6 +362,218 @@
       }
     }
   }
+
+  .success-confirmation {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    .success-icon {
+      background-color: #d1fae5;
+      border-radius: 50%;
+      width: 90px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      svg {
+        color: #10b981;
+        width: 40px;
+        height: 40px;
+      }
+    }
+    h2 {
+      color: #065f46;
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+    .booking-details-card {
+      background: #f9fafb;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      h3 {
+        color: #1f2937;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+      .booking-info {
+        text-align: left;
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.5rem 0;
+          border-bottom: 1px solid #e5e7eb;
+          transition: all 0.3s ease;
+          &:hover {
+            background: rgba(59, 130, 246, 0.05);
+            margin: 0 -1rem;
+            padding: 1rem;
+            border-radius: 8px;
+          }
+          &:last-child {
+            border-bottom: none;
+          }
+          strong {
+            color: #374151;
+            font-weight: 600;
+            font-size: 1rem;
+          }
+          span {
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 1rem;
+            &.job-id {
+              background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+              color: #1d4ed8;
+              padding: 0.5rem 1rem;
+              border-radius: 10px;
+              font-family: 'Monaco', 'Menlo', monospace;
+              font-size: 0.9rem;
+              letter-spacing: 0.5px;
+              border: 1px solid #93c5fd;
+            }
+            &.shift-badge {
+              background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+              color: #065f46;
+              padding: 0.5rem 1rem;
+              border-radius: 10px;
+              font-size: 0.9rem;
+              font-weight: 600;
+              border: 1px solid #86efac;
+            }
+          }
+        }
+      }
+    }
+    .next-steps {
+      text-align: left;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+      h3 {
+        color: #1e293b;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        position: relative;
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -0.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60px;
+          height: 3px;
+          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+          border-radius: 2px;
+        }
+      }
+      .steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        .step {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          padding: 1.5rem;
+          background: rgba(59, 130, 246, 0.05);
+          border-radius: 12px;
+          border-left: 4px solid #3b82f6;
+          transition: all 0.3s ease;
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+          }
+          .step-number {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+          }
+          .step-content {
+            flex: 1;
+            strong {
+              color: #1e293b;
+              display: block;
+              margin-bottom: 0.5rem;
+              font-size: 1.1rem;
+              font-weight: 600;
+            }
+            p {
+              color: #475569;
+              margin: 0;
+              line-height: 1.6;
+              font-size: 0.95rem;
+            }
+          }
+        }
+      }
+    }
+    .contact-info {
+      text-align: center;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, #ceffff, #e0ffe8);
+      border: 1px solid #b2f5ea;
+      border-radius: 12px;
+      p {
+        color: #065f46;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+      strong {
+        color: #047857;
+        font-weight: 700;
+      }
+    }
+    .close-window {
+      min-width: 220px;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5);
+      }
+      &:active {
+        transform: translateY(-1px);
+      }
+    }
+  }
 }
 
 @keyframes spin {
@@ -380,53 +585,37 @@
   }
 }
 
-// Responsive design
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @media (max-width: 768px) {
-  .inspection-booking-page {
+  .success-confirmation {
     padding: 1rem;
-
-    .booking-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-
-      h1 {
-        font-size: 1.5rem;
+    .booking-details-card {
+      padding: 1.5rem;
+      .booking-info .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        span {
+          margin-top: 0.25rem;
+        }
       }
     }
-
-    .booking-form {
-      .form-section {
-        .date-grid {
-          grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-          gap: 0.5rem;
-
-          .date-option {
-            min-height: 60px;
-            padding: 0.5rem;
-
-            .date-number {
-              font-size: 1.2rem;
-            }
-          }
-        }
-
-        .shift-options {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-
-          .shift-option {
-            padding: 1rem;
-          }
-        }
-      }
-
-      .form-actions {
-        flex-direction: column;
-
-        button {
-          width: 100%;
-        }
+    .next-steps .steps-list .step {
+      .step-number {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.75rem;
       }
     }
   }

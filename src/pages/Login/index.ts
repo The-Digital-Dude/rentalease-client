@@ -3,4 +3,5 @@ export { default as AdminLogin } from "./AdminLogin";
 export { AgentLogin } from "./AgentLogin";
 export { PropertyManagerLogin } from "./PropertyManagerLogin";
 export { TechnicianLogin } from "./TechnicianLogin";
+export { default as TeamMemberLogin } from "./TeamMemberLogin";
 export { default as PasswordReset } from "./PasswordReset";

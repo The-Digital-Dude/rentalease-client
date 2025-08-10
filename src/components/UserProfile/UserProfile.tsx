@@ -17,6 +17,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onClick }) => {
       tenant: "Tenant",
       technician: "Technician",
       property_manager: "Property Manager",
+      team_member: "Team Member",
     };
     return typeMap[type] || type;
   };

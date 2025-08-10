@@ -88,6 +88,11 @@ export interface BackendLoginResponse {
       name: string;
       email: string;
     };
+    teamMember?: {
+      id: string;
+      name: string;
+      email: string;
+    };
     token: string;
   };
 }
@@ -110,6 +115,7 @@ class AuthService {
       tenant: "tenant",
       agent: "agency", // Agents are now mapped to agency type
       technician: "technician",
+      teamMember: "team_member",
     };
 
     return typeMapping[backendType] || "staff"; // Default to staff if unknown
@@ -133,6 +139,8 @@ class AuthService {
         endpoint = "/v1/property-manager/auth/login";
       } else if (userType === "technician") {
         endpoint = "/v1/technician/auth/login";
+      } else if (userType === "teamMember") {
+        endpoint = "/v1/team-member/auth/login";
       }
 
       const response = await api.post<BackendLoginResponse>(endpoint, {
@@ -192,6 +200,9 @@ class AuthService {
         } else if (responseData.technician) {
           user = responseData.technician;
           mappedUserType = this.mapUserType("technician");
+        } else if (responseData.teamMember) {
+          user = responseData.teamMember;
+          mappedUserType = this.mapUserType("teamMember");
         }
 
         if (!user) {
@@ -406,6 +417,14 @@ class AuthService {
         throw new Error("An unexpected error occurred");
       }
     }
+  }
+
+  /**
+   * Team Member specific login method
+   */
+  async loginTeamMember(credentials: { email: string; password: string }) {
+    const response = await api.post("/v1/team-member/auth/login", credentials);
+    return response.data;
   }
 }
 

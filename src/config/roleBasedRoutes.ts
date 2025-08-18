@@ -24,6 +24,9 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "staff",
     "reports",
     "teamMembers",
+    "scheduled-jobs",
+    "overdue-jobs",
+    "completed-jobs",
   ],
   agency: [
     "dashboard",
@@ -33,6 +36,9 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "contacts",
     "propertyManagerManagement",
     "agencyJobs",
+    "scheduled-jobs",
+    "overdue-jobs",
+    "completed-jobs",
   ],
   staff: ["dashboard", "jobs", "contacts"],
   tenant: ["dashboard", "contacts"],
@@ -63,6 +69,9 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "technicianPayments",
     "staff",
     "reports",
+    "scheduled-jobs",
+    "overdue-jobs",
+    "completed-jobs",
   ],
 };
 

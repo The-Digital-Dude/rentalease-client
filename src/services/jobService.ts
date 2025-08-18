@@ -35,7 +35,7 @@ export interface Job {
     | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string | { fullName: string } | null;
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue";
+  status: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
   completedAt?: string;
@@ -85,7 +85,7 @@ export interface UpdateJobData {
   jobType?: "Gas" | "Electrical" | "Smoke" | "Repairs";
   dueDate?: string;
   assignedTechnician?: string;
-  status?: "Pending" | "Scheduled" | "Completed" | "Overdue";
+  status?: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
   description?: string;
   priority?: "Low" | "Medium" | "High" | "Urgent";
   estimatedDuration?: number;

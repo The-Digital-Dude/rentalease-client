@@ -20,9 +20,11 @@ import {
 import { useAppSelector } from "../../store";
 import {
   technicianService,
+  jobService,
   type Technician,
   type TechnicianFilters,
   type CreateTechnicianData,
+  type Job,
 } from "../../services";
 import "./Technician.scss";
 import toast from "react-hot-toast";
@@ -100,6 +102,8 @@ const TechnicianPage = () => {
   const [viewingTechnician, setViewingTechnician] = useState<Technician | null>(
     null
   );
+  const [technicianJobs, setTechnicianJobs] = useState<Job[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   // Get current user info for role-based display
   const { userType, name } = useAppSelector((state) => state.user);
@@ -333,9 +337,22 @@ const TechnicianPage = () => {
   };
 
   // Open view modal
-  const handleViewTechnician = (technician: Technician) => {
+  const handleViewTechnician = async (technician: Technician) => {
     setViewingTechnician(technician);
     setShowViewModal(true);
+    setLoadingJobs(true);
+    try {
+      const response = await jobService.getJobs({ assignedTechnician: technician.id });
+      if (response.success) {
+        setTechnicianJobs(response.data as Job[]);
+      } else {
+        toast.error("Failed to load technician's jobs.");
+      }
+    } catch (error) {
+      toast.error("Failed to load technician's jobs.");
+    } finally {
+      setLoadingJobs(false);
+    }
   };
 
   // Close modals
@@ -463,13 +480,16 @@ const TechnicianPage = () => {
 
   // Filter technicians based on current filters
   const filteredTechnicians = technicians.filter((technician) => {
+    const searchTermLower = searchTerm.toLowerCase();
     const matchesSearch =
       searchTerm === "" ||
       `${technician.firstName} ${technician.lastName}`
         .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      technician.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      technician.phone.includes(searchTerm);
+        .includes(searchTermLower) ||
+      technician.email.toLowerCase().includes(searchTermLower) ||
+      technician.phone.includes(searchTerm) ||
+      (technician.address.fullAddress &&
+        technician.address.fullAddress.toLowerCase().includes(searchTermLower));
 
     const matchesFilter =
       filterBy === "all" ||
@@ -511,7 +531,6 @@ const TechnicianPage = () => {
   const tabs = [
     { id: "directory", label: "Technician Directory", icon: RiTeamLine },
     { id: "calendar", label: "Availability Calendar", icon: RiCalendarLine },
-    { id: "add", label: "Add/Edit Technician", icon: RiUserAddLine },
   ];
 
   const availabilityStatuses = ["Available", "Busy", "Unavailable", "On Leave"];
@@ -1177,6 +1196,46 @@ const TechnicianPage = () => {
                 </div>
               </div>
             </div>
+            <div className="detail-section full-width">
+              <h4>Job History</h4>
+              {loadingJobs ? (
+                <div className="loading-state">
+                  <RiLoaderLine className="loading-icon" />
+                  <p>Loading jobs...</p>
+                </div>
+              ) : technicianJobs.length > 0 ? (
+                <div className="job-history-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Job ID</th>
+                        <th>Property</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {technicianJobs.map((job) => (
+                        <tr key={job.id}>
+                          <td>{job.job_id}</td>
+                          <td>{job.property.fullAddress}</td>
+                          <td>{job.jobType}</td>
+                          <td>
+                            <span className={`status-badge ${getStatusColor(job.status)}`}>
+                              {job.status}
+                            </span>
+                          </td>
+                          <td>{new Date(job.dueDate).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>No jobs found for this technician.</p>
+              )}
+            </div>
           </div>
           <div className="modal-footer">
             <button
@@ -1245,7 +1304,6 @@ const TechnicianPage = () => {
       <div className="tab-content">
         {activeTab === "directory" && renderDirectory()}
         {activeTab === "calendar" && renderCalendar()}
-        {activeTab === "add" && renderAddEditForm()}
       </div>
 
       {/* Modals */}

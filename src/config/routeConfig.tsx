@@ -45,6 +45,9 @@ const MyJobs = lazy(() => import("../pages/Technician/MyJobs"));
 const ActiveJobs = lazy(() => import("../pages/Technician/ActiveJobs"));
 const OverdueJobs = lazy(() => import("../pages/Technician/OverdueJobs"));
 const CompletedJobs = lazy(() => import("../pages/Technician/CompletedJobs"));
+const ScheduledJobs = lazy(() => import("../pages/ScheduledJobs/ScheduledJobs"));
+const SystemOverdueJobs = lazy(() => import("../pages/OverdueJobs/OverdueJobs"));
+const SystemCompletedJobs = lazy(() => import("../pages/CompletedJobs/CompletedJobs"));
 const MyPayments = lazy(() => import("../pages/Technician/MyPayments"));
 const TeamMemberManagement = lazy(
   () => import("../pages/TeamMemberManagement/TeamMemberManagement")
@@ -81,6 +84,10 @@ export const routeConfig = (userType: UserType) => {
     activeJobs: ActiveJobs,
     overdueJobs: OverdueJobs,
     completedJobs: CompletedJobs,
+    scheduledJobs: ScheduledJobs,
+    "overdue-jobs": SystemOverdueJobs,
+    "completed-jobs": SystemCompletedJobs,
+    "scheduled-jobs": ScheduledJobs,
     myPayments: MyPayments,
     technicianPayments: TechnicianPaymentManagement,
     teamMembers: TeamMemberManagement,

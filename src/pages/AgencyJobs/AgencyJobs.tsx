@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   RiBriefcaseLine,
   RiSearchLine,
@@ -102,6 +102,7 @@ interface JobsResponse {
 
 const AgencyJobs = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAppSelector((state) => state.user);
   const [jobs, setJobs] = useState<AgencyJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,6 +183,26 @@ const AgencyJobs = () => {
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  // Handle navigation state filters (from dashboard stats)
+  useEffect(() => {
+    const stateFilter = location.state?.filter;
+    if (stateFilter) {
+      const filterMap = {
+        'completed': { status: 'Completed' },
+        'overdue': { status: 'Overdue' }
+      };
+      
+      const newFilter = filterMap[stateFilter as keyof typeof filterMap];
+      if (newFilter) {
+        setFilters(prev => ({ ...prev, ...newFilter }));
+        // Clear the state to prevent re-applying on next visit
+        window.history.replaceState({}, document.title, location.pathname);
+        // Fetch jobs with the new filter
+        fetchJobs(1, newFilter);
+      }
+    }
+  }, [location.state]);
 
   const handleFilterChange = (key: keyof JobFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

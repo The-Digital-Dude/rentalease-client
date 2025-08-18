@@ -1,0 +1,73 @@
+.technician-payments-report {
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    .header-content {
+      h3 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+
+      p {
+        margin: 0;
+        color: #666;
+      }
+    }
+
+    .header-actions {
+      .btn-secondary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .payments-table {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background: #f8f9fa;
+      }
+
+      .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+
+        &.paid {
+          background: #d4edda;
+          color: #155724;
+        }
+
+        &.pending {
+          background: #fff3cd;
+          color: #856404;
+        }
+
+        &.failed {
+          background: #f8d7da;
+          color: #721c24;
+        }
+      }
+    }
+  }
+}

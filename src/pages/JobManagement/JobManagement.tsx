@@ -123,7 +123,8 @@ const JobManagement = () => {
     const matchesSearch =
       job.propertyAddress.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || job.status === statusFilter;
     const matchesType = typeFilter === "all" || job.jobType === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -143,6 +144,8 @@ const JobManagement = () => {
         return "status-pending";
       case "Overdue":
         return "status-overdue";
+      case "Cancelled":
+        return "status-cancelled";
       default:
         return "";
     }
@@ -291,8 +294,8 @@ const JobManagement = () => {
       const currentJob = jobs.find((job) => job.id === jobId);
       const wasAssigned = currentJob?.assignedTechnicianId;
 
-      // If marking as Pending and job was assigned, we need to unassign
-      if (newStatus === "Pending" && wasAssigned) {
+      // If marking as Pending or Cancelled and job was assigned, we need to unassign
+      if ((newStatus === "Pending" || newStatus === "Cancelled") && wasAssigned) {
         // Update job to unassign technician and change status
         const response = await jobService.updateJob(jobId, {
           status: newStatus,

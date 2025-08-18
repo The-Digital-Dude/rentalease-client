@@ -266,6 +266,8 @@ const TeamMemberManagement = () => {
                     <th>Status</th>
                     <th>Last Login</th>
                     <th>Created</th>
+                    <th>Created By</th>
+                    <th>Updated By</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -296,6 +298,8 @@ const TeamMemberManagement = () => {
                           : "Never"}
                       </td>
                       <td>{formatDate(teamMember.createdAt)}</td>
+                      <td>{teamMember.createdBy?.name || "N/A"}</td>
+                      <td>{teamMember.updatedBy?.name || "N/A"}</td>
                       <td>
                         <div className="actions">
                           <div className="dropdown">

@@ -35,7 +35,7 @@ const Dashboard = () => {
       case "super_user":
         return <SuperUserDashboard />;
       case "team_member":
-        return <SuperUserDashboard />;
+        return <StaffDashboard />;
       case "agency":
         return <AgencyDashboard />;
       default:

@@ -442,6 +442,73 @@ class PropertyService {
       );
     }
   }
+
+  // Document Upload
+  async uploadDocument(
+    propertyId: string,
+    file: File
+  ): Promise<PropertyResponse> {
+    try {
+      const formData = new FormData();
+      formData.append("document", file);
+
+      const response: AxiosResponse<PropertyResponse> = await api.post(
+        `${this.baseUrl}/${propertyId}/documents`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to upload document",
+        }
+      );
+    }
+  }
+
+  // Toggle Property Doubt Status
+  async togglePropertyDoubt(id: string): Promise<PropertyResponse> {
+    try {
+      const response: AxiosResponse<PropertyResponse> = await api.patch(
+        `${this.baseUrl}/${id}/toggle-doubt`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to toggle property doubt status",
+        }
+      );
+    }
+  }
+
+  // Assign Team Member to Property
+  async assignTeamMember(
+    id: string,
+    teamMemberId: string
+  ): Promise<PropertyResponse> {
+    try {
+      const response: AxiosResponse<PropertyResponse> = await api.post(
+        `${this.baseUrl}/${id}/assign-team-member`,
+        { teamMemberId }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to assign team member",
+        }
+      );
+    }
+  }
 }
 
 // Export singleton instance

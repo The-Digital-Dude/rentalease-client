@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RiBuildingLine,
   RiUserLine,
@@ -174,6 +175,7 @@ interface AgencyStats {
   activeJobs: number;
   completedJobs: number;
   overdueJobs: number;
+  scheduledJobs: number;
   completionRate: number;
   averageJobsPerProperty: number;
   averageJobsPerTechnician: number;
@@ -191,7 +193,8 @@ interface ChartData {
 }
 
 const AgencyDashboard = () => {
-  const { user } = useAppSelector((state) => state.user);
+  const user = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
@@ -207,6 +210,7 @@ const AgencyDashboard = () => {
     activeJobs: 0,
     completedJobs: 0,
     overdueJobs: 0,
+    scheduledJobs: 0,
     completionRate: 0,
     averageJobsPerProperty: 0,
     averageJobsPerTechnician: 0,
@@ -269,6 +273,11 @@ const AgencyDashboard = () => {
         const quickStats = result.data.quickStats;
         const performanceSummary = result.data.performanceSummary;
 
+        // Calculate scheduled jobs from job status distribution
+        const scheduledJobsCount = result.data.jobStatusDistribution.find(
+          (status: any) => status.status.toLowerCase() === 'scheduled'
+        )?.count || 0;
+
         const enhancedStats: AgencyStats = {
           totalProperties: quickStats.totalProperties,
           totalJobs: quickStats.totalJobs,
@@ -277,6 +286,7 @@ const AgencyDashboard = () => {
           activeJobs: quickStats.activeJobs,
           completedJobs: quickStats.completedJobs,
           overdueJobs: quickStats.overdueJobs,
+          scheduledJobs: scheduledJobsCount,
           completionRate: performanceSummary.completionRate,
           averageJobsPerProperty: performanceSummary.averageJobsPerProperty,
           averageJobsPerTechnician: performanceSummary.averageJobsPerTechnician,
@@ -336,6 +346,32 @@ const AgencyDashboard = () => {
 
   const handleRefresh = () => {
     fetchDashboardData();
+  };
+
+  // Navigation handlers for stat cards
+  const handleStatCardClick = (statType: string) => {
+    switch (statType) {
+      case 'properties':
+        navigate('/properties');
+        break;
+      case 'jobs':
+        navigate('/agencyJobs');
+        break;
+      case 'completedJobs':
+        navigate('/completed-jobs');
+        break;
+      case 'overdueJobs':
+        navigate('/overdue-jobs');
+        break;
+      case 'scheduledJobs':
+        navigate('/scheduled-jobs');
+        break;
+      case 'propertyManagers':
+        navigate('/propertyManagerManagement');
+        break;
+      default:
+        break;
+    }
   };
 
   const handleJobStatusUpdate = async (jobId: string, newStatus: string) => {
@@ -663,7 +699,18 @@ const AgencyDashboard = () => {
 
         {/* Enhanced Statistics Cards */}
         <div className="stats-overview">
-          <div className="stat-card primary">
+          <div 
+            className="stat-card primary clickable" 
+            onClick={() => handleStatCardClick('properties')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('properties');
+              }
+            }}
+          >
             <div className="stat-icon">
               <RiBuildingLine />
             </div>
@@ -679,7 +726,18 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card active">
+          <div 
+            className="stat-card active clickable"
+            onClick={() => handleStatCardClick('jobs')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('jobs');
+              }
+            }}
+          >
             <div className="stat-icon">
               <RiBriefcaseLine />
             </div>
@@ -693,7 +751,18 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card success">
+          <div 
+            className="stat-card success clickable"
+            onClick={() => handleStatCardClick('completedJobs')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('completedJobs');
+              }
+            }}
+          >
             <div className="stat-icon">
               <RiCheckLine />
             </div>
@@ -707,7 +776,18 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card warning">
+          <div 
+            className="stat-card warning clickable"
+            onClick={() => handleStatCardClick('overdueJobs')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('overdueJobs');
+              }
+            }}
+          >
             <div className="stat-icon">
               <RiAlertLine />
             </div>
@@ -721,7 +801,18 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card technicians">
+          <div 
+            className="stat-card technicians clickable"
+            onClick={() => handleStatCardClick('propertyManagers')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('propertyManagers');
+              }
+            }}
+          >
             <div className="stat-icon">
               <RiUserStarLine />
             </div>
@@ -735,16 +826,27 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card efficiency">
+          <div 
+            className="stat-card scheduled clickable"
+            onClick={() => handleStatCardClick('scheduledJobs')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleStatCardClick('scheduledJobs');
+              }
+            }}
+          >
             <div className="stat-icon">
-              <RiAwardLine />
+              <RiCalendarLine />
             </div>
             <div className="stat-content">
-              <h3>{stats.efficiencyScore.toFixed(1)}%</h3>
-              <p>Efficiency Score</p>
-              <div className="stat-trend positive">
-                <RiTrendingUpLine />
-                <span>Performance metric</span>
+              <h3>{stats.scheduledJobs}</h3>
+              <p>Scheduled Jobs</p>
+              <div className="stat-trend info">
+                <RiCalendarLine />
+                <span>Ready to start</span>
               </div>
             </div>
           </div>

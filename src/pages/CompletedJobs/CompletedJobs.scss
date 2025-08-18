@@ -1,0 +1,186 @@
+@import '../ScheduledJobs/ScheduledJobs.scss';
+
+.completed-jobs {
+  @extend .scheduled-jobs;
+
+  .page-header {
+    .header-content {
+      h1 {
+        svg {
+          color: #10b981;
+        }
+      }
+    }
+  }
+
+  .jobs-content {
+    .jobs-grid {
+      .job-card {
+        &.completed {
+          border-left: 4px solid #10b981;
+          background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+
+          .job-header {
+            .job-status {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 0.5rem;
+
+              .status-badge {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+
+                &.success {
+                  background-color: #d1fae5;
+                  color: #065f46;
+                }
+
+                svg {
+                  font-size: 0.9rem;
+                }
+              }
+
+              .completion-badge {
+                padding: 0.2rem 0.5rem;
+                border-radius: 12px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+
+                &.fast {
+                  background-color: #dcfce7;
+                  color: #166534;
+
+                  svg {
+                    color: #eab308;
+                  }
+                }
+
+                &.on-time {
+                  background-color: #dbeafe;
+                  color: #1e40af;
+                }
+
+                &.delayed {
+                  background-color: #fef3c7;
+                  color: #92400e;
+                }
+
+                &.completed {
+                  background-color: #f3f4f6;
+                  color: #374151;
+                }
+
+                svg {
+                  font-size: 0.8rem;
+                }
+              }
+            }
+          }
+
+          .job-details {
+            .job-dates {
+              .completion-date {
+                color: #059669;
+                font-weight: 600;
+
+                svg {
+                  color: #059669;
+                }
+              }
+            }
+
+            .job-rating {
+              margin-top: 0.75rem;
+              padding-top: 0.75rem;
+              border-top: 1px solid #f3f4f6;
+
+              .rating-stars {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                margin-bottom: 0.5rem;
+
+                svg {
+                  font-size: 1rem;
+
+                  &.filled {
+                    color: #fbbf24;
+                  }
+
+                  &.empty {
+                    color: #d1d5db;
+                  }
+                }
+
+                span {
+                  margin-left: 0.5rem;
+                  color: #6b7280;
+                  font-size: 0.9rem;
+                  font-weight: 500;
+                }
+              }
+
+              .job-feedback {
+                background-color: #f8fafc;
+                padding: 0.75rem;
+                border-radius: 8px;
+                margin-top: 0.5rem;
+
+                p {
+                  margin: 0;
+                  color: #475569;
+                  font-style: italic;
+                  font-size: 0.9rem;
+                  line-height: 1.4;
+                }
+              }
+            }
+
+            .job-duration {
+              color: #059669;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      svg {
+        color: #10b981;
+      }
+
+      h3 {
+        color: #059669;
+      }
+    }
+  }
+}
+
+// Additional styles for completed jobs specific elements
+.completed-jobs {
+  .header-stats {
+    .stat {
+      &:nth-child(2) {
+        color: #f59e0b;
+        
+        strong {
+          color: #d97706;
+        }
+      }
+
+      &:nth-child(3) {
+        color: #10b981;
+        
+        strong {
+          color: #059669;
+        }
+      }
+    }
+  }
+}

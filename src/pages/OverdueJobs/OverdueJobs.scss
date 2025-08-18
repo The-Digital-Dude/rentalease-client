@@ -1,0 +1,202 @@
+@import '../ScheduledJobs/ScheduledJobs.scss';
+
+.overdue-jobs {
+  @extend .scheduled-jobs;
+
+  .page-header {
+    .header-content {
+      h1 {
+        svg {
+          color: #ef4444;
+        }
+      }
+
+      .header-stats {
+        .stat {
+          &.critical {
+            color: #991b1b;
+            font-weight: 600;
+            
+            strong {
+              color: #dc2626;
+            }
+          }
+
+          &.high {
+            color: #b45309;
+            font-weight: 600;
+            
+            strong {
+              color: #d97706;
+            }
+          }
+
+          &.total {
+            color: #374151;
+            
+            strong {
+              color: #1f2937;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .jobs-content {
+    .jobs-grid {
+      .job-card {
+        border-left: 4px solid #fca5a5;
+
+        &.overdue-critical {
+          border-left-color: #dc2626;
+          background: linear-gradient(135deg, #fff 0%, #fef2f2 100%);
+
+          .job-header {
+            .overdue-indicator {
+              background-color: #fee2e2;
+              color: #991b1b;
+              padding: 0.25rem 0.5rem;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              svg {
+                font-size: 0.8rem;
+                animation: pulse 2s infinite;
+              }
+            }
+          }
+        }
+
+        &.overdue-high {
+          border-left-color: #f59e0b;
+          background: linear-gradient(135deg, #fff 0%, #fffbeb 100%);
+
+          .job-header {
+            .overdue-indicator {
+              background-color: #fef3c7;
+              color: #92400e;
+              padding: 0.25rem 0.5rem;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              svg {
+                font-size: 0.8rem;
+              }
+            }
+          }
+        }
+
+        &.overdue-medium {
+          border-left-color: #f59e0b;
+
+          .job-header {
+            .overdue-indicator {
+              background-color: #fef3c7;
+              color: #92400e;
+              padding: 0.25rem 0.5rem;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              font-weight: 500;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              svg {
+                font-size: 0.8rem;
+              }
+            }
+          }
+        }
+
+        &.overdue-low {
+          border-left-color: #fbbf24;
+
+          .job-header {
+            .overdue-indicator {
+              background-color: #fef3c7;
+              color: #92400e;
+              padding: 0.25rem 0.5rem;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              font-weight: 500;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              svg {
+                font-size: 0.8rem;
+              }
+            }
+          }
+        }
+
+        .job-header {
+          .job-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+          }
+        }
+
+        .job-details {
+          .job-dates {
+            .due-date {
+              &.overdue {
+                color: #dc2626;
+                font-weight: 600;
+
+                svg {
+                  color: #dc2626;
+                }
+              }
+            }
+          }
+        }
+
+        .job-actions {
+          .btn-danger {
+            animation: subtle-glow 3s ease-in-out infinite;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      svg {
+        color: #10b981;
+      }
+
+      h3 {
+        color: #059669;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  }
+}

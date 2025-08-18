@@ -1,9 +1,10 @@
 import { RiMenuLine, RiLogoutBoxLine } from "react-icons/ri";
-import { useAppDispatch } from "../../store";
-import { logout } from "../../store/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector, logout } from "../../store";
+import type { UserType } from "../../store";
+import { useNavigate, Link } from "react-router-dom";
 import NotificationBell from "../NotificationBell";
 import "./TopNavbar.scss";
+import { defaultRoutes } from "../../config/roleBasedRoutes";
 
 interface TopNavbarProps {
   onMobileMenuClick?: () => void;
@@ -12,6 +13,8 @@ interface TopNavbarProps {
 const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { userType } = useAppSelector((state) => state.user);
+  const homePath = userType ? defaultRoutes[userType as UserType] : "/";
 
   const handleNotificationClick = (notification: any) => {
     console.log("Notification clicked:", notification);
@@ -35,11 +38,13 @@ const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
             <RiMenuLine />
           </button>
           <div className="navbar-logo">
-            <img
-              src="/rentalease-logo.png"
-              alt="RentalEase Logo"
-              className="logo-image"
-            />
+            <Link to={homePath}>
+              <img
+                src="/rentalease-logo.png"
+                alt="RentalEase Logo"
+                className="logo-image"
+              />
+            </Link>
           </div>
         </div>
         <div className="navbar-actions">

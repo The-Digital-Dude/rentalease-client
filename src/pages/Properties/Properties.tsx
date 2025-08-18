@@ -7,20 +7,14 @@ import PropertiesHeader from "../../components/PropertiesHeader";
 import PropertyErrorAlert from "../../components/PropertyErrorAlert";
 import PropertyModals from "../../components/PropertyModals";
 import PropertyManagement from "../../components/PropertyManagement";
-import StatsGrid from "../../components/StatsGrid";
+
 import type { Property as PropertyCardType } from "../../components/PropertyCard";
 import propertyService, {
   type Property,
   type CreatePropertyData,
 } from "../../services/propertyService";
 import toast from "react-hot-toast";
-import {
-  RiHomeLine,
-  RiUser3Line,
-  RiEyeLine,
-  RiAlertLine,
-  RiShieldCheckLine,
-} from "react-icons/ri";
+
 import "./Properties.scss";
 
 const Properties = () => {
@@ -208,35 +202,50 @@ const Properties = () => {
         },
       },
       notes: property.notes,
+      // Sample data for emails, comments, and documents - replace with real API data
+      emails: [
+        {
+          id: "email1",
+          subject: "Property Inspection Schedule",
+          from: "admin@rentalease.com",
+          to: property.currentTenant?.email || "tenant@example.com",
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          content: "Scheduled inspection for next week"
+        }
+      ],
+      comments: [
+        {
+          id: "comment1",
+          author: "Property Manager",
+          content: "Recent maintenance completed successfully. All systems operational.",
+          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ],
+      documents: [
+        {
+          id: "doc1",
+          name: "Lease Agreement.pdf",
+          type: "pdf",
+          size: 245760,
+          uploadDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          url: "/documents/lease-agreement.pdf"
+        },
+        {
+          id: "doc2",
+          name: "Inspection Report.jpg",
+          type: "image",
+          size: 1024000,
+          uploadDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          url: "/documents/inspection-report.jpg"
+        }
+      ],
       isActive: true, // Default to true since it's not in the service interface
       createdAt: property.createdAt,
       updatedAt: property.updatedAt || property.createdAt,
     })
   );
 
-  // Enhanced statistics
-  const now = new Date();
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const recentlyAddedCount = properties.filter((p) => {
-    if (!p.createdAt) return false;
-    const createdAt = new Date(p.createdAt);
-    return now.getTime() - createdAt.getTime() <= THIRTY_DAYS_MS;
-  }).length;
-
-  const stats = [
-    {
-      label: "Total Properties",
-      value: properties.length,
-      icon: RiHomeLine,
-      color: "primary" as const,
-    },
-    {
-      label: "Recently Added Properties",
-      value: recentlyAddedCount,
-      icon: RiHomeLine,
-      color: "warning" as const,
-    },
-  ];
+  // Removed redundant statistics display as per client feedback
 
   if (loading) {
     return (
@@ -258,8 +267,6 @@ const Properties = () => {
       />
 
       <PropertyErrorAlert error={error} onDismiss={() => setError(null)} />
-
-      <StatsGrid stats={stats} />
 
       <PropertyManagement
         properties={transformedProperties}

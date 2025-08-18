@@ -1,20 +1,13 @@
-import { useState } from "react";
-import {
-  RiBarChartBoxLine,
-  RiLineChartLine,
-  RiUserStarLine,
-  RiShieldCheckLine,
-  RiMoneyDollarCircleLine,
-  RiCalendarLine,
-  RiFilterLine,
-  RiDownloadLine,
-  RiArrowUpLine,
-  RiArrowDownLine,
-  RiCheckboxCircleLine,
-  RiCloseCircleLine,
-  RiTimeLine,
-  RiStarLine,
-} from "react-icons/ri";
+import { useState, useEffect } from "react";
+import { RiBarChartBoxLine, RiLineChartLine, RiUserStarLine, RiShieldCheckLine, RiMoneyDollarCircleLine, RiCalendarLine, RiFilterLine, RiDownloadLine, RiArrowUpLine, RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiTimeLine, RiStarLine } from "react-icons/ri";
+import reportService, {
+  type ComplianceData,
+  type RevenueData,
+  type TechnicianPerformance,
+} from "../../services/reportService";
+import toast from "react-hot-toast";
+import { unparse } from "papaparse";
+import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
 import "./ReportsAnalytics.scss";
 
 interface ComplianceData {
@@ -57,140 +50,134 @@ const ReportsAnalytics = () => {
   const [revenueFilter, setRevenueFilter] = useState("month");
   const [revenueBreakdown, setRevenueBreakdown] = useState("agency");
   const [technicianSort, setTechnicianSort] = useState("rating");
+  const [complianceData, setComplianceData] = useState<ComplianceData[]>([]);
+  const [loadingCompliance, setLoadingCompliance] = useState(true);
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [loadingRevenue, setLoadingRevenue] = useState(true);
+  const [technicianData, setTechnicianData] = useState<TechnicianPerformance[]>([]);
+  const [loadingTechnicianPerformance, setLoadingTechnicianPerformance] = useState(true);
 
-  // Mock data - in real app, this would come from an API
-  const complianceData: ComplianceData[] = [
-    {
-      id: "1",
-      name: "Premier Property Solutions",
-      type: "agency",
-      totalJobs: 145,
-      completedJobs: 132,
-      compliantJobs: 128,
-      overdueJobs: 13,
-      complianceRate: 97.0,
-      avgCompletionTime: 2.3,
-    },
-    {
-      id: "2",
-      name: "North Zone",
-      type: "region",
-      totalJobs: 89,
-      completedJobs: 82,
-      compliantJobs: 79,
-      overdueJobs: 7,
-      complianceRate: 96.3,
-      avgCompletionTime: 2.1,
-    },
-    {
-      id: "3",
-      name: "Luxury Apartments CBD",
-      type: "property",
-      totalJobs: 67,
-      completedJobs: 61,
-      compliantJobs: 58,
-      overdueJobs: 6,
-      complianceRate: 95.1,
-      avgCompletionTime: 2.8,
-    },
-    {
-      id: "4",
-      name: "Elite Realty Group",
-      type: "agency",
-      totalJobs: 98,
-      completedJobs: 88,
-      compliantJobs: 83,
-      overdueJobs: 10,
-      complianceRate: 94.3,
-      avgCompletionTime: 2.5,
-    },
-  ];
+  useEffect(() => {
+    const fetchComplianceData = async () => {
+      try {
+        setLoadingCompliance(true);
+        const response = await reportService.getComplianceReport(
+          complianceFilter as any
+        );
+        setComplianceData(response.data);
+      } catch (error) {
+        toast.error("Failed to fetch compliance report");
+      } finally {
+        setLoadingCompliance(false);
+      }
+    };
 
-  const revenueData: RevenueData[] = [
-    {
-      period: "2024-01",
-      agency: "Premier Property Solutions",
-      region: "North Zone",
-      jobType: "Plumbing",
-      amount: 15750,
-      jobCount: 45,
-      avgJobValue: 350,
-    },
-    {
-      period: "2024-01",
-      agency: "Elite Realty Group",
-      region: "South Zone",
-      jobType: "Electrical",
-      amount: 12400,
-      jobCount: 31,
-      avgJobValue: 400,
-    },
-    {
-      period: "2024-01",
-      agency: "Premier Property Solutions",
-      region: "East Zone",
-      jobType: "HVAC",
-      amount: 18900,
-      jobCount: 27,
-      avgJobValue: 700,
-    },
-    {
-      period: "2024-01",
-      agency: "Elite Realty Group",
-      region: "Central Zone",
-      jobType: "General Maintenance",
-      amount: 8750,
-      jobCount: 35,
-      avgJobValue: 250,
-    },
-  ];
+    if (activeTab === "compliance") {
+      fetchComplianceData();
+    }
 
-  const technicianData: TechnicianPerformance[] = [
-    {
-      id: "1",
-      name: "John Smith",
-      tradeType: "Plumber",
-      jobsCompleted: 89,
-      avgCompletionTime: 2.1,
-      rating: 4.8,
-      onTimeRate: 94.5,
-      totalRevenue: 31150,
-      efficiency: 96.2,
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      tradeType: "Electrician",
-      jobsCompleted: 76,
-      avgCompletionTime: 1.9,
-      rating: 4.7,
-      onTimeRate: 96.1,
-      totalRevenue: 28400,
-      efficiency: 97.8,
-    },
-    {
-      id: "3",
-      name: "Mike Davis",
-      tradeType: "HVAC",
-      jobsCompleted: 54,
-      avgCompletionTime: 3.2,
-      rating: 4.6,
-      onTimeRate: 88.9,
-      totalRevenue: 37800,
-      efficiency: 91.5,
-    },
-    {
-      id: "4",
-      name: "Emily Brown",
-      tradeType: "General Maintenance",
-      jobsCompleted: 112,
-      avgCompletionTime: 1.5,
-      rating: 4.9,
-      onTimeRate: 98.2,
-      totalRevenue: 22400,
-      efficiency: 98.5,
-    },
-  ];
+    const fetchRevenueData = async () => {
+      try {
+        setLoadingRevenue(true);
+        const response = await reportService.getRevenueReport(
+          revenueBreakdown as any,
+          revenueFilter as any
+        );
+        setRevenueData(response.data);
+      } catch (error) {
+        toast.error("Failed to fetch revenue report");
+      } finally {
+        setLoadingRevenue(false);
+      }
+    };
+
+    if (activeTab === "revenue") {
+      fetchRevenueData();
+    }
+
+    const fetchTechnicianPerformanceData = async () => {
+      try {
+        setLoadingTechnicianPerformance(true);
+        const response = await reportService.getTechnicianPerformanceReport();
+        setTechnicianData(response.data);
+      } catch (error) {
+        toast.error("Failed to fetch technician performance report");
+      } finally {
+        setLoadingTechnicianPerformance(false);
+      }
+    };
+
+    if (activeTab === "performance") {
+      fetchTechnicianPerformanceData();
+    }
+  }, [activeTab, complianceFilter, revenueBreakdown, revenueFilter, technicianSort]);
+
+  const handleExportCompliance = () => {
+    const csv = unparse(filteredCompliance, {
+      header: true,
+      columns: [
+        "name",
+        "type",
+        "totalJobs",
+        "completedJobs",
+        "compliantJobs",
+        "overdueJobs",
+        "complianceRate",
+        "avgCompletionTime",
+      ],
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "compliance_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportRevenue = () => {
+    const csv = unparse(revenueData, {
+      header: true,
+      columns: ["period", "agency", "region", "jobType", "amount", "jobCount", "avgJobValue"],
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "revenue_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportTechnicianPerformance = () => {
+    const csv = unparse(sortedTechnicians, {
+      header: true,
+      columns: [
+        "name",
+        "tradeType",
+        "jobsCompleted",
+        "avgCompletionTime",
+        "rating",
+        "onTimeRate",
+        "totalRevenue",
+        "efficiency",
+      ],
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "technician_performance_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  
+
+  
 
   const filteredCompliance = complianceData.filter((item) => {
     if (complianceFilter === "all") return true;
@@ -245,6 +232,11 @@ const ReportsAnalytics = () => {
       label: "Technician Performance",
       icon: RiUserStarLine,
     },
+    {
+      id: "payments",
+      label: "Technician Payments",
+      icon: RiMoneyDollarCircleLine,
+    },
   ];
 
   const renderComplianceReport = () => (
@@ -267,7 +259,7 @@ const ReportsAnalytics = () => {
               <option value="property">Properties</option>
             </select>
           </div>
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExportCompliance}>
             <RiDownloadLine /> Export Report
           </button>
         </div>
@@ -317,63 +309,70 @@ const ReportsAnalytics = () => {
       </div>
 
       <div className="compliance-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Total Jobs</th>
-              <th>Completed</th>
-              <th>Compliant</th>
-              <th>Overdue</th>
-              <th>Compliance Rate</th>
-              <th>Avg Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCompliance.map((item) => {
-              const compliance = getComplianceStatus(item.complianceRate);
-              return (
-                <tr key={item.id}>
-                  <td>
-                    <div className="name-cell">
-                      <strong>{item.name}</strong>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`type-badge ${item.type}`}>
-                      {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                    </span>
-                  </td>
-                  <td>{item.totalJobs}</td>
-                  <td>
-                    <span className="job-count completed">
-                      {item.completedJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="job-count compliant">
-                      {item.compliantJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="job-count overdue">
-                      {item.overdueJobs}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="compliance-rate">
-                      <span className={`rate ${compliance.color}`}>
-                        {item.complianceRate.toFixed(1)}%
+        {loadingCompliance ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading compliance data...</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Total Jobs</th>
+                <th>Completed</th>
+                <th>Compliant</th>
+                <th>Overdue</th>
+                <th>Compliance Rate</th>
+                <th>Avg Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCompliance.map((item) => {
+                const compliance = getComplianceStatus(item.complianceRate);
+                return (
+                  <tr key={item.id}>
+                    <td>
+                      <div className="name-cell">
+                        <strong>{item.name}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`type-badge ${item.type}`}>
+                        {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                       </span>
-                    </div>
-                  </td>
-                  <td>{item.avgCompletionTime.toFixed(1)} days</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td>{item.totalJobs}</td>
+                    <td>
+                      <span className="job-count completed">
+                        {item.completedJobs}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="job-count compliant">
+                        {item.compliantJobs}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="job-count overdue">
+                        {item.overdueJobs}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="compliance-rate">
+                        <span className={`rate ${compliance.color}`}>
+                          {item.complianceRate.toFixed(1)}%
+                        </span>
+                      </div>
+                    </td>
+                    <td>{item.avgCompletionTime.toFixed(1)} days</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
@@ -409,97 +408,105 @@ const ReportsAnalytics = () => {
               <option value="jobType">By Job Type</option>
             </select>
           </div>
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExportRevenue}>
             <RiDownloadLine /> Export Report
           </button>
         </div>
       </div>
 
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="card-icon revenue">
-            <RiMoneyDollarCircleLine />
-          </div>
-          <div className="card-content">
-            <h4>$55,800</h4>
-            <p>Total Revenue</p>
-            {getTrendIcon(55800, 50000)}
-          </div>
+      {loadingRevenue ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading revenue data...</p>
         </div>
-        <div className="summary-card">
-          <div className="card-icon jobs">
-            <RiBarChartBoxLine />
-          </div>
-          <div className="card-content">
-            <h4>138</h4>
-            <p>Total Jobs</p>
-            {getTrendIcon(138, 130)}
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="card-icon average">
-            <RiLineChartLine />
-          </div>
-          <div className="card-content">
-            <h4>$404</h4>
-            <p>Average Job Value</p>
-            {getTrendIcon(404, 400)}
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="card-icon growth">
-            <RiArrowUpLine />
-          </div>
-          <div className="card-content">
-            <h4>+12.5%</h4>
-            <p>Growth Rate</p>
-            {getTrendIcon(12.5, 10)}
-          </div>
-        </div>
-      </div>
-
-      <div className="revenue-breakdown">
-        <h4>
-          Revenue Breakdown -{" "}
-          {revenueBreakdown.charAt(0).toUpperCase() + revenueBreakdown.slice(1)}
-        </h4>
-        <div className="breakdown-grid">
-          {Object.entries(groupedRevenue).map(([key, data]) => (
-            <div key={key} className="breakdown-card">
-              <div className="breakdown-header">
-                <h5>{key}</h5>
-                <span className="revenue-amount">
-                  ${data.amount.toLocaleString()}
-                </span>
+      ) : (
+        <>
+          <div className="summary-cards">
+            <div className="summary-card">
+              <div className="card-icon revenue">
+                <RiMoneyDollarCircleLine />
               </div>
-              <div className="breakdown-stats">
-                <div className="stat">
-                  <span className="stat-label">Jobs:</span>
-                  <span>{data.jobCount}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Avg Value:</span>
-                  <span>${data.avgJobValue.toFixed(0)}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Share:</span>
-                  <span>
-                    {(
-                      (data.amount /
-                        Object.values(groupedRevenue).reduce(
-                          (sum, d) => sum + d.amount,
-                          0
-                        )) *
-                      100
-                    ).toFixed(1)}
-                    %
-                  </span>
-                </div>
+              <div className="card-content">
+                <h4>
+                  $
+                  {revenueData
+                    .reduce((acc, item) => acc + item.amount, 0)
+                    .toLocaleString()}
+                </h4>
+                <p>Total Revenue</p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="summary-card">
+              <div className="card-icon jobs">
+                <RiBarChartBoxLine />
+              </div>
+              <div className="card-content">
+                <h4>
+                  {revenueData.reduce((acc, item) => acc + item.jobCount, 0)}
+                </h4>
+                <p>Total Jobs</p>
+              </div>
+            </div>
+            <div className="summary-card">
+              <div className="card-icon average">
+                <RiLineChartLine />
+              </div>
+              <div className="card-content">
+                <h4>
+                  $
+                  {(revenueData.reduce((acc, item) => acc + item.avgJobValue, 0) /
+                    revenueData.length || 0).toFixed(0)}
+                </h4>
+                <p>Average Job Value</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="revenue-breakdown">
+            <h4>
+              Revenue Breakdown -{" "}
+              {revenueBreakdown.charAt(0).toUpperCase() +
+                revenueBreakdown.slice(1)}
+            </h4>
+            <div className="breakdown-grid">
+              {Object.entries(groupedRevenue).map(([key, data]) => (
+                <div key={key} className="breakdown-card">
+                  <div className="breakdown-header">
+                    <h5>{key}</h5>
+                    <span className="revenue-amount">
+                      ${data.amount.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="breakdown-stats">
+                    <div className="stat">
+                      <span className="stat-label">Jobs:</span>
+                      <span>{data.jobCount}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Avg Value:</span>
+                      <span>${data.avgJobValue.toFixed(0)}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Share:</span>
+                      <span>
+                        {(
+                          (data.amount /
+                            Object.values(groupedRevenue).reduce(
+                              (sum, d) => sum + d.amount,
+                              0
+                            )) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 
@@ -523,107 +530,114 @@ const ReportsAnalytics = () => {
               <option value="efficiency">By Efficiency</option>
             </select>
           </div>
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExportTechnicianPerformance}>
             <RiDownloadLine /> Export Report
           </button>
         </div>
       </div>
 
-      <div className="performance-grid">
-        {sortedTechnicians.map((tech) => (
-          <div key={tech.id} className="performance-card">
-            <div className="card-header">
-              <div className="tech-info">
-                <h4>{tech.name}</h4>
-                <span className="trade-type">{tech.tradeType}</span>
+      {loadingTechnicianPerformance ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading technician performance data...</p>
+        </div>
+      ) : (
+        <div className="performance-grid">
+          {sortedTechnicians.map((tech) => (
+            <div key={tech.id} className="performance-card">
+              <div className="card-header">
+                <div className="tech-info">
+                  <h4>{tech.name}</h4>
+                  <span className="trade-type">{tech.tradeType}</span>
+                </div>
+                <div className="rating">
+                  <RiStarLine className="star-icon" />
+                  <span>{tech.rating.toFixed(1)}</span>
+                </div>
               </div>
-              <div className="rating">
-                <RiStarLine className="star-icon" />
-                <span>{tech.rating.toFixed(1)}</span>
+
+              <div className="performance-metrics">
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">Jobs Completed</span>
+                    <span className="metric-value">{tech.jobsCompleted}</span>
+                  </div>
+                  <div className="metric-bar">
+                    <div
+                      className="metric-fill jobs"
+                      style={{ width: `${(tech.jobsCompleted / 120) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">Avg Completion Time</span>
+                    <span className="metric-value">
+                      {tech.avgCompletionTime.toFixed(1)} days
+                    </span>
+                  </div>
+                  <div className="metric-bar">
+                    <div
+                      className="metric-fill time"
+                      style={{
+                        width: `${
+                          Math.max(0, (4 - tech.avgCompletionTime) / 4) * 100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">On-Time Rate</span>
+                    <span className="metric-value">
+                      {tech.onTimeRate.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="metric-bar">
+                    <div
+                      className="metric-fill ontime"
+                      style={{ width: `${tech.onTimeRate}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">Revenue Generated</span>
+                    <span className="metric-value">
+                      ${tech.totalRevenue.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="metric-bar">
+                    <div
+                      className="metric-fill revenue"
+                      style={{ width: `${(tech.totalRevenue / 40000) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">Efficiency Score</span>
+                    <span className="metric-value">
+                      {tech.efficiency.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="metric-bar">
+                    <div
+                      className="metric-fill efficiency"
+                      style={{ width: `${tech.efficiency}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div className="performance-metrics">
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Jobs Completed</span>
-                  <span className="metric-value">{tech.jobsCompleted}</span>
-                </div>
-                <div className="metric-bar">
-                  <div
-                    className="metric-fill jobs"
-                    style={{ width: `${(tech.jobsCompleted / 120) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Avg Completion Time</span>
-                  <span className="metric-value">
-                    {tech.avgCompletionTime.toFixed(1)} days
-                  </span>
-                </div>
-                <div className="metric-bar">
-                  <div
-                    className="metric-fill time"
-                    style={{
-                      width: `${
-                        Math.max(0, (4 - tech.avgCompletionTime) / 4) * 100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">On-Time Rate</span>
-                  <span className="metric-value">
-                    {tech.onTimeRate.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="metric-bar">
-                  <div
-                    className="metric-fill ontime"
-                    style={{ width: `${tech.onTimeRate}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Revenue Generated</span>
-                  <span className="metric-value">
-                    ${tech.totalRevenue.toLocaleString()}
-                  </span>
-                </div>
-                <div className="metric-bar">
-                  <div
-                    className="metric-fill revenue"
-                    style={{ width: `${(tech.totalRevenue / 40000) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Efficiency Score</span>
-                  <span className="metric-value">
-                    {tech.efficiency.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="metric-bar">
-                  <div
-                    className="metric-fill efficiency"
-                    style={{ width: `${tech.efficiency}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -654,6 +668,7 @@ const ReportsAnalytics = () => {
         {activeTab === "compliance" && renderComplianceReport()}
         {activeTab === "revenue" && renderRevenueReport()}
         {activeTab === "performance" && renderPerformanceReport()}
+        {activeTab === "payments" && <TechnicianPaymentsReport />}
       </div>
     </div>
   );

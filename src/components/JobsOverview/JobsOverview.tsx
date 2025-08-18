@@ -171,6 +171,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
             <option value="Scheduled">Scheduled</option>
             <option value="Completed">Completed</option>
             <option value="Overdue">Overdue</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
           <select
             value={typeFilter}

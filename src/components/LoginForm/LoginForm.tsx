@@ -73,6 +73,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
         console.log("Login successful, userType:", userTypeFromResponse);
         console.log("Full response data:", response.data);
+        console.log("User name from login response:", response.data.user.name);
+        console.log("User name length:", response.data.user.name?.length);
 
         dispatch(
           login({

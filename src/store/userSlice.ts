@@ -77,19 +77,29 @@ const userSlice = createSlice({
       const token = localStorage.getItem("authToken");
       const userData = localStorage.getItem("userData");
 
+      console.log("Restoring auth state:", { token: !!token, userData });
+
       if (token && userData) {
         try {
           const parsedUserData = JSON.parse(userData);
+          console.log("Parsed user data:", parsedUserData);
+          console.log("User name from localStorage:", parsedUserData.name);
+          
           state.isLoggedIn = true;
           state.email = parsedUserData.email;
           state.userType = parsedUserData.userType;
           state.name = parsedUserData.name;
           state.id = parsedUserData.id;
+          
+          console.log("Auth state restored successfully");
         } catch (error) {
+          console.error("Failed to parse userData from localStorage:", error);
           // If parsing fails, clear invalid data
           localStorage.removeItem("authToken");
           localStorage.removeItem("userData");
         }
+      } else {
+        console.log("No token or userData found in localStorage");
       }
     },
     // Action to update user info

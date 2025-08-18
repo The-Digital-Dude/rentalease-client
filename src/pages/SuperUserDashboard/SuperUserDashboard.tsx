@@ -106,8 +106,19 @@ interface DashboardData {
 }
 
 const SuperUserDashboard = () => {
-  const { user } = useAppSelector((state) => state.user);
+  const userState = useAppSelector((state) => state.user);
   const navigate = useNavigate();
+
+  // Debug logging to check user state
+  useEffect(() => {
+    console.log('SuperUserDashboard - User State Debug:', {
+      fullState: userState,
+      userName: userState?.name,
+      userNameTrimmed: userState?.name?.trim(),
+      userNameLength: userState?.name?.length,
+      localStorage: localStorage.getItem('userData')
+    });
+  }, [userState]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
@@ -394,7 +405,7 @@ const SuperUserDashboard = () => {
       <div className="dashboard-header">
         <div className="welcome-section">
           <div className="welcome-content">
-            <h1>Welcome back, {user?.name || "Super User"}!</h1>
+            <h1>Welcome back, {userState?.name?.trim() || "Super User"}!</h1>
             <p>Comprehensive system overview and administration dashboard</p>
             <div className="last-updated">
               <RiInformationLine />
@@ -486,7 +497,10 @@ const SuperUserDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card active">
+          <div 
+            className="stat-card active clickable"
+            onClick={() => handleStatCardClick("jobs")}
+          >
             <div className="stat-icon">
               <RiCalendarLine />
             </div>
@@ -500,7 +514,10 @@ const SuperUserDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card success">
+          <div 
+            className="stat-card success clickable"
+            onClick={() => handleStatCardClick("jobs")}
+          >
             <div className="stat-icon">
               <RiCheckLine />
             </div>
@@ -514,7 +531,10 @@ const SuperUserDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card warning">
+          <div 
+            className="stat-card warning clickable"
+            onClick={() => handleStatCardClick("jobs")}
+          >
             <div className="stat-icon">
               <RiAlertLine />
             </div>
@@ -562,7 +582,10 @@ const SuperUserDashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card staff">
+          <div 
+            className="stat-card staff clickable"
+            onClick={() => handleStatCardClick("properties")}
+          >
             <div className="stat-icon">
               <RiHandHeartLine />
             </div>

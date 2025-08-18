@@ -3,6 +3,90 @@
   margin: 0 auto;
   padding: 0 1rem;
 
+  // Clickable element styles
+  .clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Stats card hover effects
+  .stat-card.clickable {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(-2px);
+    }
+  }
+
+  // Property row hover effects
+  .property-row.clickable {
+    &:hover {
+      background-color: #f8fafc;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      background-color: #f1f5f9;
+    }
+
+    .row-indicator {
+      opacity: 0.5;
+      transition: opacity 0.2s ease;
+      color: #6b7280;
+    }
+
+    &:hover .row-indicator {
+      opacity: 1;
+      color: #667eea;
+    }
+  }
+
+  // Job row hover effects
+  .job-row.clickable {
+    &:hover {
+      background-color: #fef3c7;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      background-color: #fde68a;
+    }
+
+    .row-indicator {
+      opacity: 0.5;
+      transition: opacity 0.2s ease;
+      color: #6b7280;
+    }
+
+    &:hover .row-indicator {
+      opacity: 1;
+      color: #f59e0b;
+    }
+  }
+
+  // Property address hover effect
+  .property-address.clickable {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    
+    &:hover {
+      background-color: #e0e7ff;
+      color: #667eea;
+    }
+  }
+
   // Loading and Error States
   .loading-state,
   .error-state {

@@ -140,6 +140,22 @@ const AgencyProfile: React.FC = () => {
     );
   }).length;
 
+  const handleStatCardClick = (cardType: string) => {
+    switch (cardType) {
+      case 'properties':
+        setActiveTab('properties');
+        break;
+      case 'jobs':
+        setActiveTab('jobs');
+        break;
+      case 'propertyManagers':
+        setActiveTab('propertyManagers');
+        break;
+      default:
+        break;
+    }
+  };
+
   const statsCards = [
     {
       title: "Total Properties",
@@ -148,6 +164,7 @@ const AgencyProfile: React.FC = () => {
       changeType: newPropertiesThisMonth > 0 ? "positive" : "neutral",
       icon: RiHomeLine,
       color: "blue",
+      clickAction: "properties",
     },
     {
       title: "Total Jobs",
@@ -156,6 +173,7 @@ const AgencyProfile: React.FC = () => {
       changeType: "positive",
       icon: RiToolsLine,
       color: "green",
+      clickAction: "jobs",
     },
     {
       title: "Property Managers",
@@ -166,6 +184,7 @@ const AgencyProfile: React.FC = () => {
       changeType: "positive",
       icon: RiTeamLine,
       color: "purple",
+      clickAction: "propertyManagers",
     },
     {
       title: "Job Value",
@@ -178,6 +197,7 @@ const AgencyProfile: React.FC = () => {
       changeType: "neutral",
       icon: RiMoneyDollarBoxLine,
       color: "orange",
+      clickAction: "jobs",
     },
   ];
 
@@ -254,7 +274,18 @@ const AgencyProfile: React.FC = () => {
       {/* Stats Cards */}
       <div className="stats-grid">
         {statsCards.map((stat, index) => (
-          <div key={index} className={`stat-card ${stat.color}`}>
+          <div 
+            key={index} 
+            className={`stat-card ${stat.color} clickable`}
+            onClick={() => handleStatCardClick(stat.clickAction)}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleStatCardClick(stat.clickAction);
+              }
+            }}
+          >
             <div className="stat-icon">
               <stat.icon />
             </div>
@@ -489,7 +520,18 @@ const AgencyProfile: React.FC = () => {
                 </thead>
                 <tbody>
                   {properties.map((property) => (
-                    <tr key={property.id}>
+                    <tr 
+                      key={property.id}
+                      className="property-row clickable"
+                      onClick={() => handleViewProperty(property.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleViewProperty(property.id);
+                        }
+                      }}
+                    >
                       <td>
                         <div className="property-address">
                           <strong>{property.address.fullAddress}</strong>
@@ -526,13 +568,7 @@ const AgencyProfile: React.FC = () => {
                         </span>
                       </td>
                       <td>
-                        <button
-                          className="action-btn view-btn"
-                          onClick={() => handleViewProperty(property.id)}
-                          title="View Property"
-                        >
-                          <RiEyeLine />
-                        </button>
+                        <RiEyeLine className="row-indicator" />
                       </td>
                     </tr>
                   ))}
@@ -566,7 +602,18 @@ const AgencyProfile: React.FC = () => {
                 </thead>
                 <tbody>
                   {jobs.map((job) => (
-                    <tr key={job.id}>
+                    <tr 
+                      key={job.id}
+                      className="job-row clickable"
+                      onClick={() => handleViewJob(job.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleViewJob(job.id);
+                        }
+                      }}
+                    >
                       <td>
                         <span className="job-id">{job.job_id}</span>
                       </td>
@@ -613,13 +660,7 @@ const AgencyProfile: React.FC = () => {
                       </td>
                       <td>{job.cost ? `$${job.cost.totalCost}` : "N/A"}</td>
                       <td>
-                        <button
-                          className="action-btn view-btn"
-                          onClick={() => handleViewJob(job.id)}
-                          title="View Job"
-                        >
-                          <RiEyeLine />
-                        </button>
+                        <RiEyeLine className="row-indicator" />
                       </td>
                     </tr>
                   ))}

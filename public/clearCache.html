@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Auth Cache</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #5a67d8; }
+        .info { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>RentalEase CRM - Clear Auth Cache</h1>
+    
+    <div class="info">
+        <h3>Current localStorage Data:</h3>
+        <div id="currentData">Loading...</div>
+    </div>
+    
+    <button onclick="clearAuthData()">Clear Auth Data & Reload</button>
+    <button onclick="showCurrentData()">Refresh Current Data</button>
+    <button onclick="testLogin()">Test Login Data Structure</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        function showCurrentData() {
+            const authToken = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            
+            let html = '<strong>Auth Token:</strong> ' + (authToken ? 'Present' : 'Not found') + '<br>';
+            html += '<strong>User Data:</strong> ';
+            
+            if (userData) {
+                try {
+                    const parsed = JSON.parse(userData);
+                    html += '<pre>' + JSON.stringify(parsed, null, 2) + '</pre>';
+                    
+                    if (parsed.name) {
+                        html += '<div style="color: green;">✅ Name found: "' + parsed.name + '"</div>';
+                    } else {
+                        html += '<div style="color: red;">❌ Name field missing or empty</div>';
+                    }
+                } catch (e) {
+                    html += '<div style="color: red;">Invalid JSON: ' + userData + '</div>';
+                }
+            } else {
+                html += 'Not found';
+            }
+            
+            document.getElementById('currentData').innerHTML = html;
+        }
+        
+        function clearAuthData() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            
+            document.getElementById('result').innerHTML = 
+                '<div class="success">✅ Auth data cleared successfully! Redirecting to login...</div>';
+            
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+        }
+        
+        function testLogin() {
+            // Simulate what the login should store
+            const testUserData = {
+                id: "688e86093583b460c2f1c6ec",
+                email: "jubayerjuhan.info@gmail.com",
+                name: "Jubayer Juhan",
+                userType: "super_user"
+            };
+            
+            localStorage.setItem('userData', JSON.stringify(testUserData));
+            localStorage.setItem('authToken', 'test-token');
+            
+            document.getElementById('result').innerHTML = 
+                '<div class="success">✅ Test login data set! Refresh the dashboard to see the change.</div>';
+            
+            showCurrentData();
+        }
+        
+        // Show data on page load
+        showCurrentData();
+    </script>
+</body>
+</html>

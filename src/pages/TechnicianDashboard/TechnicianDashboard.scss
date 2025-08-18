@@ -615,28 +615,28 @@
                 text-transform: uppercase;
 
                 &.success {
-                  background: #dcfce7;
-                  color: #15803d;
+                  background: #10b981;
+                  color: white;
                 }
 
                 &.warning {
-                  background: #fef3c7;
-                  color: #d97706;
+                  background: #f59e0b;
+                  color: white;
                 }
 
                 &.info {
-                  background: #dbeafe;
-                  color: #2563eb;
+                  background: #3b82f6;
+                  color: white;
                 }
 
                 &.danger {
-                  background: #fee2e2;
-                  color: #dc2626;
+                  background: #ef4444;
+                  color: white;
                 }
 
                 &.secondary {
-                  background: #f3f4f6;
-                  color: #6b7280;
+                  background: #6b7280;
+                  color: white;
                 }
               }
             }

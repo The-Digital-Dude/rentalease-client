@@ -973,9 +973,7 @@ const SuperUserDashboard = () => {
                           {new Date(job.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="job-actions">
-                        <RiEyeLine />
-                      </div>
+                      
                     </div>
                   );
                 })

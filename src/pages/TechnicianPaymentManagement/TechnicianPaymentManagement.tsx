@@ -607,19 +607,21 @@ const TechnicianPaymentManagement: React.FC = () => {
                         <RiUserLine className="technician-icon" />
                         <div className="technician-details">
                           <span className="name">
-                            {payment.technicianId.firstName}{" "}
-                            {payment.technicianId.lastName}
+                            {payment.technicianId?.firstName || 'N/A'}{" "}
+                            {payment.technicianId?.lastName || ''}
                           </span>
                           <span className="email">
-                            {payment.technicianId.email}
+                            {payment.technicianId?.email || 'N/A'}
                           </span>
                         </div>
                       </div>
                     </td>
                     <td className="job-details">
                       <div className="job-info">
-                        <span className="job-id">#{payment.jobId.job_id}</span>
-                        <span className="job-type">{payment.jobType}</span>
+                        <span className="job-id">
+                          #{payment.jobId?.job_id || 'N/A'}
+                        </span>
+                        <span className="job-type">{payment.jobType || 'N/A'}</span>
                       </div>
                     </td>
                     <td className="amount">

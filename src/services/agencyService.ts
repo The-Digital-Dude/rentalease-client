@@ -418,4 +418,20 @@ export const agencyService = {
       throw new Error(error.response?.data?.message || "Failed to fetch jobs");
     }
   },
+
+  // Get technician information
+  getTechnicianInfo: async (
+    technicianId: string
+  ): Promise<{
+    status: string;
+    message: string;
+    data: any;
+  }> => {
+    try {
+      const response = await api.get(`/v1/technicians/${technicianId}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "Failed to fetch technician information");
+    }
+  },
 };

@@ -24,6 +24,7 @@ import {
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import TechnicianInfoModal from "../../components/TechnicianInfoModal";
 import "./AgencyJobs.scss";
 
 // Types for job data
@@ -131,6 +132,8 @@ const AgencyJobs = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("dueDate");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null);
+  const [showTechnicianModal, setShowTechnicianModal] = useState(false);
 
   // Fetch jobs with filters and pagination
   const fetchJobs = async (page = 1, newFilters?: Partial<JobFilters>) => {
@@ -206,6 +209,25 @@ const AgencyJobs = () => {
 
   const handleFilterChange = (key: keyof JobFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleTechnicianClick = (technicianId: string) => {
+    setSelectedTechnicianId(technicianId);
+    setShowTechnicianModal(true);
+  };
+
+  const handleCloseTechnicianModal = () => {
+    setShowTechnicianModal(false);
+    setSelectedTechnicianId(null);
+  };
+
+  const handleQuickSearch = (value: string) => {
+    handleFilterChange('search', value);
+    // Auto-trigger search for immediate feedback
+    if (value.trim() !== '') {
+      const newFilters = { ...filters, search: value };
+      fetchJobs(1, newFilters);
+    }
   };
 
   const handleFilterSubmit = () => {
@@ -394,9 +416,9 @@ const AgencyJobs = () => {
             <RiSearchLine />
             <input
               type="text"
-              placeholder="Search jobs by description, property, or technician..."
+              placeholder="Search by Job ID, status, property address, technician name, or description..."
               value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
+              onChange={(e) => handleQuickSearch(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleFilterSubmit()}
             />
           </div>
@@ -583,11 +605,11 @@ const AgencyJobs = () => {
                     <div className="property-info">
                       <div className="property-address">
                         <RiMapPinLine />
-                        <span>{job.property.address.street}</span>
+                        <span>{job.property?.address?.street || 'Address not available'}</span>
                       </div>
                       <div className="property-type">
-                        {job.property.address.state}{" "}
-                        {job.property.address.postcode}
+                        {job.property?.address?.state || ''}{" "}
+                        {job.property?.address?.postcode || ''}
                       </div>
                     </div>
                   </td>
@@ -615,7 +637,11 @@ const AgencyJobs = () => {
                   </td>
                   <td>
                     {job.assignedTechnician && job.assignedTechnician.name ? (
-                      <div className="technician-info">
+                      <div 
+                        className="technician-info clickable"
+                        onClick={() => handleTechnicianClick(job.assignedTechnician!.id)}
+                        title="Click to view technician details"
+                      >
                         <RiUserLine />
                         <span>{job.assignedTechnician.name}</span>
                         <div className="technician-trade">
@@ -703,6 +729,15 @@ const AgencyJobs = () => {
           </div>
         )}
       </div>
+
+      {/* Technician Info Modal */}
+      {selectedTechnicianId && (
+        <TechnicianInfoModal
+          isOpen={showTechnicianModal}
+          onClose={handleCloseTechnicianModal}
+          technicianId={selectedTechnicianId}
+        />
+      )}
     </div>
   );
 };

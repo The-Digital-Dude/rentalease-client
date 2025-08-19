@@ -3,6 +3,27 @@ import { useAppSelector } from "../../store";
 import { allowedRoutes } from "../../config/roleBasedRoutes";
 import type { UserType } from "../../store/userSlice";
 import { UserProfile } from "../UserProfile";
+import {
+  MdDashboard,
+  MdBusiness,
+  MdWork,
+  MdHome,
+  MdAssignment,
+  MdPerson,
+  MdPeople,
+  MdGroup,
+  MdContacts,
+  MdPayment,
+  MdVerifiedUser,
+  MdMap,
+  MdLogin,
+  MdWorkOutline,
+  MdCheckCircle,
+  MdError,
+  MdSchedule,
+  MdAttachMoney,
+  MdCode,
+} from "react-icons/md";
 import "./Sidebar.scss";
 
 interface SidebarProps {
@@ -40,6 +61,35 @@ const labelMap: Record<string, string> = {
   teamMembers: "Team Members",
 };
 
+const iconMap: Record<string, React.ReactNode> = {
+  dashboard: <MdDashboard />,
+  devDashboard: <MdCode />,
+  agencies: <MdBusiness />,
+  agencyJobs: <MdWork />,
+  jobs: <MdWork />,
+  properties: <MdHome />,
+  propertyAssignment: <MdAssignment />,
+  technician: <MdPerson />,
+  propertyManagerManagement: <MdPeople />,
+  staff: <MdGroup />,
+  contacts: <MdContacts />,
+  payment: <MdPayment />,
+  compliance: <MdVerifiedUser />,
+  region: <MdMap />,
+  login: <MdLogin />,
+  availableJobs: <MdWorkOutline />,
+  myJobs: <MdWork />,
+  activeJobs: <MdWorkOutline />,
+  overdueJobs: <MdError />,
+  completedJobs: <MdCheckCircle />,
+  "scheduled-jobs": <MdSchedule />,
+  "overdue-jobs": <MdError />,
+  "completed-jobs": <MdCheckCircle />,
+  myPayments: <MdAttachMoney />,
+  technicianPayments: <MdPayment />,
+  teamMembers: <MdGroup />,
+};
+
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { userType } = useAppSelector((state) => state.user);
   const location = useLocation();
@@ -64,7 +114,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
               className={`nav-link ${isActive ? "active" : ""}`}
               onClick={onClose}
             >
-              {labelMap[route] || route}
+              <span className="nav-icon">{iconMap[route]}</span>
+              <span className="nav-label">{labelMap[route] || route}</span>
             </Link>
           );
         })}

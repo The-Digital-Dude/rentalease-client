@@ -23,6 +23,7 @@ import {
   MdSchedule,
   MdAttachMoney,
   MdCode,
+  MdCreditCard,
 } from "react-icons/md";
 import "./Sidebar.scss";
 
@@ -59,6 +60,7 @@ const labelMap: Record<string, string> = {
   myPayments: "My Payments",
   technicianPayments: "Technician Payments",
   teamMembers: "Team Members",
+  subscription: "Subscription",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -88,6 +90,7 @@ const iconMap: Record<string, React.ReactNode> = {
   myPayments: <MdAttachMoney />,
   technicianPayments: <MdPayment />,
   teamMembers: <MdGroup />,
+  subscription: <MdCreditCard />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

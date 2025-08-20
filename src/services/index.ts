@@ -7,6 +7,7 @@ export { default as propertyManagerService } from "./propertyManagerService";
 export { default as staffService } from "./staffService";
 export { notificationService } from "./notificationService";
 export { default as dashboardService } from "./dashboardService";
+export { default as subscriptionService } from "./subscriptionService";
 
 // Re-export types from jobService
 export type {

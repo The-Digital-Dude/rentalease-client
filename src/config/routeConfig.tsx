@@ -55,6 +55,7 @@ const TeamMemberManagement = lazy(
 const TechnicianPaymentManagement = lazy(
   () => import("../pages/TechnicianPaymentManagement/TechnicianPaymentManagement")
 );
+const Subscription = lazy(() => import("../pages/Subscription/Subscription"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -91,6 +92,7 @@ export const routeConfig = (userType: UserType) => {
     myPayments: MyPayments,
     technicianPayments: TechnicianPaymentManagement,
     teamMembers: TeamMemberManagement,
+    subscription: Subscription,
   };
 
   // Generate routes based on user permissions

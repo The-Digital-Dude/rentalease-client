@@ -19,9 +19,16 @@ import {
   RiArrowDownSLine,
   RiInformationFill,
   RiCheckboxCircleLine,
+  RiBarChartBoxLine,
+  RiLineChartLine,
+  RiArrowUpLine as RiTrendingUpLine,
+  RiUserLine,
+  RiCheckboxCircleFill,
+  RiCalendarEventLine,
 } from "react-icons/ri";
 import subscriptionService, {
   type SubscriptionResponse,
+  type AnalyticsData,
 } from "../../services/subscriptionService";
 import Toast from "../../components/Toast";
 import "./Subscription.scss";
@@ -29,9 +36,11 @@ import "./Subscription.scss";
 const Subscription: React.FC = () => {
   const [subscriptionData, setSubscriptionData] =
     useState<SubscriptionResponse | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error" | "info";
@@ -45,15 +54,32 @@ const Subscription: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await subscriptionService.getSubscriptionStatus();
-      setSubscriptionData(data);
+      const [subscriptionResult, analyticsResult] = await Promise.allSettled([
+        subscriptionService.getSubscriptionStatus(),
+        subscriptionService.getAnalyticsData()
+      ]);
+      
+      if (subscriptionResult.status === 'fulfilled') {
+        setSubscriptionData(subscriptionResult.value);
+      } else {
+        console.error("Error fetching subscription data:", subscriptionResult.reason);
+        setError(subscriptionResult.reason?.message || "Failed to load subscription data");
+      }
+      
+      if (analyticsResult.status === 'fulfilled') {
+        setAnalyticsData(analyticsResult.value);
+      } else {
+        console.error("Error fetching analytics data:", analyticsResult.reason);
+        // Don't set error for analytics failure, just log it
+      }
     } catch (err: any) {
-      console.error("Error fetching subscription data:", err);
+      console.error("Error fetching data:", err);
       setError(err.message || "Failed to load subscription data");
     } finally {
       setLoading(false);
     }
   };
+;
 
   const handleManageBilling = async () => {
     try {
@@ -71,7 +97,23 @@ const Subscription: React.FC = () => {
         type: "error",
       });
     } finally {
-      setLoadingPortal(false);
+      setLoadingCheckout(false);
+    }
+  };
+
+  const handleSubscribe = async (planType: 'starter' | 'pro') => {
+    try {
+      setLoadingCheckout(true);
+      const checkoutUrl = await subscriptionService.createCheckoutSession(planType, 'monthly');
+      window.location.href = checkoutUrl;
+    } catch (err: any) {
+      console.error("Error starting subscription:", err);
+      setToast({
+        message: err.message || "Failed to start subscription",
+        type: "error",
+      });
+    } finally {
+      setLoadingCheckout(false);
     }
   };
 
@@ -109,14 +151,40 @@ const Subscription: React.FC = () => {
 
   if (!subscriptionData) {
     return (
-      <div className="page-container">
-        <div className="error-state">
-          <RiAlertFill />
-          <h3>No Subscription Data</h3>
-          <p>Unable to load subscription information.</p>
-          <button onClick={fetchSubscriptionData} className="btn-primary">
-            Retry
-          </button>
+      <div className="page-container subscription-page">
+        {/* Header */}
+        <div className="page-header">
+          <div className="header-content">
+            <div className="header-info">
+              <h1>Subscription Required</h1>
+              <p>Choose a plan to continue using RentalEase CRM</p>
+            </div>
+          </div>
+        </div>
+
+        {/* No Subscription CTA */}
+        <div className="no-subscription-cta">
+          <div className="cta-icon">
+            <RiVipCrown2Line />
+          </div>
+          <h2>Activate Your Subscription</h2>
+          <p>You currently don't have an active subscription. Choose a plan to unlock all features and start your 14-day free trial.</p>
+          <div className="plan-options">
+            <button 
+              className="btn-primary" 
+              onClick={() => handleSubscribe('starter')}
+              disabled={loadingCheckout}
+            >
+              {loadingCheckout ? 'Redirecting...' : 'Start with Starter Plan'}
+            </button>
+            <button 
+              className="btn-secondary" 
+              onClick={() => handleSubscribe('pro')}
+              disabled={loadingCheckout}
+            >
+              {loadingCheckout ? 'Redirecting...' : 'Start with Pro Plan'}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -129,17 +197,6 @@ const Subscription: React.FC = () => {
   const planDetails = subscriptionService.getPlanFeatures(
     subscription.planType
   );
-  const trialRemaining = subscriptionService.getTrialRemainingTime(
-    subscription.trialEndsAt
-  );
-  const nextBilling = subscriptionService.getNextBillingDate(
-    subscription.subscriptionEndDate
-  );
-
-  const isTrialExpired =
-    subscription.status === "trial" &&
-    subscription.trialEndsAt &&
-    new Date(subscription.trialEndsAt) < new Date();
 
   return (
     <div className="page-container subscription-page">
@@ -204,51 +261,90 @@ const Subscription: React.FC = () => {
             </div>
           </div>
 
-          {/* Billing Status */}
-          <div className="status-card billing-card">
+          {/* Usage Analytics & Insights Card */}
+          <div className="status-card analytics-card">
             <div className="card-header">
-              <RiVipCrown2Line />
-              <h3>Billing Status</h3>
+              <h3>Usage Analytics & Insights</h3>
+              <RiBarChartBoxLine />
             </div>
-            <div className="billing-info">
-              {subscription.status === "trial" ? (
-                <div className="trial-info">
-                  <div className="trial-remaining">
-                    <RiTimeFill className={isTrialExpired ? "expired" : ""} />
-                    <span className={isTrialExpired ? "expired" : ""}>
-                      {trialRemaining}
+            <div className="analytics-info">
+              <div className="analytics-metrics">
+                <div className="metric-item">
+                  <div className="metric-icon">
+                    <RiBuildingFill />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-value">{analyticsData?.totalProperties.value || 0}</span>
+                    <span className="metric-label">Total Properties</span>
+                    <span className={`metric-trend ${analyticsData?.totalProperties.trendDirection || 'neutral'}`}>
+                      {analyticsData?.totalProperties.trendDirection === 'positive' && <RiTrendingUpLine />}
+                      {analyticsData?.totalProperties.trendDirection === 'negative' && <RiArrowDownSLine />}
+                      {analyticsData?.totalProperties.trendDirection === 'neutral' && <RiLineChartLine />}
+                      {analyticsData?.totalProperties.trend > 0 ? '+' : ''}{analyticsData?.totalProperties.trend || 0}% this month
                     </span>
                   </div>
-                  {isTrialExpired && (
-                    <div className="trial-expired-message">
-                      <RiAlertFill />
-                      <span>
-                        Your trial has expired. Please update your billing
-                        information.
-                      </span>
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <div className="billing-details">
-                  <div className="billing-item">
-                    <label>Billing Period</label>
-                    <span className="capitalize">
-                      {subscription.billingPeriod}
+                <div className="metric-item">
+                  <div className="metric-icon">
+                    <RiUserLine />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-value">{analyticsData?.totalPropertyManagers.value || 0}</span>
+                    <span className="metric-label">Property Managers</span>
+                    <span className={`metric-trend ${analyticsData?.totalPropertyManagers.trendDirection || 'neutral'}`}>
+                      {analyticsData?.totalPropertyManagers.trendDirection === 'positive' && <RiTrendingUpLine />}
+                      {analyticsData?.totalPropertyManagers.trendDirection === 'negative' && <RiArrowDownSLine />}
+                      {analyticsData?.totalPropertyManagers.trendDirection === 'neutral' && <RiLineChartLine />}
+                      {analyticsData?.totalPropertyManagers.trend > 0 ? '+' : ''}{analyticsData?.totalPropertyManagers.trend || 0}% this month
                     </span>
                   </div>
-                  <div className="billing-item">
-                    <label>Next Billing</label>
-                    <span>{nextBilling}</span>
-                  </div>
-                  {stripe?.cancelAtPeriodEnd && (
-                    <div className="cancellation-notice">
-                      <RiInformationFill />
-                      <span>Subscription will cancel at period end</span>
-                    </div>
-                  )}
                 </div>
-              )}
+                <div className="metric-item">
+                  <div className="metric-icon">
+                    <RiCheckboxCircleFill />
+                  </div>
+                  <div className="metric-details">
+                    <span className="metric-value">{analyticsData?.totalCompletedJobs.value || 0}</span>
+                    <span className="metric-label">Completed Jobs</span>
+                    <span className={`metric-trend ${analyticsData?.totalCompletedJobs.trendDirection || 'neutral'}`}>
+                      {analyticsData?.totalCompletedJobs.trendDirection === 'positive' && <RiTrendingUpLine />}
+                      {analyticsData?.totalCompletedJobs.trendDirection === 'negative' && <RiArrowDownSLine />}
+                      {analyticsData?.totalCompletedJobs.trendDirection === 'neutral' && <RiLineChartLine />}
+                      {analyticsData?.totalCompletedJobs.trend > 0 ? '+' : ''}{analyticsData?.totalCompletedJobs.trend || 0}% this month
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="analytics-chart">
+                <h4>Completed Jobs (Last 4 Weeks)</h4>
+                <div className="mini-chart">
+                  <div className="chart-bars">
+                    {analyticsData?.weeklyActivity.map((activity, index) => {
+                      const maxActivity = Math.max(...(analyticsData.weeklyActivity || [1]));
+                      const height = maxActivity > 0 ? (activity / maxActivity) * 100 : 0;
+                      return (
+                        <div 
+                          key={index} 
+                          className="bar" 
+                          style={{height: `${Math.max(height, 8)}%`}}
+                          title={`Week ${index + 1}: ${activity} completed jobs`}
+                        ></div>
+                      );
+                    }) || [
+                      <div key={0} className="bar" style={{height: '8%'}}></div>,
+                      <div key={1} className="bar" style={{height: '8%'}}></div>,
+                      <div key={2} className="bar" style={{height: '8%'}}></div>,
+                      <div key={3} className="bar" style={{height: '8%'}}></div>
+                    ]}
+                  </div>
+                  <div className="chart-labels">
+                    <span>Week 1</span>
+                    <span>Week 2</span>
+                    <span>Week 3</span>
+                    <span>Week 4</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -267,19 +363,23 @@ const Subscription: React.FC = () => {
               </div>
               <div className="usage-progress">
                 <div className="usage-bar">
-                  <div 
-                    className="usage-fill" 
-                    style={{ 
-                      width: subscription.limits.properties === -1 || subscription.limits.properties === Infinity 
-                        ? "0%" 
-                        : `${Math.min(100, ((subscription.currentUsage?.properties || 0) / subscription.limits.properties) * 100)}%` 
+                  <div
+                    className="usage-fill"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        ((subscription.currentUsage?.properties || 0) /
+                          subscription.limits.properties) *
+                          100
+                      )}%`,
                     }}
                   ></div>
                 </div>
                 <span className="usage-text">
-                  {subscription.limits.properties === -1 || subscription.limits.properties === Infinity
+                  {subscription.currentUsage?.properties || 0} /{" "}
+                  {subscription.limits.properties === -1
                     ? "Unlimited"
-                    : `${subscription.currentUsage?.properties || 0} / ${subscription.limits.properties}`}
+                    : subscription.limits.properties}
                 </span>
               </div>
             </div>
@@ -304,24 +404,22 @@ const Subscription: React.FC = () => {
 
         {/* Upgrade Section */}
         {subscription.planType !== "enterprise" && (
-          <div className="upgrade-section">
-            <div className="upgrade-card">
-              <div className="upgrade-content">
-                <RiRocket2Line />
-                <h3>Need More?</h3>
-                <p>
-                  Upgrade to unlock more properties, users, and premium
-                  features.
-                </p>
-                <button
+          <div className="upgrade-section-new">
+            <div className="upgrade-content">
+                <div className="upgrade-icon">
+                    <RiRocket2Line />
+                </div>
+                <div className="upgrade-text">
+                    <h3>{subscription.planType === 'starter' ? 'Upgrade to Pro' : 'Need More Power?'}</h3>
+                    <p>{subscription.planType === 'starter' ? 'Unlock advanced features like priority support and expanded limits.' : 'Explore our Enterprise plan for unlimited possibilities.'}</p>
+                </div>
+                <button 
                   onClick={handleManageBilling}
-                  className="btn-primary"
+                  className="btn-upgrade"
                   disabled={loadingPortal}
                 >
-                  <RiArrowUpSLine />
-                  Upgrade Plan
+                    {loadingPortal ? 'Opening...' : (subscription.planType === 'starter' ? 'Upgrade Now' : 'Contact Sales')}
                 </button>
-              </div>
             </div>
           </div>
         )}

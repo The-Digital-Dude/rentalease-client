@@ -38,6 +38,19 @@ export interface BillingPortalResponse {
   url: string;
 }
 
+export interface AnalyticsMetric {
+  value: number;
+  trend: number;
+  trendDirection: 'positive' | 'negative' | 'neutral';
+}
+
+export interface AnalyticsData {
+  totalProperties: AnalyticsMetric;
+  totalPropertyManagers: AnalyticsMetric;
+  totalCompletedJobs: AnalyticsMetric;
+  weeklyActivity: number[];
+}
+
 class SubscriptionService {
   /**
    * Get current subscription status
@@ -84,6 +97,50 @@ class SubscriptionService {
   }
 
   /**
+   * Get analytics data for the agency
+   */
+  async getAnalyticsData(): Promise<AnalyticsData> {
+    try {
+      const response = await api.get("/v1/subscription/analytics");
+
+      if (response.data.status === "success") {
+        return response.data.data;
+      }
+
+      throw new Error(
+        response.data.message || "Failed to fetch analytics data"
+      );
+    } catch (error: any) {
+      console.error("Error fetching analytics data:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch analytics data"
+      );
+    }
+  }
+
+  /**
+   * Create a checkout session for an existing agency to subscribe
+   */
+  async createCheckoutSession(planType: 'starter' | 'pro', billingPeriod: 'monthly' | 'yearly'): Promise<string> {
+    try {
+      const response = await api.post("/v1/subscription/create-checkout-session", { planType, billingPeriod });
+
+      if (response.data.status === "success") {
+        return response.data.data.url;
+      }
+
+      throw new Error(
+        response.data.message || "Failed to create checkout session"
+      );
+    } catch (error: any) {
+      console.error("Error creating checkout session:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to create checkout session"
+      );
+    }
+  }
+
+  /**
    * Get plan features and limits
    */
   getPlanFeatures(planType: string) {
@@ -91,11 +148,7 @@ class SubscriptionService {
       starter: {
         name: "Starter",
         price: "$99/mo",
-        features: [
-          "Up to 50 Properties",
-          "Full CRM Access",
-          "Basic Support",
-        ],
+        features: ["Up to 50 Properties", "Full CRM Access", "Basic Support"],
       },
       pro: {
         name: "Pro",

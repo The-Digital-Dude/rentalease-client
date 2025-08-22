@@ -3,6 +3,267 @@
   margin: 0 auto;
   padding: 0 1rem;
 
+  // Subscription section styles
+  .subscription-section {
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 1rem;
+    }
+
+    .subscription-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+
+      .subscription-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        .plan-info {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+
+          .plan-badge {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border-radius: 2rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+
+            svg {
+              padding: 0.75rem;
+              background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+              color: #ffffff;
+              font-size: 1.25rem;
+            }
+
+            .plan-name {
+              padding: 0.75rem 1.25rem 0.75rem 1rem;
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+              color: #ffffff;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              font-size: 0.9375rem;
+            }
+          }
+
+          .status-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            &.active {
+              background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+              color: #ffffff;
+            }
+
+            &.trial {
+              background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+              color: #ffffff;
+            }
+
+            &.past_due {
+              background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+              color: #ffffff;
+            }
+
+            &.canceled {
+              background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+              color: #ffffff;
+            }
+          }
+        }
+
+        .manage-subscription {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border: 1px solid #d1d5db;
+          background: white;
+          color: #374151;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background: #f9fafb;
+            border-color: #9ca3af;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          svg {
+            font-size: 1rem;
+          }
+
+          .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+        }
+      }
+
+      .subscription-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+
+        .detail-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+          }
+
+          span {
+            color: #1e293b;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+
+  // Business details subscription styles
+  .business-info {
+    .subscription-details {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .subscription-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 2rem;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        text-transform: capitalize;
+        transition: all 0.2s ease;
+
+        .subscription-icon {
+          font-size: 1.125rem;
+        }
+
+        &.pro.trial {
+          background: #e0f2fe;
+          color: #0369a1;
+          
+          .subscription-icon {
+            color: #0284c7;
+          }
+        }
+
+        &.pro.active {
+          background: #dcfce7;
+          color: #166534;
+          
+          .subscription-icon {
+            color: #16a34a;
+          }
+        }
+
+        &.starter.trial {
+          background: #fef3c7;
+          color: #92400e;
+          
+          .subscription-icon {
+            color: #d97706;
+          }
+        }
+
+        &.starter.active {
+          background: #dcfce7;
+          color: #166534;
+          
+          .subscription-icon {
+            color: #16a34a;
+          }
+        }
+
+        &.enterprise.trial {
+          background: #f3e8ff;
+          color: #7c3aed;
+          
+          .subscription-icon {
+            color: #8b5cf6;
+          }
+        }
+
+        &.enterprise.active {
+          background: #dcfce7;
+          color: #166534;
+          
+          .subscription-icon {
+            color: #16a34a;
+          }
+        }
+
+        &.past_due {
+          background: #fed7aa;
+          color: #c2410c;
+          
+          .subscription-icon {
+            color: #ea580c;
+          }
+        }
+
+        &.canceled {
+          background: #fee2e2;
+          color: #991b1b;
+          
+          .subscription-icon {
+            color: #dc2626;
+          }
+        }
+      }
+    }
+
+    .no-subscription-details {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .no-sub-icon {
+        color: #6b7280;
+        font-size: 1rem;
+      }
+
+      span {
+        color: #6b7280;
+        font-weight: 500;
+      }
+    }
+  }
+
   // Clickable element styles
   .clickable {
     cursor: pointer;

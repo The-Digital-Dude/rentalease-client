@@ -1,6 +1,17 @@
 import api from "./api";
 import type { Region } from "../constants";
 
+export interface AgencySubscription {
+  id: string;
+  planType: "starter" | "pro" | "enterprise";
+  status: "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid";
+  subscriptionStartDate?: string;
+  subscriptionEndDate?: string;
+  trialEndsAt?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+}
+
 export interface Agency {
   id: string;
   name: string;
@@ -12,6 +23,7 @@ export interface Agency {
   complianceLevel: string;
   status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
+  subscription?: AgencySubscription;
 }
 
 // Server response format for agency
@@ -31,6 +43,16 @@ export interface ServerAgency {
   joinedDate?: string;
   createdAt?: string;
   lastUpdated?: string;
+  subscription?: {
+    id: string;
+    planType: string;
+    status: string;
+    subscriptionStartDate?: string;
+    subscriptionEndDate?: string;
+    trialEndsAt?: string;
+    currentPeriodStart?: string;
+    currentPeriodEnd?: string;
+  };
 }
 
 // Detailed agency profile interface for single agency fetch
@@ -51,6 +73,16 @@ export interface AgencyProfile {
     joinedDate?: string;
     createdAt?: string;
     lastUpdated?: string;
+    subscription?: {
+      id: string;
+      planType: string;
+      status: string;
+      subscriptionStartDate?: string;
+      subscriptionEndDate?: string;
+      trialEndsAt?: string;
+      currentPeriodStart?: string;
+      currentPeriodEnd?: string;
+    };
   };
   statistics: {
     totalProperties: number;
@@ -199,6 +231,16 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   complianceLevel: serverData.compliance,
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
+  subscription: serverData.subscription ? {
+    id: serverData.subscription.id,
+    planType: serverData.subscription.planType.toLowerCase() as "starter" | "pro" | "enterprise",
+    status: serverData.subscription.status.toLowerCase() as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid",
+    subscriptionStartDate: serverData.subscription.subscriptionStartDate,
+    subscriptionEndDate: serverData.subscription.subscriptionEndDate,
+    trialEndsAt: serverData.subscription.trialEndsAt,
+    currentPeriodStart: serverData.subscription.currentPeriodStart,
+    currentPeriodEnd: serverData.subscription.currentPeriodEnd,
+  } : undefined,
 });
 
 export const agencyService = {
@@ -432,6 +474,46 @@ export const agencyService = {
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "Failed to fetch technician information");
+    }
+  },
+
+  // Get agency subscription data
+  getAgencySubscription: async (
+    agencyId: string
+  ): Promise<{
+    success: boolean;
+    data?: AgencySubscription;
+    message?: string;
+  }> => {
+    try {
+      const response = await api.get(`/v1/agency/${agencyId}/subscription`);
+      
+      if (response.data.status === "success" && response.data.data?.subscription) {
+        const subscription = response.data.data.subscription;
+        return {
+          success: true,
+          data: {
+            id: subscription.id,
+            planType: subscription.planType?.toLowerCase() as "starter" | "pro" | "enterprise",
+            status: subscription.status?.toLowerCase() as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid",
+            subscriptionStartDate: subscription.subscriptionStartDate,
+            subscriptionEndDate: subscription.subscriptionEndDate,
+            trialEndsAt: subscription.trialEndsAt,
+            currentPeriodStart: subscription.currentPeriodStart,
+            currentPeriodEnd: subscription.currentPeriodEnd,
+          },
+        };
+      } else {
+        return {
+          success: false,
+          message: "No subscription found for this agency",
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to fetch agency subscription",
+      };
     }
   },
 };

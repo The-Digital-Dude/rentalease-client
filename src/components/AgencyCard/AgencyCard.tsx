@@ -4,6 +4,8 @@ import {
   RiDeleteBin6Line,
   RiMailSendLine,
   RiEyeLine,
+  RiVipCrown2Line,
+  RiShieldCheckLine,
 } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import type { Agency } from "../../services/agencyService";
@@ -179,9 +181,20 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
       </div>
 
       <div className="agency-footer">
-        <div className="outstanding-amount">
-          <span className="label">Outstanding</span>
-          <span className="amount">${agency.outstandingAmount}</span>
+        <div className="subscription-info">
+          {agency.subscription ? (
+            <div className="subscription-status">
+              <div className={`subscription-badge ${agency.subscription.planType} ${agency.subscription.status}`}>
+                <RiVipCrown2Line className="subscription-icon" />
+                <span>{agency.subscription.planType.charAt(0).toUpperCase() + agency.subscription.planType.slice(1)} Plan - {agency.subscription.status.charAt(0).toUpperCase() + agency.subscription.status.slice(1)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="no-subscription">
+              <RiShieldCheckLine className="no-sub-icon" />
+              <span className="no-sub-text">No Subscription</span>
+            </div>
+          )}
         </div>
         <button className="btn-secondary" onClick={() => onEdit(agency)}>
           Edit

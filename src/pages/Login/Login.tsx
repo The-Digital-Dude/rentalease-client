@@ -27,6 +27,36 @@ const Login = () => {
 
         <div className="login-options">
           <div className="login-grid">
+            <Link to="/login/admin" className="login-option-card">
+              <div className="option-icon admin">
+                <RiShieldUserLine />
+              </div>
+              <div className="option-content">
+                <h3>Admin Login</h3>
+                <p>
+                  Access admin panel, manage users, and oversee system operations
+                </p>
+              </div>
+              <div className="option-arrow">
+                <RiArrowRightLine />
+              </div>
+            </Link>
+
+            <Link to="/login/team-member" className="login-option-card">
+              <div className="option-icon team-member">
+                <RiTeamLine />
+              </div>
+              <div className="option-content">
+                <h3>Team Member</h3>
+                <p>
+                  Access team member portal with admin-level privileges and permissions
+                </p>
+              </div>
+              <div className="option-arrow">
+                <RiArrowRightLine />
+              </div>
+            </Link>
+
             <Link to="/login/agent" className="login-option-card">
               <div className="option-icon agent">
                 <RiUser3Line />
@@ -51,36 +81,6 @@ const Login = () => {
                 <h3>Property Manager</h3>
                 <p>
                   Access property management portal and oversee property operations
-                </p>
-              </div>
-              <div className="option-arrow">
-                <RiArrowRightLine />
-              </div>
-            </Link>
-
-            <Link to="/login/admin" className="login-option-card">
-              <div className="option-icon admin">
-                <RiShieldUserLine />
-              </div>
-              <div className="option-content">
-                <h3>Admin Login</h3>
-                <p>
-                  Access admin panel, manage users, and oversee system operations
-                </p>
-              </div>
-              <div className="option-arrow">
-                <RiArrowRightLine />
-              </div>
-            </Link>
-
-            <Link to="/login/team-member" className="login-option-card">
-              <div className="option-icon team-member">
-                <RiTeamLine />
-              </div>
-              <div className="option-content">
-                <h3>Team Member</h3>
-                <p>
-                  Access team member portal with admin-level privileges and permissions
                 </p>
               </div>
               <div className="option-arrow">

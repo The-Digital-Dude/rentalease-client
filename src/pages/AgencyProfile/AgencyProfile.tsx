@@ -20,21 +20,34 @@ import {
   RiTimeLine,
   RiAlertLine,
   RiStarLine,
+  RiVipCrown2Line,
+  RiSettings2Line,
+  RiExternalLinkFill,
 } from "react-icons/ri";
 import { agencyService } from "../../services/agencyService";
+import subscriptionService from "../../services/subscriptionService";
 import type { AgencyProfile as AgencyProfileType } from "../../services/agencyService";
 import { formatDateTime } from "../../utils";
+import { useAppSelector } from "../../store";
+import PillBadge from "../../components/PillBadge";
+import Toast from "../../components/Toast";
 import "./AgencyProfile.scss";
 
 const AgencyProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userType } = useAppSelector((state) => state.user);
   const [agencyData, setAgencyData] = useState<AgencyProfileType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "overview" | "properties" | "jobs" | "propertyManagers"
   >("overview");
+  const [loadingPortal, setLoadingPortal] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
 
   useEffect(() => {
     const fetchAgencyData = async () => {
@@ -76,6 +89,30 @@ const AgencyProfile: React.FC = () => {
 
   const handleViewJob = (jobId: string) => {
     navigate(`/jobs/${jobId}`);
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      setLoadingPortal(true);
+      
+      // For super users, pass the agency ID
+      const requestData = userType === 'super_user' ? { agencyId: id } : {};
+      
+      const portalUrl = await subscriptionService.createPortalSession(requestData);
+      window.open(portalUrl, "_blank");
+      setToast({
+        message: "Billing portal opened in new tab",
+        type: "success",
+      });
+    } catch (err: any) {
+      console.error("Error opening billing portal:", err);
+      setToast({
+        message: err.message || "Failed to open billing portal",
+        type: "error",
+      });
+    } finally {
+      setLoadingPortal(false);
+    }
   };
 
   if (loading) {
@@ -388,10 +425,21 @@ const AgencyProfile: React.FC = () => {
                       <span>{agency?.compliance || "N/A"}</span>
                     </div>
                     <div className="business-item">
-                      <label>Outstanding Amount</label>
-                      <span className="amount">
-                        ${(agency?.outstandingAmount || 0).toLocaleString()}
-                      </span>
+                      <label>Subscription Plan</label>
+                      {agency?.subscription ? (
+                        <div className="subscription-details">
+                          <PillBadge
+                            planType={agency.subscription.planType as "starter" | "pro" | "enterprise" | "trial"}
+                            status={agency.subscription.status as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid"}
+                            size="medium"
+                          />
+                        </div>
+                      ) : (
+                        <div className="no-subscription-details">
+                          <RiShieldCheckLine className="no-sub-icon" />
+                          <span>No Active Subscription</span>
+                        </div>
+                      )}
                     </div>
                     <div className="business-item">
                       <label>Joined Date</label>
@@ -405,6 +453,61 @@ const AgencyProfile: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Subscription Information */}
+            {agency?.subscription && (
+              <div className="subscription-section">
+                <h2>Subscription Details</h2>
+                <div className="subscription-card">
+                  <div className="subscription-header">
+                    <div className="plan-info">
+                      <PillBadge
+                        planType={agency.subscription.planType as "starter" | "pro" | "enterprise" | "trial"}
+                        status={agency.subscription.status as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid"}
+                        size="medium"
+                      />
+                    </div>
+                    <button 
+                      className="btn-secondary manage-subscription"
+                      onClick={handleManageSubscription}
+                      disabled={loadingPortal}
+                    >
+                      {loadingPortal ? (
+                        <>
+                          <div className="spinner-small"></div>
+                          Opening...
+                        </>
+                      ) : (
+                        <>
+                          <RiExternalLinkFill />
+                          Manage Subscription
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="subscription-details-grid">
+                    {agency.subscription.subscriptionStartDate && (
+                      <div className="detail-item">
+                        <label>Started</label>
+                        <span>{formatDateTime(agency.subscription.subscriptionStartDate)}</span>
+                      </div>
+                    )}
+                    {agency.subscription.subscriptionEndDate && (
+                      <div className="detail-item">
+                        <label>Next Billing</label>
+                        <span>{formatDateTime(agency.subscription.subscriptionEndDate)}</span>
+                      </div>
+                    )}
+                    {agency.subscription.trialEndsAt && (
+                      <div className="detail-item">
+                        <label>Trial Ends</label>
+                        <span>{formatDateTime(agency.subscription.trialEndsAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Performance Overview */}
             <div className="performance-section">
@@ -734,6 +837,16 @@ const AgencyProfile: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Toast notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={true}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };

@@ -102,7 +102,7 @@ const Agencies = () => {
           region: formData.region,
           complianceLevel: formData.complianceLevel,
           status: formData.status,
-          outstandingAmount: editingAgency.outstandingAmount, // Preserve existing amount
+          outstandingAmount: editingAgency.outstandingAmount, // Keep for now to satisfy interface
         };
 
         const response = await agencyService.updateAgency(
@@ -142,7 +142,7 @@ const Agencies = () => {
           region: formData.region,
           complianceLevel: formData.complianceLevel,
           status: formData.status,
-          outstandingAmount: 0, // Default outstanding amount for new agencies
+          outstandingAmount: 0, // Keep for now to satisfy interface
           password: formData.password,
         };
 

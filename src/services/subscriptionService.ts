@@ -77,9 +77,9 @@ class SubscriptionService {
   /**
    * Create customer portal session for managing subscription
    */
-  async createPortalSession(): Promise<string> {
+  async createPortalSession(data: { agencyId?: string } = {}): Promise<string> {
     try {
-      const response = await api.post("/v1/subscription/create-portal-session");
+      const response = await api.post("/v1/subscription/create-portal-session", data);
 
       if (response.data.status === "success") {
         return response.data.data.url;

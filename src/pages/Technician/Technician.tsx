@@ -531,6 +531,7 @@ const TechnicianPage = () => {
   const tabs = [
     { id: "directory", label: "Technician Directory", icon: RiTeamLine },
     { id: "calendar", label: "Availability Calendar", icon: RiCalendarLine },
+    { id: "add", label: "Add Technician", icon: RiUserAddLine },
   ];
 
   const availabilityStatuses = ["Available", "Busy", "Unavailable", "On Leave"];
@@ -1304,6 +1305,7 @@ const TechnicianPage = () => {
       <div className="tab-content">
         {activeTab === "directory" && renderDirectory()}
         {activeTab === "calendar" && renderCalendar()}
+        {activeTab === "add" && renderAddEditForm()}
       </div>
 
       {/* Modals */}

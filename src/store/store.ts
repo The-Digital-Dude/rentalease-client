@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
 import notificationReducer from "./notificationSlice";
 import availableJobsReducer from "./availableJobsSlice";
+import emailReducer from "./emailSlice";
 
 // Create the store with the user reducer
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     user: userReducer,
     notifications: notificationReducer,
     availableJobs: availableJobsReducer,
+    email: emailReducer,
   },
 });
 

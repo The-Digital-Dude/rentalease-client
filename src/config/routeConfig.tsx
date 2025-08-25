@@ -18,9 +18,6 @@ const TechnicianDashboard = lazy(
 const StaffDashboard = lazy(
   () => import("../pages/StaffDashboard/StaffDashboard")
 );
-const TenantDashboard = lazy(
-  () => import("../pages/TenantDashboard/TenantDashboard")
-);
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const AgencyJobs = lazy(() => import("../pages/AgencyJobs/AgencyJobs"));
 const Contacts = lazy(
@@ -56,6 +53,7 @@ const TechnicianPaymentManagement = lazy(
   () => import("../pages/TechnicianPaymentManagement/TechnicianPaymentManagement")
 );
 const Subscription = lazy(() => import("../pages/Subscription/Subscription"));
+const EmailCommunication = lazy(() => import("../pages/EmailCommunication").then(module => ({ default: module.EmailCommunication })));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -72,7 +70,6 @@ export const routeConfig = (userType: UserType) => {
     technician: Technician,
     propertyManagerManagement: PropertyManagerManagement,
     staff: StaffDashboard,
-    tenant: TenantDashboard,
     agencies: Agencies,
     agencyJobs: AgencyJobs,
     contacts: Contacts,
@@ -93,6 +90,7 @@ export const routeConfig = (userType: UserType) => {
     technicianPayments: TechnicianPaymentManagement,
     teamMembers: TeamMemberManagement,
     subscription: Subscription,
+    messages: EmailCommunication,
   };
 
   // Generate routes based on user permissions

@@ -6,7 +6,6 @@ import { RiLogoutBoxLine } from "react-icons/ri";
 import type { UserType } from "../../store/userSlice";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
 import TechnicianDashboard from "../TechnicianDashboard/TechnicianDashboard";
-import TenantDashboard from "../TenantDashboard/TenantDashboard";
 import StaffDashboard from "../StaffDashboard/StaffDashboard";
 import SuperUserDashboard from "../SuperUserDashboard/SuperUserDashboard";
 import AgencyDashboard from "../AgencyDashboard/AgencyDashboard";
@@ -29,7 +28,9 @@ const Dashboard = () => {
       case "technician":
         return <TechnicianDashboard />;
       case "tenant":
-        return <TenantDashboard />;
+        // Tenants use email-only interactions, redirect to login
+        navigate("/login");
+        return null;
       case "staff":
         return <StaffDashboard />;
       case "super_user":

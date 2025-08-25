@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RiBarChartBoxLine, RiLineChartLine, RiUserStarLine, RiShieldCheckLine, RiMoneyDollarCircleLine, RiCalendarLine, RiFilterLine, RiDownloadLine, RiArrowUpLine, RiArrowDownLine, RiCheckboxCircleLine, RiCloseCircleLine, RiTimeLine, RiStarLine } from "react-icons/ri";
+import { RiBarChartBoxLine, RiLineChartLine, RiUserStarLine, RiShieldCheckLine, RiMoneyDollarCircleLine, RiCalendarLine, RiFilterLine, RiDownloadLine, RiArrowUpLine, RiArrowDownLine, RiCheckboxCircleLine, RiCloseLine, RiTimeLine, RiStarLine } from "react-icons/ri";
 import reportService, {
   type ComplianceData,
   type RevenueData,
@@ -288,7 +288,7 @@ const ReportsAnalytics = () => {
         </div>
         <div className="summary-card">
           <div className="card-icon overdue">
-            <RiCloseCircleLine />
+            <RiCloseLine />
           </div>
           <div className="card-content">
             <h4>36</h4>

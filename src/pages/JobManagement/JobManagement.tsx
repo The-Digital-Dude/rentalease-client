@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { RiAddLine } from "react-icons/ri";
+import { 
+  RiAddLine, 
+  RiToolsLine, 
+  RiFilterLine, 
+  RiTimeLine, 
+  RiFireLine, 
+  RiCheckboxCircleLine, 
+  RiGroupLine 
+} from "react-icons/ri";
 import {
   JobFormModal,
   UrgentJobsSection,
@@ -370,26 +378,70 @@ const JobManagement = () => {
   }
 
   return (
-    <div className="page-container job-management">
-      <div className="page-header">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <h1>Job Management</h1>
-            <p>Manage property maintenance and compliance jobs</p>
+    <div className="page-container modern-job-management">
+      <div className="modern-page-header">
+        <div className="header-content">
+          <div className="title-section">
+            <div className="page-icon">
+              <RiToolsLine />
+            </div>
+            <div className="title-content">
+              <h1>Job Management Hub</h1>
+              <p>Streamlined property maintenance & compliance workflow</p>
+            </div>
           </div>
-          <button
-            className="btn-primary"
-            onClick={() => setShowCreateForm(true)}
-          >
-            <RiAddLine size={18} />
-            Create Job
-          </button>
+          <div className="header-actions">
+            <button className="action-btn secondary">
+              <RiFilterLine />
+              Filter Jobs
+            </button>
+            <button
+              className="action-btn primary"
+              onClick={() => setShowCreateForm(true)}
+            >
+              <RiAddLine />
+              Create New Job
+            </button>
+          </div>
+        </div>
+        
+        <div className="header-stats">
+          <div className="stat-item">
+            <div className="stat-icon pending">
+              <RiTimeLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{jobs.filter(j => j.status === 'Pending').length}</span>
+              <span className="stat-label">Pending</span>
+            </div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-icon urgent">
+              <RiFireLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{urgentJobs.length}</span>
+              <span className="stat-label">Urgent</span>
+            </div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-icon completed">
+              <RiCheckboxCircleLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{jobs.filter(j => j.status === 'Completed').length}</span>
+              <span className="stat-label">Completed</span>
+            </div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-icon technicians">
+              <RiGroupLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{technicians.filter(t => t.availability === 'Available').length}</span>
+              <span className="stat-label">Available Techs</span>
+            </div>
+          </div>
         </div>
       </div>
 

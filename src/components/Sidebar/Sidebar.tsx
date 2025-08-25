@@ -3,6 +3,7 @@ import { useAppSelector } from "../../store";
 import { allowedRoutes } from "../../config/roleBasedRoutes";
 import type { UserType } from "../../store/userSlice";
 import { UserProfile } from "../UserProfile";
+import { useSidebar } from "../../contexts/SidebarContext";
 import {
   MdDashboard,
   MdBusiness,
@@ -24,6 +25,7 @@ import {
   MdAttachMoney,
   MdCode,
   MdCreditCard,
+  MdEmail,
 } from "react-icons/md";
 import "./Sidebar.scss";
 
@@ -61,6 +63,7 @@ const labelMap: Record<string, string> = {
   technicianPayments: "Technician Payments",
   teamMembers: "Team Members",
   subscription: "Subscription",
+  messages: "Messages",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -91,11 +94,13 @@ const iconMap: Record<string, React.ReactNode> = {
   technicianPayments: <MdPayment />,
   teamMembers: <MdGroup />,
   subscription: <MdCreditCard />,
+  messages: <MdEmail />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { userType } = useAppSelector((state) => state.user);
   const location = useLocation();
+  const { isCollapsed } = useSidebar();
 
   if (!userType) {
     return null;
@@ -104,7 +109,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const userRoutes = allowedRoutes[userType as UserType] || [];
 
   return (
-    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+    <aside className={`sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""}`}>
       <nav className="sidebar-nav">
         {userRoutes.map((route) => {
           const routePath = `/${route}`;

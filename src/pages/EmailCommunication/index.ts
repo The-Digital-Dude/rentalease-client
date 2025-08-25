@@ -1,0 +1,1 @@
+export { EmailCommunication } from './EmailCommunication';

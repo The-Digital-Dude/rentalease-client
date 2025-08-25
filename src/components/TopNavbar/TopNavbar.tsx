@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector, logout } from "../../store";
 import type { UserType } from "../../store";
 import { useNavigate, Link } from "react-router-dom";
 import NotificationBell from "../NotificationBell";
+import { SidebarToggle } from "../SidebarToggle";
 import "./TopNavbar.scss";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
 
@@ -37,6 +38,7 @@ const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
           >
             <RiMenuLine />
           </button>
+          <SidebarToggle />
           <div className="navbar-logo">
             <Link to={homePath}>
               <img

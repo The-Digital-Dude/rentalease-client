@@ -68,6 +68,7 @@ import {
 } from "recharts";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import jobService from "../../services/jobService";
 import "./AgencyDashboard.scss";
 
 // Utility function to check authentication
@@ -376,14 +377,22 @@ const AgencyDashboard = () => {
 
   const handleJobStatusUpdate = async (jobId: string, newStatus: string) => {
     try {
-      // TODO: Replace with actual API call
-      setJobs((prevJobs) =>
-        prevJobs.map((job) =>
-          job.id === jobId ? { ...job, status: newStatus } : job
-        )
-      );
+      const result = await jobService.updateJobStatus(jobId, newStatus as any);
+      
+      if (result.success) {
+        setJobs((prevJobs) =>
+          prevJobs.map((job) =>
+            job.id === jobId ? { ...job, status: newStatus } : job
+          )
+        );
+        console.log("Job status updated successfully");
+      } else {
+        console.error("Failed to update job status:", result.message);
+        // You could show a toast notification here
+      }
     } catch (error) {
       console.error("Failed to update job status:", error);
+      // You could show a toast notification here
     }
   };
 

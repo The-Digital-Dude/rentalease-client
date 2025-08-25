@@ -4,7 +4,7 @@ import {
   RiDownloadLine,
   RiCheckLine,
   RiAlertLine,
-  RiCloseCircleLine,
+  RiCloseLine,
 } from "react-icons/ri";
 import "./PaymentCard.scss";
 
@@ -59,9 +59,9 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
       case "Pending":
         return <RiAlertLine />;
       case "Overdue":
-        return <RiCloseCircleLine />;
+        return <RiCloseLine />;
       case "Cancelled":
-        return <RiCloseCircleLine />;
+        return <RiCloseLine />;
       default:
         return <RiAlertLine />;
     }

@@ -43,6 +43,10 @@ export { default as JobProfileTabs } from "./JobProfileTabs";
 export { default as JobCompletionModal } from "./JobCompletionModal";
 export { UserProfile } from "./UserProfile";
 export { PublicLayout } from "./PublicLayout";
+export { EmailSidebar } from "./EmailSidebar";
+export { EmailDetail } from "./EmailDetail";
+export { FloatingActionButton } from "./FloatingActionButton";
+export { SidebarToggle } from "./SidebarToggle";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

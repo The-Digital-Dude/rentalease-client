@@ -10,16 +10,36 @@
   min-height: calc(100vh - 64px);
   margin-top: 64px;
   background: #f8fafc;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* On mobile, no left margin */
   @media (max-width: 991px) {
     margin-left: 0;
   }
 
-  /* On desktop, fixed left margin for sidebar */
+  /* On desktop, dynamic left margin based on sidebar state */
   @media (min-width: 992px) {
     margin-left: 240px;
+    
+    // When sidebar is collapsed
+    .sidebar.collapsed ~ & {
+      margin-left: 80px;
+    }
+  }
+}
+
+// Alternative approach using CSS variables
+.app-layout {
+  --sidebar-width: 240px;
+  
+  &.sidebar-collapsed {
+    --sidebar-width: 80px;
+  }
+  
+  .main-content {
+    @media (min-width: 992px) {
+      margin-left: var(--sidebar-width);
+    }
   }
 }
 

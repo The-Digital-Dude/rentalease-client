@@ -5,7 +5,7 @@ export const defaultRoutes: Record<UserType, string> = {
   super_user: "/dashboard",
   agency: "/dashboard",
   staff: "/dashboard",
-  tenant: "/dashboard",
+  tenant: "/login", // Tenants only use email interactions, no dashboard access
   technician: "/dashboard",
   property_manager: "/dashboard",
   team_member: "/dashboard",
@@ -27,6 +27,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",
+    "messages",
   ],
   agency: [
     "dashboard",
@@ -40,9 +41,10 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",
+    "messages",
   ],
-  staff: ["dashboard", "jobs", "contacts"],
-  tenant: ["dashboard", "contacts"],
+  staff: ["dashboard", "jobs", "contacts", "messages"],
+  tenant: [], // Tenants interact only via email, no dashboard access needed
   technician: [
     "devDashboard",
     // "dashboard",
@@ -52,6 +54,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "overdueJobs",
     "completedJobs",
     "myPayments",
+    "messages",
   ],
   property_manager: [
     "dashboard",
@@ -59,6 +62,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "properties",
     "contacts",
     "reports",
+    "messages",
   ],
   team_member: [
     "dashboard",
@@ -73,6 +77,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",
+    "messages",
   ],
 };
 

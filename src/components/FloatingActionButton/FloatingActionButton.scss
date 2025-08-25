@@ -1,0 +1,84 @@
+.floating-action-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  background: #024974;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 16px rgba(2, 73, 116, 0.3), 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  
+  &:hover:not(.disabled) {
+    background: #023a5c;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(2, 73, 116, 0.4), 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(.disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(2, 73, 116, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &.disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: 0 4px 8px rgba(148, 163, 184, 0.3);
+    
+    &:hover {
+      transform: none;
+    }
+  }
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+
+  // Pulse animation for emphasis
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: rgba(2, 73, 116, 0.3);
+    animation: pulse 2s infinite;
+    z-index: -1;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  // Remove pulse on hover
+  &:hover::before {
+    animation: none;
+    opacity: 0;
+  }
+}

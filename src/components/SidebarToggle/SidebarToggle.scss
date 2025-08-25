@@ -1,0 +1,29 @@
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #024974;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Hide on mobile
+  @media (max-width: 991px) {
+    display: none;
+  }
+}

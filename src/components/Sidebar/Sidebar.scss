@@ -8,7 +8,7 @@
   top: 64px;
   height: calc(100vh - 64px);
   width: 240px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -18,6 +18,25 @@
 
   &.open {
     transform: translateX(0);
+  }
+
+  &.collapsed {
+    width: 80px;
+    
+    .nav-label {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+    }
+
+    .sidebar-footer {
+      .developer-credit {
+        opacity: 0;
+      }
+    }
   }
 
   /* Desktop: always visible */
@@ -57,10 +76,14 @@
         flex-shrink: 0;
         width: 20px;
         height: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .nav-label {
         flex: 1;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        overflow: hidden;
       }
 
       &:hover {
@@ -88,6 +111,7 @@
       color: #64748b;
       text-align: center;
       line-height: 1.4;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       .roko-link {
         color: #2563eb;

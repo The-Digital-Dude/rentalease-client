@@ -19,4 +19,5 @@ export { default as JobProfile } from "./JobProfile";
 export { default as AvailableJobs } from "./AvailableJobs";
 export { default as CompletedJobs } from "./Technician/CompletedJobs";
 export { default as Subscription } from "./Subscription";
+export { EmailCommunication } from "./EmailCommunication";
 export { Login, AgentLogin, AdminLogin, PasswordReset } from "./Login";

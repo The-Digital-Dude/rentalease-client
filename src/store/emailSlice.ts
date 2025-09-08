@@ -102,12 +102,17 @@ export const fetchThreads = createAsyncThunk(
   'email/fetchThreads',
   async (params: {
     page?: number;
+    folder?: string;
     unread?: boolean;
     starred?: boolean;
     search?: string;
-  } = {}) => {
+  } = {}, { getState }) => {
+    const state = getState() as { email: EmailState };
+    const currentFolder = params.folder || state.email.currentFolder;
+    
     const response = await emailService.getThreads({
       page: params.page || 1,
+      folder: currentFolder,
       unread: params.unread,
       starred: params.starred,
       search: params.search,

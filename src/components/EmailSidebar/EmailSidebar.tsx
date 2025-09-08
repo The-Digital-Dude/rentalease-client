@@ -10,6 +10,8 @@ interface EmailSidebarProps {
   onThreadSelect: (threadId: string) => void;
   isOpen: boolean;
   onClose: () => void;
+  onFolderChange?: (folder: string) => void;
+  activeFolder?: string;
 }
 
 const folderIcons: Record<string, React.ReactNode> = {
@@ -24,9 +26,11 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
   selectedThreadId,
   onThreadSelect,
   isOpen,
-  onClose
+  onClose,
+  onFolderChange,
+  activeFolder: propActiveFolder = 'inbox'
 }) => {
-  const [activeFolder, setActiveFolder] = useState<string>('inbox');
+  const activeFolder = propActiveFolder;
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -59,10 +63,6 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
 
   return (
     <div className={`email-sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="email-sidebar-header">
-        <button className="close-button" onClick={onClose}>×</button>
-      </div>
-
       {/* Search Section */}
       <div className="search-section">
         <div className="search-input-container">
@@ -81,7 +81,9 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
           <button
             key={folder.id}
             className={`folder-item-grid ${activeFolder === folder.id ? 'active' : ''}`}
-            onClick={() => setActiveFolder(folder.id)}
+            onClick={() => {
+              onFolderChange?.(folder.id);
+            }}
           >
             <div className="folder-icon-grid">
               {folderIcons[folder.icon]}

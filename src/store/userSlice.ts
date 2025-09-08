@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import {
+  syncUserDataToLocalStorage,
+  clearUserDataFromStorage,
+  type UserDataStructure,
+} from "../utils";
 
 // Define the different user types
 export type UserType =
@@ -18,6 +23,8 @@ export interface UserState {
   userType: UserType | null;
   name: string | null;
   id: string | null;
+  avatar: string | null;
+  phone: string | null;
 }
 
 // Define the initial state
@@ -27,6 +34,8 @@ const initialState: UserState = {
   userType: null,
   name: null,
   id: null,
+  avatar: null,
+  phone: null,
 };
 
 // Define the payload for login action
@@ -35,6 +44,15 @@ interface LoginPayload {
   userType: UserType;
   name: string;
   id: string;
+  avatar?: string;
+  phone?: string;
+}
+
+// Define the payload for profile update
+interface ProfileUpdatePayload {
+  name?: string;
+  avatar?: string;
+  phone?: string;
 }
 
 // Create the user slice
@@ -49,6 +67,8 @@ const userSlice = createSlice({
       state.userType = action.payload.userType;
       state.name = action.payload.name;
       state.id = action.payload.id;
+      state.avatar = action.payload.avatar || null;
+      state.phone = action.payload.phone || null;
 
       // Also update localStorage to ensure consistency
       if (typeof window !== "undefined") {
@@ -57,6 +77,8 @@ const userSlice = createSlice({
           userType: action.payload.userType,
           name: action.payload.name,
           id: action.payload.id,
+          avatar: action.payload.avatar || null,
+          phone: action.payload.phone || null,
         };
         localStorage.setItem("userData", JSON.stringify(userData));
       }
@@ -68,9 +90,10 @@ const userSlice = createSlice({
       state.userType = null;
       state.name = null;
       state.id = null;
-      // Clear localStorage when logging out
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userData");
+      state.avatar = null;
+      state.phone = null;
+      // Clear localStorage when logging out using helper
+      clearUserDataFromStorage();
     },
     // Action to restore user state from localStorage
     restoreAuthState: (state) => {
@@ -84,13 +107,15 @@ const userSlice = createSlice({
           const parsedUserData = JSON.parse(userData);
           console.log("Parsed user data:", parsedUserData);
           console.log("User name from localStorage:", parsedUserData.name);
-          
+
           state.isLoggedIn = true;
           state.email = parsedUserData.email;
           state.userType = parsedUserData.userType;
           state.name = parsedUserData.name;
           state.id = parsedUserData.id;
-          
+          state.avatar = parsedUserData.avatar || null;
+          state.phone = parsedUserData.phone || null;
+
           console.log("Auth state restored successfully");
         } catch (error) {
           console.error("Failed to parse userData from localStorage:", error);
@@ -108,13 +133,48 @@ const userSlice = createSlice({
       if (action.payload.userType) state.userType = action.payload.userType;
       if (action.payload.name) state.name = action.payload.name;
       if (action.payload.id) state.id = action.payload.id;
+      if (action.payload.avatar !== undefined)
+        state.avatar = action.payload.avatar;
+      if (action.payload.phone !== undefined)
+        state.phone = action.payload.phone;
+    },
+    // Action to update user profile
+    updateUserProfile: (state, action: PayloadAction<ProfileUpdatePayload>) => {
+      if (action.payload.name !== undefined) state.name = action.payload.name;
+      if (action.payload.avatar !== undefined)
+        state.avatar = action.payload.avatar;
+      if (action.payload.phone !== undefined)
+        state.phone = action.payload.phone;
+
+      // Update localStorage with complete user data using helper
+      if (
+        typeof window !== "undefined" &&
+        state.email &&
+        state.userType &&
+        state.id
+      ) {
+        const updatedUserData: UserDataStructure = {
+          id: state.id,
+          email: state.email,
+          name: state.name || "",
+          userType: state.userType,
+          avatar: state.avatar,
+          phone: state.phone,
+        };
+        syncUserDataToLocalStorage(updatedUserData);
+      }
     },
   },
 });
 
 // Export actions
-export const { login, logout, restoreAuthState, updateUser } =
-  userSlice.actions;
+export const {
+  login,
+  logout,
+  restoreAuthState,
+  updateUser,
+  updateUserProfile,
+} = userSlice.actions;
 
 // Export reducer
 export default userSlice.reducer;

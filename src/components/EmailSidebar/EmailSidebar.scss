@@ -24,40 +24,6 @@
     }
   }
 
-  .email-sidebar-header {
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    background: #f8fafc;
-    min-height: 48px;
-
-    .close-button {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: #64748b;
-      cursor: pointer;
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: #e2e8f0;
-        color: #1e293b;
-      }
-
-      @media (min-width: 1200px) {
-        display: none;
-      }
-    }
-  }
 
   .search-section {
     padding: 1rem 1.25rem;

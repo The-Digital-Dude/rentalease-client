@@ -1,0 +1,237 @@
+.user-profile-dropdown {
+  position: relative;
+
+  .profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      flex-shrink: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-initials {
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        letter-spacing: 0.025em;
+      }
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      @media (max-width: 640px) {
+        display: none;
+      }
+
+      .profile-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #1e293b;
+      }
+
+      .dropdown-arrow {
+        color: #64748b;
+        transition: transform 0.2s ease;
+        
+        &.open {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    animation: slideDown 0.2s ease;
+    overflow: hidden;
+
+    @media (max-width: 480px) {
+      width: 280px;
+    }
+
+    .dropdown-header {
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      .header-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .avatar-initials-large {
+          color: white;
+          font-weight: 600;
+          font-size: 1.25rem;
+          letter-spacing: 0.025em;
+        }
+      }
+
+      .header-info {
+        flex: 1;
+        min-width: 0;
+
+        h3 {
+          margin: 0 0 0.25rem 0;
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #1e293b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-role {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.8125rem;
+          color: #3b82f6;
+          margin-bottom: 0.25rem;
+
+          svg {
+            font-size: 0.875rem;
+          }
+        }
+
+        .user-email {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.75rem;
+          color: #64748b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          svg {
+            font-size: 0.875rem;
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 0;
+    }
+
+    .dropdown-content,
+    .dropdown-footer {
+      padding: 0.5rem;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+      color: #475569;
+      text-align: left;
+
+      svg {
+        font-size: 1.125rem;
+        color: #64748b;
+      }
+
+      &:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+
+        svg {
+          color: #3b82f6;
+        }
+      }
+
+      &.logout {
+        color: #dc2626;
+
+        svg {
+          color: #dc2626;
+        }
+
+        &:hover {
+          background: #fef2f2;
+          color: #b91c1c;
+
+          svg {
+            color: #b91c1c;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

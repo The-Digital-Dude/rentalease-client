@@ -46,7 +46,8 @@
   .jobs-content {
     .jobs-grid {
       .job-card {
-        border-left: 4px solid #fca5a5;
+        border: none !important;
+        border-left: 4px solid #fca5a5 !important;
 
         &.overdue-critical {
           border-left-color: #dc2626;

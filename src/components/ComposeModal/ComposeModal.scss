@@ -95,15 +95,15 @@
     .icon-btn {
       background: transparent;
       border: none;
-      color: #71717a;
+      color: #1e40af;
       cursor: pointer;
       padding: 0.25rem;
       border-radius: 4px;
       transition: all 0.2s ease;
       
       &:hover {
-        background: #e4e4e7;
-        color: #09090b;
+        background: #dbeafe;
+        color: #1e3a8a;
       }
       
       &.close-btn:hover {
@@ -224,19 +224,19 @@
     .toolbar-btn {
       background: transparent;
       border: none;
-      color: #71717a;
+      color: #1e40af;
       cursor: pointer;
       padding: 0.25rem 0.5rem;
       border-radius: 4px;
       transition: all 0.2s ease;
       
       &:hover {
-        background: #e4e4e7;
-        color: #09090b;
+        background: #dbeafe;
+        color: #1e3a8a;
       }
       
       &.active {
-        background: #09090b;
+        background: #1e40af;
         color: white;
       }
       
@@ -260,10 +260,48 @@
     font-size: 0.875rem;
     line-height: 1.6;
     overflow-y: auto;
+    direction: ltr !important;
+    text-align: left !important;
+    unicode-bidi: embed !important;
+    writing-mode: horizontal-tb !important;
+    width: 100%;
+    min-height: 150px;
     
     &:empty:before {
       content: attr(data-placeholder);
       color: #a1a1aa;
+      direction: ltr !important;
+      text-align: left !important;
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+    
+    // Ensure all child elements follow LTR direction
+    * {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: embed !important;
+    }
+    
+    // Rich text formatting styles
+    b, strong {
+      font-weight: bold;
+    }
+    
+    i, em {
+      font-style: italic;
+    }
+    
+    u {
+      text-decoration: underline;
+    }
+    
+    ul, ol {
+      padding-left: 1.5rem;
+      direction: ltr !important;
     }
     
     blockquote {
@@ -271,6 +309,8 @@
       padding-left: 1rem;
       margin: 1rem 0;
       color: #71717a;
+      direction: ltr !important;
+      text-align: left !important;
     }
   }
   

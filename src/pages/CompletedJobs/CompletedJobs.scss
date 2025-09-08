@@ -17,7 +17,8 @@
     .jobs-grid {
       .job-card {
         &.completed {
-          border-left: 4px solid #10b981;
+          border: none !important;
+          border-left: 4px solid #10b981 !important;
           background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
 
           .job-header {

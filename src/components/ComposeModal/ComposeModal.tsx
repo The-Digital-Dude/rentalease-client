@@ -403,10 +403,26 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({
                   ref={editorRef}
                   className="editor-content"
                   contentEditable
-                  dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                  onInput={(e) => setBodyHtml(e.currentTarget.innerHTML)}
+                  dir="ltr"
+                  style={{ 
+                    direction: 'ltr', 
+                    textAlign: 'left', 
+                    unicodeBidi: 'embed',
+                    writingMode: 'horizontal-tb'
+                  }}
+                  suppressContentEditableWarning={true}
+                  onInput={(e) => {
+                    const html = e.currentTarget.innerHTML;
+                    setBodyHtml(html);
+                  }}
+                  onFocus={(e) => {
+                    // Reset direction on focus to ensure LTR
+                    e.currentTarget.style.direction = 'ltr';
+                    e.currentTarget.style.textAlign = 'left';
+                  }}
                   data-placeholder="Compose your email..."
-                />
+                >
+                </div>
                 {errors.body && <span className="error-message">{errors.body}</span>}
               </div>
               

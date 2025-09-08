@@ -70,42 +70,6 @@
   .navbar-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
-
-    .logout-button {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 0.875rem;
-      font-weight: 500;
-
-      &:hover {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-
-      svg {
-        width: 1.25rem;
-        height: 1.25rem;
-      }
-
-      .logout-text {
-        @media (max-width: 640px) {
-          display: none;
-        }
-      }
-    }
+    gap: 0.75rem;
   }
 }

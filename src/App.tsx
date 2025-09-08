@@ -29,6 +29,7 @@ import AgencyProfile from "./pages/AgencyProfile";
 import JobProfile from "./pages/JobProfile";
 import InspectionBooking from "./pages/InspectionBooking";
 import DevDashboard from "./pages/DevDashboard";
+import { Settings, Profile } from "./pages";
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -119,6 +120,12 @@ const App = () => {
 
                 {/* DevDashboard Route - Accessible to all users */}
                 <Route path="/dev-dashboard" element={<DevDashboard />} />
+                
+                {/* Settings Route - Accessible to all authenticated users */}
+                <Route path="/settings" element={<Settings />} />
+                
+                {/* Profile Route - Accessible to all authenticated users */}
+                <Route path="/profile" element={<Profile />} />
 
                 {/* Protected Routes */}
                 {userRoutes.map((route) => (

@@ -55,7 +55,7 @@ export const EmailCommunication: React.FC = () => {
   
   // Set up WebSocket for real-time updates
   useEffect(() => {
-    const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:4000';
+    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:4000';
     const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
@@ -170,6 +170,8 @@ export const EmailCommunication: React.FC = () => {
         onThreadSelect={handleThreadSelect}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        onFolderChange={handleFolderChange}
+        activeFolder={currentFolder}
       />
 
       <div className="email-main">

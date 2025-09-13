@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppSelector } from "../../store";
 import { Sidebar } from "../Sidebar";
 import TopNavbar from "../TopNavbar";
+import ChatWithUs from "../ChatWithUs";
 import { SidebarProvider, useSidebar } from "../../contexts/SidebarContext";
 import "./AppLayout.scss";
 
@@ -12,6 +13,7 @@ interface AppLayoutProps {
 const AppLayoutContent = ({ children }: AppLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isCollapsed } = useSidebar();
+  const { userType } = useAppSelector((state) => state.user);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -40,6 +42,9 @@ const AppLayoutContent = ({ children }: AppLayoutProps) => {
 
       {/* Main Content */}
       <main className="main-content">{children}</main>
+      
+      {/* Chat Support Widget - Only for Agency users */}
+      {userType === 'agency' && <ChatWithUs />}
     </div>
   );
 };

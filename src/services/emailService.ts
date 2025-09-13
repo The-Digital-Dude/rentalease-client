@@ -119,6 +119,7 @@ class EmailService {
   async getThreads(params?: {
     page?: number;
     limit?: number;
+    folder?: string;
     unread?: boolean;
     starred?: boolean;
     category?: string;
@@ -127,6 +128,7 @@ class EmailService {
     console.log('📬 Fetching threads with params:', params);
     
     const response = await api.get('/v1/emails/threads', { params });
+    console.log('📬 Threads response:', response.data.data);
     return response.data.data;
   }
 
@@ -247,6 +249,67 @@ class EmailService {
   }
 
   /**
+   * Save email as draft
+   */
+  async saveDraft(data: {
+    to: EmailParticipant[];
+    cc?: EmailParticipant[];
+    bcc?: EmailParticipant[];
+    subject: string;
+    bodyHtml: string;
+    bodyText?: string;
+    attachments?: File[];
+    draftId?: string; // For updating existing draft
+  }): Promise<Email> {
+    console.log('💾 Saving email draft');
+    
+    const formData = new FormData();
+    
+    // Add recipients
+    formData.append('to', JSON.stringify(data.to));
+    if (data.cc && data.cc.length > 0) {
+      formData.append('cc', JSON.stringify(data.cc));
+    }
+    if (data.bcc && data.bcc.length > 0) {
+      formData.append('bcc', JSON.stringify(data.bcc));
+    }
+    
+    // Add content
+    formData.append('subject', data.subject);
+    formData.append('bodyHtml', data.bodyHtml);
+    if (data.bodyText) {
+      formData.append('bodyText', data.bodyText);
+    }
+    
+    // Mark as draft
+    formData.append('folder', 'drafts');
+    
+    // Add attachments
+    if (data.attachments && data.attachments.length > 0) {
+      data.attachments.forEach((file) => {
+        formData.append('attachments', file);
+      });
+    }
+    
+    // If updating existing draft
+    if (data.draftId) {
+      const response = await api.put(`/v1/emails/${data.draftId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data.email;
+    } else {
+      const response = await api.post('/v1/emails/draft', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data.email;
+    }
+  }
+
+  /**
    * Toggle email star
    */
   async toggleStar(emailId: string): Promise<Email> {
@@ -261,6 +324,14 @@ class EmailService {
     await api.delete(`/v1/emails/${emailId}`, {
       params: { permanent },
     });
+  }
+
+  /**
+   * Restore email from trash
+   */
+  async restoreEmail(emailId: string): Promise<Email> {
+    const response = await api.put(`/v1/emails/${emailId}/restore`);
+    return response.data.data.email;
   }
 
   /**

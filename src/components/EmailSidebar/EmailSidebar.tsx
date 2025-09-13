@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { MdInbox, MdSend, MdDrafts, MdDelete, MdAttachFile, MdCircle, MdSearch } from 'react-icons/md';
+import { MdSend, MdDrafts, MdDelete, MdAttachFile, MdCircle, MdSearch, MdEmail } from 'react-icons/md';
 import type { EmailThread } from '../../types/emailTypes';
-import { emailFolders } from '../../data/emailDummyData';
+import { emailFolders } from '../../data/emailFolders';
 import './EmailSidebar.scss';
 
 interface EmailSidebarProps {
@@ -15,7 +15,6 @@ interface EmailSidebarProps {
 }
 
 const folderIcons: Record<string, React.ReactNode> = {
-  MdInbox: <MdInbox />,
   MdSend: <MdSend />,
   MdDrafts: <MdDrafts />,
   MdDelete: <MdDelete />,
@@ -28,7 +27,7 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
   isOpen,
   onClose,
   onFolderChange,
-  activeFolder: propActiveFolder = 'inbox'
+  activeFolder: propActiveFolder = 'sent'
 }) => {
   const activeFolder = propActiveFolder;
 
@@ -52,13 +51,11 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
   };
 
   const getEmailPreview = (thread: EmailThread) => {
-    const lastEmail = thread.emails[thread.emails.length - 1];
-    return lastEmail?.body?.substring(0, 100) + (lastEmail?.body?.length > 100 ? '...' : '');
+    return thread.lastMessage?.preview || '';
   };
 
   const getSenderName = (thread: EmailThread) => {
-    const lastEmail = thread.emails[thread.emails.length - 1];
-    return lastEmail?.from?.name || 'Unknown';
+    return thread.lastMessage?.from?.name || thread.lastMessage?.from?.email || 'Unknown';
   };
 
   return (
@@ -102,9 +99,9 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
       <div className="email-thread-list">
         {threads.map((thread) => (
           <div
-            key={thread.id}
-            className={`thread-item ${selectedThreadId === thread.id ? 'selected' : ''} ${!thread.isRead ? 'unread' : ''}`}
-            onClick={() => onThreadSelect(thread.id)}
+            key={thread._id || thread.id}
+            className={`thread-item ${selectedThreadId === (thread._id || thread.id) ? 'selected' : ''} ${thread.unreadCount > 0 ? 'unread' : ''}`}
+            onClick={() => onThreadSelect(thread._id || thread.id)}
           >
             <div className="thread-header">
               <div className="sender-info">
@@ -112,7 +109,7 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
                 <span className="thread-time">{formatTime(thread.lastActivity)}</span>
               </div>
               <div className="thread-indicators">
-                {!thread.isRead && (
+                {thread.unreadCount > 0 && (
                   <MdCircle className="unread-indicator" />
                 )}
                 {thread.hasAttachments && (
@@ -130,7 +127,7 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
         
         {threads.length === 0 && (
           <div className="empty-state">
-            <MdInbox size={48} />
+            <MdEmail size={48} />
             <p>No messages in this folder</p>
           </div>
         )}

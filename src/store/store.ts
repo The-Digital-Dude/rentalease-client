@@ -3,6 +3,7 @@ import userReducer from "./userSlice";
 import notificationReducer from "./notificationSlice";
 import availableJobsReducer from "./availableJobsSlice";
 import emailReducer from "./emailSlice";
+import chatReducer from "./chatSlice";
 
 // Create the store with the user reducer
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
     notifications: notificationReducer,
     availableJobs: availableJobsReducer,
     email: emailReducer,
+    chat: chatReducer,
   },
 });
 

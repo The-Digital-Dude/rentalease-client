@@ -30,13 +30,29 @@ export interface Email {
 }
 
 export interface EmailThread {
+  _id?: string;
   id: string;
   subject: string;
   participants: EmailContact[];
-  emails: Email[];
+  emailIds: string[];
+  emailCount: number;
+  unreadCount: number;
   lastActivity: string;
-  isRead: boolean;
+  lastMessage?: {
+    preview: string;
+    from: {
+      email: string;
+      name?: string;
+    };
+    timestamp: string;
+  };
+  isRead?: boolean;
   hasAttachments: boolean;
+  isStarred?: boolean;
+  isImportant?: boolean;
+  isPinned?: boolean;
+  labels?: string[];
+  category?: string;
 }
 
 export interface EmailFolder {

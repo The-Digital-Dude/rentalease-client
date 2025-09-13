@@ -54,6 +54,7 @@ const TechnicianPaymentManagement = lazy(
 );
 const Subscription = lazy(() => import("../pages/Subscription/Subscription"));
 const EmailCommunication = lazy(() => import("../pages/EmailCommunication").then(module => ({ default: module.EmailCommunication })));
+const Messages = lazy(() => import("../pages/Messages/Messages"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -90,7 +91,7 @@ export const routeConfig = (userType: UserType) => {
     technicianPayments: TechnicianPaymentManagement,
     teamMembers: TeamMemberManagement,
     subscription: Subscription,
-    messages: EmailCommunication,
+    messages: Messages,
   };
 
   // Generate routes based on user permissions

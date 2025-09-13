@@ -12,6 +12,7 @@ import { routeConfig } from "./config/routeConfig";
 import { defaultRoutes } from "./config/roleBasedRoutes";
 import type { UserType } from "./store/userSlice";
 import { AppLayout, PublicLayout } from "./components";
+import { WebSocketProvider } from "./contexts/WebSocketContext";
 import "./App.css";
 
 // Import pages
@@ -88,87 +89,95 @@ const App = () => {
   const userRoutes = userType ? routeConfig(userType as UserType) : [];
 
   return (
-    <Routes>
-      {/* Public Routes - No Authentication Required */}
-      <Route
-        path="/book-inspection/:propertyId/:complienceType"
-        element={
-          <PublicLayout>
-            <InspectionBooking />
-          </PublicLayout>
-        }
-      />
+    <WebSocketProvider>
+      <Routes>
+        {/* Public Routes - No Authentication Required */}
+        <Route
+          path="/book-inspection/:propertyId/:complienceType"
+          element={
+            <PublicLayout>
+              <InspectionBooking />
+            </PublicLayout>
+          }
+        />
 
-      {/* Protected Routes - Require Authentication */}
-      <Route
-        path="/*"
-        element={
-          <AppLayout>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/login/admin" element={<AdminLogin />} />
-                <Route path="/login/agent" element={<AgentLogin />} />
-                <Route
-                  path="/login/property-manager"
-                  element={<PropertyManagerLogin />}
-                />
-                <Route path="/login/technician" element={<TechnicianLogin />} />
-                <Route path="/login/team-member" element={<TeamMemberLogin />} />
-                <Route path="/password-reset" element={<PasswordReset />} />
-
-                {/* DevDashboard Route - Accessible to all users */}
-                <Route path="/dev-dashboard" element={<DevDashboard />} />
-                
-                {/* Settings Route - Accessible to all authenticated users */}
-                <Route path="/settings" element={<Settings />} />
-                
-                {/* Profile Route - Accessible to all authenticated users */}
-                <Route path="/profile" element={<Profile />} />
-
-                {/* Protected Routes */}
-                {userRoutes.map((route) => (
+        {/* Protected Routes - Require Authentication */}
+        <Route
+          path="/*"
+          element={
+            <AppLayout>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/login/admin" element={<AdminLogin />} />
+                  <Route path="/login/agent" element={<AgentLogin />} />
                   <Route
-                    key={route.path}
-                    path={route.path}
+                    path="/login/property-manager"
+                    element={<PropertyManagerLogin />}
+                  />
+                  <Route
+                    path="/login/technician"
+                    element={<TechnicianLogin />}
+                  />
+                  <Route
+                    path="/login/team-member"
+                    element={<TeamMemberLogin />}
+                  />
+                  <Route path="/password-reset" element={<PasswordReset />} />
+
+                  {/* DevDashboard Route - Accessible to all users */}
+                  <Route path="/dev-dashboard" element={<DevDashboard />} />
+
+                  {/* Settings Route - Accessible to all authenticated users */}
+                  <Route path="/settings" element={<Settings />} />
+
+                  {/* Profile Route - Accessible to all authenticated users */}
+                  <Route path="/profile" element={<Profile />} />
+
+                  {/* Protected Routes */}
+                  {userRoutes.map((route) => (
+                    <Route
+                      key={route.path}
+                      path={route.path}
+                      element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          {route.element}
+                        </Suspense>
+                      }
+                    />
+                  ))}
+
+                  {/* Property Profile Route */}
+                  <Route path="/properties/:id" element={<PropertyProfile />} />
+
+                  {/* Agency Profile Route */}
+                  <Route path="/agencies/:id" element={<AgencyProfile />} />
+
+                  {/* Job Profile Route */}
+                  <Route path="/jobs/:id" element={<JobProfile />} />
+
+                  {/* Default Route */}
+                  <Route
+                    path="/"
                     element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
+                      <Navigate
+                        to={
+                          userType
+                            ? defaultRoutes[userType as UserType]
+                            : "/login"
+                        }
+                        replace
+                      />
                     }
                   />
-                ))}
-
-                {/* Property Profile Route */}
-                <Route path="/properties/:id" element={<PropertyProfile />} />
-
-                {/* Agency Profile Route */}
-                <Route path="/agencies/:id" element={<AgencyProfile />} />
-
-                {/* Job Profile Route */}
-                <Route path="/jobs/:id" element={<JobProfile />} />
-
-                {/* Default Route */}
-                <Route
-                  path="/"
-                  element={
-                    <Navigate
-                      to={
-                        userType
-                          ? defaultRoutes[userType as UserType]
-                          : "/login"
-                      }
-                      replace
-                    />
-                  }
-                />
-              </Routes>
-            </Suspense>
-          </AppLayout>
-        }
-      />
-    </Routes>
+                </Routes>
+              </Suspense>
+            </AppLayout>
+          }
+        />
+      </Routes>
+    </WebSocketProvider>
   );
 };
 

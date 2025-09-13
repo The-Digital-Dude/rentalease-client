@@ -55,7 +55,7 @@ const initialState: EmailState = {
   selectedEmail: null,
   selectedThread: null,
   stats: null,
-  currentFolder: 'inbox',
+  currentFolder: 'sent',
   currentView: 'threads',
   unreadCount: 0,
   totalEmails: 0,
@@ -88,7 +88,7 @@ export const fetchEmails = createAsyncThunk(
   } = {}) => {
     const response = await emailService.getEmails({
       page: params.page || 1,
-      folder: params.folder || 'inbox',
+      folder: params.folder || 'sent',
       unread: params.unread,
       starred: params.starred,
       search: params.search,
@@ -210,6 +210,31 @@ export const fetchEmailStats = createAsyncThunk(
   }
 );
 
+export const saveDraft = createAsyncThunk(
+  'email/saveDraft',
+  async (data: {
+    to: any[];
+    cc?: any[];
+    bcc?: any[];
+    subject: string;
+    bodyHtml: string;
+    bodyText?: string;
+    attachments?: File[];
+    draftId?: string;
+  }) => {
+    const response = await emailService.saveDraft(data);
+    return response;
+  }
+);
+
+export const restoreEmail = createAsyncThunk(
+  'email/restoreEmail',
+  async (emailId: string) => {
+    const email = await emailService.restoreEmail(emailId);
+    return email;
+  }
+);
+
 // Slice
 const emailSlice = createSlice({
   name: 'email',
@@ -255,10 +280,6 @@ const emailSlice = createSlice({
       state.composeOpen = false;
       state.replyTo = null;
       state.draftEmail = null;
-    },
-    
-    saveDraft: (state, action: PayloadAction<Partial<Email>>) => {
-      state.draftEmail = action.payload;
     },
     
     // Real-time updates
@@ -479,6 +500,42 @@ const emailSlice = createSlice({
         state.stats = action.payload;
         state.unreadCount = action.payload.totalUnread;
       });
+    
+    // Save draft
+    builder
+      .addCase(saveDraft.pending, (state) => {
+        state.sendingEmail = true;
+        state.error = null;
+      })
+      .addCase(saveDraft.fulfilled, (state, action) => {
+        state.sendingEmail = false;
+        state.composeOpen = false;
+        
+        // Add to drafts folder if currently viewing it
+        if (state.currentFolder === 'drafts') {
+          state.emails = [action.payload, ...state.emails];
+        }
+      })
+      .addCase(saveDraft.rejected, (state, action) => {
+        state.sendingEmail = false;
+        state.error = action.error.message || 'Failed to save draft';
+      });
+    
+    // Restore email
+    builder
+      .addCase(restoreEmail.fulfilled, (state, action) => {
+        const restoredEmail = action.payload;
+        
+        // Remove from trash folder if currently viewing it
+        if (state.currentFolder === 'trash') {
+          state.emails = state.emails.filter(e => e._id !== restoredEmail._id);
+        }
+        
+        // Add to sent folder if currently viewing it
+        if (state.currentFolder === 'sent') {
+          state.emails = [restoredEmail, ...state.emails];
+        }
+      });
   },
 });
 
@@ -493,7 +550,6 @@ export const {
   clearError,
   openCompose,
   closeCompose,
-  saveDraft,
   addNewEmail,
   updateEmail,
   removeEmail,

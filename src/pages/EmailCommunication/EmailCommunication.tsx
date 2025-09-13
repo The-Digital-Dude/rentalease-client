@@ -37,11 +37,11 @@ export const EmailCommunication: React.FC = () => {
 
   // Fetch threads on mount and folder change
   useEffect(() => {
-    dispatch(fetchThreads({}));
+    dispatch(fetchThreads({ folder: currentFolder }));
     
     // Set up auto-refresh every 30 seconds
     const interval = setInterval(() => {
-      dispatch(fetchThreads({}));
+      dispatch(fetchThreads({ folder: currentFolder }));
     }, 30000);
     
     setRefreshInterval(interval);
@@ -73,7 +73,7 @@ export const EmailCommunication: React.FC = () => {
       if (data.type === 'new_email') {
         console.log('📧 New email received:', data.email);
         // Refresh threads to show new email
-        dispatch(fetchThreads({}));
+        dispatch(fetchThreads({ folder: currentFolder }));
         
         // Show notification
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -96,7 +96,7 @@ export const EmailCommunication: React.FC = () => {
     return () => {
       ws.close();
     };
-  }, [dispatch]);
+  }, [dispatch, currentFolder]);
   
   // Request notification permission
   useEffect(() => {
@@ -159,7 +159,7 @@ export const EmailCommunication: React.FC = () => {
   
   const handleFolderChange = (folder: string) => {
     dispatch(setCurrentFolder(folder));
-    dispatch(fetchThreads({}));
+    dispatch(fetchThreads({ folder }));
   };
 
   return (
@@ -189,7 +189,7 @@ export const EmailCommunication: React.FC = () => {
           <div className="empty-state">
             <MdEmail className="empty-icon" />
             <h3>Select an email to read</h3>
-            <p>Choose from your inbox on the left</p>
+            <p>Choose from your sent emails on the left</p>
           </div>
         )}
         

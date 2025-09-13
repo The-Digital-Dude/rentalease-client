@@ -84,21 +84,21 @@ export const EmailDetail: React.FC<EmailDetailProps> = ({
           <div className="email-actions">
             <button
               className="action-button"
-              onClick={() => onReply?.(thread.emails[0].id)}
+              onClick={() => onReply?.(thread._id || thread.id)}
               title="Reply"
             >
               <MdReply />
             </button>
             <button
               className="action-button"
-              onClick={() => onReplyAll?.(thread.emails[0].id)}
+              onClick={() => onReplyAll?.(thread._id || thread.id)}
               title="Reply All"
             >
               <MdReplyAll />
             </button>
             <button
               className="action-button"
-              onClick={() => onForward?.(thread.emails[0].id)}
+              onClick={() => onForward?.(thread._id || thread.id)}
               title="Forward"
             >
               <MdForward />
@@ -136,7 +136,7 @@ export const EmailDetail: React.FC<EmailDetailProps> = ({
           </div>
           <div className="thread-meta">
             <span className="message-count">
-              {thread.emails.length} message{thread.emails.length > 1 ? 's' : ''}
+              {thread.emailCount} message{thread.emailCount > 1 ? 's' : ''}
             </span>
             {thread.hasAttachments && (
               <span className="attachment-indicator">
@@ -148,80 +148,50 @@ export const EmailDetail: React.FC<EmailDetailProps> = ({
       </div>
 
       <div className="email-messages">
-        {thread.emails.map((email, index) => (
-          <div key={email.id} className="email-message">
+        {thread.lastMessage && (
+          <div className="email-message">
             <div className="message-header">
               <div className="sender-info">
                 <div className="sender-avatar">
-                  {email.from.name.charAt(0).toUpperCase()}
+                  {(thread.lastMessage.from.name || thread.lastMessage.from.email).charAt(0).toUpperCase()}
                 </div>
                 <div className="sender-details">
                   <div className="sender-name-line">
-                    <span className="sender-name">{email.from.name}</span>
-                    <span 
-                      className="priority-indicator"
-                      style={{ color: getPriorityColor(email.priority) }}
-                    >
-                      {getPriorityLabel(email.priority)}
-                    </span>
+                    <span className="sender-name">{thread.lastMessage.from.name || thread.lastMessage.from.email}</span>
                   </div>
-                  <div className="sender-email">{email.from.email}</div>
+                  <div className="sender-email">{thread.lastMessage.from.email}</div>
                   <div className="recipients">
                     <span>To: </span>
-                    {email.to.map((recipient, i) => (
-                      <span key={recipient.id}>
-                        {recipient.name}
-                        {i < email.to.length - 1 && ', '}
-                      </span>
-                    ))}
+                    {thread.participants
+                      .filter((p: any) => p.email !== thread.lastMessage?.from.email)
+                      .map((recipient: any, i: number) => (
+                        <span key={recipient._id || recipient.email}>
+                          {recipient.name || recipient.email}
+                          {i < thread.participants.filter((p: any) => p.email !== thread.lastMessage?.from.email).length - 1 && ', '}
+                        </span>
+                      ))}
                   </div>
                 </div>
               </div>
               <div className="message-meta">
                 <div className="timestamp">
                   <MdSchedule />
-                  {formatTimestamp(email.timestamp)}
-                </div>
-                <div className="message-actions">
-                  <button
-                    className="message-action"
-                    onClick={() => setShowActions(showActions === email.id ? null : email.id)}
-                  >
-                    <MdMoreVert />
-                  </button>
+                  {formatTimestamp(thread.lastMessage.timestamp)}
                 </div>
               </div>
             </div>
-
-            {email.attachments && email.attachments.length > 0 && (
-              <div className="message-attachments">
-                <h4>Attachments ({email.attachments.length})</h4>
-                <div className="attachment-list">
-                  {email.attachments.map((attachment) => (
-                    <div key={attachment.id} className="attachment-item">
-                      <div className="attachment-info">
-                        <MdAttachFile className="attachment-icon" />
-                        <div className="attachment-details">
-                          <span className="attachment-name">{attachment.name}</span>
-                          <span className="attachment-size">{formatFileSize(attachment.size)}</span>
-                        </div>
-                      </div>
-                      <button className="attachment-download">
-                        <MdDownload />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="message-body">
-              <p>{email.body}</p>
+              <p>{thread.lastMessage.preview}</p>
             </div>
-
-            {index < thread.emails.length - 1 && <div className="message-divider" />}
           </div>
-        ))}
+        )}
+        
+        {thread.emailCount > 1 && (
+          <div className="show-more-messages">
+            <p>This thread contains {thread.emailCount} messages. Click to load full conversation.</p>
+          </div>
+        )}
       </div>
 
       <div className="email-compose-area">

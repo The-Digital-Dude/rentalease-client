@@ -1,0 +1,48 @@
+// Connection status styles for development
+
+.chat-with-us {
+  // Connection status indicator (development only)
+  .connection-status {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 9997;
+    pointer-events: none;
+    user-select: none;
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      
+      &.connected {
+        background: #10b981;
+        animation: pulse 2s infinite;
+      }
+      
+      &.disconnected {
+        background: #ef4444;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Connection status is controlled by the NODE_ENV check in the React component

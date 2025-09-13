@@ -57,12 +57,25 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
   // Get WebSocket URL based on environment
   const getWebSocketUrl = () => {
+    const wsUrl = import.meta.env.VITE_WS_URL;
+    
+    if (wsUrl) {
+      // If VITE_WS_URL is a full URL (includes protocol), use it directly
+      if (wsUrl.startsWith('http://') || wsUrl.startsWith('https://')) {
+        // Convert HTTP/HTTPS to WS/WSS
+        return wsUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+      }
+      
+      // If it's just a hostname, build the URL
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const port = import.meta.env.VITE_WS_PORT || "4000";
+      return `${protocol}//${wsUrl}:${port}`;
+    }
+    
+    // Fallback to current location
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = import.meta.env.VITE_WS_URL || window.location.hostname;
     const port = import.meta.env.VITE_WS_PORT || "4000";
-
-    // Always include port for WebSocket connections
-    return `${protocol}//${host}:${port}`;
+    return `${protocol}//${window.location.hostname}:${port}`;
   };
 
   // Disconnect from WebSocket server

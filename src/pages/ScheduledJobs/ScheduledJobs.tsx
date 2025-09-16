@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
   RiSearchLine,
-  RiFilterLine,
   RiRefreshLine,
   RiEyeLine,
-  RiEditLine,
   RiCalendarLine,
   RiMapPinLine,
   RiUserLine,
@@ -14,11 +12,9 @@ import {
   RiPlayLine,
   RiArrowLeftLine,
   RiArrowRightLine,
-  RiDownloadLine,
-  RiMoreLine,
   RiLoaderLine,
   RiErrorWarningLine,
-  RiInformationLine,
+  RiCloseLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
@@ -72,8 +68,13 @@ const ScheduledJobs = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [filterPriority, setFilterPriority] = useState<string>("");
+  const [filterJobType, setFilterJobType] = useState<string>("");
+  const [filterDateRange, setFilterDateRange] = useState({
+    startDate: "",
+    endDate: "",
+  });
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
@@ -81,73 +82,177 @@ const ScheduledJobs = () => {
     itemsPerPage: 12,
   });
 
+  // Refs for debouncing
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Fetch scheduled jobs data
-  const fetchScheduledJobs = async (page: number = 1) => {
-    try {
-      setRefreshing(true);
-      setError(null);
+  const fetchScheduledJobs = useCallback(
+    async (
+      page: number = 1,
+      resetPagination: boolean = false,
+      searchValue?: string
+    ) => {
+      try {
+        if (resetPagination) {
+          setRefreshing(true);
+        } else {
+          setLoading(page === 1);
+        }
+        setError(null);
 
-      // Build query parameters based on user role
-      const params = new URLSearchParams({
-        status: 'scheduled',
-        page: page.toString(),
-        limit: pagination.itemsPerPage.toString(),
-      });
-
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-
-      if (filterPriority) {
-        params.append('priority', filterPriority);
-      }
-
-      // Role-based filtering
-      if (user.userType === 'agency') {
-        // Agency users only see their own jobs
-        params.append('agencyId', user.id || '');
-      }
-      // Super users and team members see all jobs (no additional filter needed)
-
-      const result = await agencyService.getJobs(`?${params.toString()}`);
-
-      if (result.status === "success") {
-        setJobs(result.data.jobs || []);
-        setPagination({
-          currentPage: result.data.pagination?.currentPage || 1,
-          totalPages: result.data.pagination?.totalPages || 1,
-          totalItems: result.data.pagination?.totalItems || 0,
-          itemsPerPage: result.data.pagination?.itemsPerPage || 12,
+        // Build query parameters based on user role
+        const params = new URLSearchParams({
+          status: "Scheduled",
+          page: page.toString(),
+          limit: pagination.itemsPerPage.toString(),
         });
-      } else {
-        throw new Error(result.message || "Failed to fetch scheduled jobs");
+
+        // Use searchValue if provided, otherwise use searchInput
+        const searchToUse =
+          searchValue !== undefined ? searchValue : searchInput;
+        if (searchToUse.trim()) {
+          params.append("search", searchToUse.trim());
+          console.log("🔍 Searching for:", searchToUse.trim());
+        }
+
+        if (filterPriority) {
+          params.append("priority", filterPriority);
+        }
+
+        if (filterJobType) {
+          params.append("jobType", filterJobType);
+        }
+
+        if (filterDateRange.startDate) {
+          params.append("startDate", filterDateRange.startDate);
+        }
+
+        if (filterDateRange.endDate) {
+          params.append("endDate", filterDateRange.endDate);
+        }
+
+        // Role-based filtering is handled by the backend based on authentication
+        // Super users see all jobs, agencies see only their own jobs
+
+        const result = await agencyService.getJobs(params.toString());
+        console.log("📊 API Response:", result);
+
+        if (result.status === "success") {
+          setJobs(result.data.jobs || []);
+          setPagination({
+            currentPage: result.data.pagination?.currentPage || 1,
+            totalPages: result.data.pagination?.totalPages || 1,
+            totalItems: result.data.pagination?.totalItems || 0,
+            itemsPerPage: result.data.pagination?.itemsPerPage || 12,
+          });
+          console.log("✅ Jobs loaded:", result.data.jobs?.length || 0, "jobs");
+        } else {
+          throw new Error(result.message || "Failed to fetch scheduled jobs");
+        }
+      } catch (error: unknown) {
+        console.error("Failed to fetch scheduled jobs:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to load scheduled jobs";
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (error: any) {
-      console.error("Failed to fetch scheduled jobs:", error);
-      setError(error.message || "Failed to load scheduled jobs");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+    },
+    [
+      pagination.itemsPerPage,
+      filterPriority,
+      filterJobType,
+      filterDateRange.startDate,
+      filterDateRange.endDate,
+      searchInput,
+    ]
+  );
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (searchValue: string) => {
+      console.log("⏰ Debounced search triggered for:", searchValue);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      searchTimeoutRef.current = setTimeout(() => {
+        console.log("🚀 Executing search after 1000ms delay for:", searchValue);
+        fetchScheduledJobs(1, true, searchValue);
+      }, 1000); // 1000ms delay as requested by user
+    },
+    [fetchScheduledJobs]
+  );
 
   useEffect(() => {
     fetchScheduledJobs();
-  }, [user.id, user.userType]);
+  }, [user.id, user.userType, fetchScheduledJobs]);
+
+  // Effect to trigger search when filters change
+  useEffect(() => {
+    fetchScheduledJobs(1, true);
+  }, [
+    filterPriority,
+    filterJobType,
+    filterDateRange.startDate,
+    filterDateRange.endDate,
+    fetchScheduledJobs,
+  ]);
 
   const handleRefresh = () => {
-    fetchScheduledJobs(pagination.currentPage);
+    setSearchInput("");
+    setFilterPriority("");
+    setFilterJobType("");
+    setFilterDateRange({ startDate: "", endDate: "" });
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    fetchScheduledJobs(1, true);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchScheduledJobs(1);
+  const handleSearchInputChange = (value: string) => {
+    console.log("📝 Search input changed to:", value);
+    setSearchInput(value);
+    debouncedSearch(value);
   };
 
-  const handleFilterChange = (priority: string) => {
+  const handlePriorityFilterChange = (priority: string) => {
     setFilterPriority(priority);
-    fetchScheduledJobs(1);
   };
+
+  const handleJobTypeFilterChange = (jobType: string) => {
+    setFilterJobType(jobType);
+  };
+
+  const handleDateRangeChange = (
+    field: "startDate" | "endDate",
+    value: string
+  ) => {
+    setFilterDateRange((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchInput("");
+    setFilterPriority("");
+    setFilterJobType("");
+    setFilterDateRange({ startDate: "", endDate: "" });
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    fetchScheduledJobs(1, true, ""); // Clear search and fetch
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handlePageChange = (page: number) => {
     fetchScheduledJobs(page);
@@ -218,7 +323,7 @@ const ScheduledJobs = () => {
           <RiMapPinLine />
           <span>{job.property.address.fullAddress}</span>
         </div>
-        
+
         {job.description && (
           <div className="job-description">
             <p>{job.description}</p>
@@ -227,7 +332,9 @@ const ScheduledJobs = () => {
 
         <div className="job-meta">
           <div className="job-priority">
-            <span className={`priority-badge ${getPriorityColor(job.priority)}`}>
+            <span
+              className={`priority-badge ${getPriorityColor(job.priority)}`}
+            >
               {job.priority} Priority
             </span>
           </div>
@@ -247,7 +354,9 @@ const ScheduledJobs = () => {
           {job.assignedDate && (
             <div className="assigned-date">
               <RiCalendarLine />
-              <span>Scheduled: {new Date(job.assignedDate).toLocaleDateString()}</span>
+              <span>
+                Scheduled: {new Date(job.assignedDate).toLocaleDateString()}
+              </span>
             </div>
           )}
         </div>
@@ -259,7 +368,7 @@ const ScheduledJobs = () => {
           </div>
         )}
 
-        {user.userType !== 'agency' && job.agency && (
+        {user.userType !== "agency" && job.agency && (
           <div className="job-agency">
             <RiBriefcaseLine />
             <span>Agency: {job.agency.name}</span>
@@ -322,10 +431,9 @@ const ScheduledJobs = () => {
             Scheduled Jobs
           </h1>
           <p>
-            {user.userType === 'agency' 
-              ? `Jobs scheduled for your agency` 
-              : `All scheduled jobs across the system`
-            }
+            {user.userType === "agency"
+              ? `Jobs scheduled for your agency`
+              : `All scheduled jobs across the system`}
           </p>
           <div className="header-stats">
             <span className="stat">
@@ -345,35 +453,95 @@ const ScheduledJobs = () => {
         </div>
       </div>
 
-      <div className="filters-section">
-        <form onSubmit={handleSearch} className="search-form">
+      <div
+        className={`filters-section ${
+          searchInput ||
+          filterPriority ||
+          filterJobType ||
+          filterDateRange.startDate ||
+          filterDateRange.endDate
+            ? "has-active-filters"
+            : ""
+        }`}
+      >
+        <div className="search-form">
           <div className="search-input">
             <RiSearchLine />
             <input
               type="text"
-              placeholder="Search jobs by type, property, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by job ID, property address, job type, or description... (search as you type)"
+              value={searchInput}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            Search
-          </button>
-        </form>
+        </div>
 
         <div className="filter-options">
-          <div className="filter-group">
-            <label>Priority:</label>
-            <select
-              value={filterPriority}
-              onChange={(e) => handleFilterChange(e.target.value)}
-            >
-              <option value="">All Priorities</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
+          <div className="filter-row">
+            <div className="filter-group">
+              <label>Priority:</label>
+              <select
+                value={filterPriority}
+                onChange={(e) => handlePriorityFilterChange(e.target.value)}
+              >
+                <option value="">All Priorities</option>
+                <option value="Urgent">Urgent</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Job Type:</label>
+              <select
+                value={filterJobType}
+                onChange={(e) => handleJobTypeFilterChange(e.target.value)}
+              >
+                <option value="">All Job Types</option>
+                <option value="Gas">Gas</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Smoke">Smoke</option>
+                <option value="Repairs">Repairs</option>
+                <option value="Pool Safety">Pool Safety</option>
+                <option value="Routine Inspection">Routine Inspection</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Due Date From:</label>
+              <input
+                type="date"
+                value={filterDateRange.startDate}
+                onChange={(e) =>
+                  handleDateRangeChange("startDate", e.target.value)
+                }
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Due Date To:</label>
+              <input
+                type="date"
+                value={filterDateRange.endDate}
+                onChange={(e) =>
+                  handleDateRangeChange("endDate", e.target.value)
+                }
+              />
+            </div>
+
+            {(searchInput ||
+              filterPriority ||
+              filterJobType ||
+              filterDateRange.startDate ||
+              filterDateRange.endDate) && (
+              <div className="filter-group">
+                <button className="btn btn-secondary" onClick={clearAllFilters}>
+                  <RiCloseLine />
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -384,28 +552,28 @@ const ScheduledJobs = () => {
             <RiCalendarLine />
             <h3>No Scheduled Jobs</h3>
             <p>
-              {searchTerm || filterPriority
+              {searchInput ||
+              filterPriority ||
+              filterJobType ||
+              filterDateRange.startDate ||
+              filterDateRange.endDate
                 ? "No scheduled jobs match your current filters."
                 : "There are no scheduled jobs at the moment."}
             </p>
-            {(searchTerm || filterPriority) && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setSearchTerm("");
-                  setFilterPriority("");
-                  fetchScheduledJobs(1);
-                }}
-              >
+            {(searchInput ||
+              filterPriority ||
+              filterJobType ||
+              filterDateRange.startDate ||
+              filterDateRange.endDate) && (
+              <button className="btn btn-secondary" onClick={clearAllFilters}>
+                <RiCloseLine />
                 Clear Filters
               </button>
             )}
           </div>
         ) : (
           <>
-            <div className="jobs-grid">
-              {jobs.map(renderJobCard)}
-            </div>
+            <div className="jobs-grid">{jobs.map(renderJobCard)}</div>
 
             {pagination.totalPages > 1 && (
               <div className="pagination">
@@ -417,14 +585,12 @@ const ScheduledJobs = () => {
                   <RiArrowLeftLine />
                   Previous
                 </button>
-                
+
                 <div className="page-info">
                   <span>
                     Page {pagination.currentPage} of {pagination.totalPages}
                   </span>
-                  <span>
-                    ({pagination.totalItems} total jobs)
-                  </span>
+                  <span>({pagination.totalItems} total jobs)</span>
                 </div>
 
                 <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   RiMoneyDollarBoxLine,
   RiSearchLine,
@@ -105,7 +105,9 @@ const TechnicianPaymentManagement: React.FC = () => {
     startDate: "",
     endDate: "",
   });
+  const [searchInput, setSearchInput] = useState(""); // Separate state for input
   const [showFilters, setShowFilters] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedPayment, setSelectedPayment] =
     useState<TechnicianPayment | null>(null);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
@@ -204,6 +206,52 @@ const TechnicianPaymentManagement: React.FC = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1); // Reset to first page when filters change
   };
+
+  // Debounced search function
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      handleFilterChange("search", value);
+    }, 500); // 500ms debounce delay
+  };
+
+  // Handle Enter key press for immediate search
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      // Clear existing timeout and trigger immediate search
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      handleFilterChange("search", searchInput);
+    }
+  };
+
+  // Handle search blur for immediate search
+  const handleSearchBlur = () => {
+    // Clear existing timeout and trigger immediate search on blur
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    if (searchInput !== filters.search) {
+      handleFilterChange("search", searchInput);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleUpdatePaymentStatus = async (
     paymentId: string,
@@ -476,9 +524,11 @@ const TechnicianPaymentManagement: React.FC = () => {
             <RiSearchLine className="search-icon" />
             <input
               type="text"
-              placeholder="Search by payment number, technician name, or job ID..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
+              placeholder="Search by payment number, technician name, or job ID... (Press Enter or wait 500ms)"
+              value={searchInput}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
+              onBlur={handleSearchBlur}
             />
           </div>
 
@@ -586,6 +636,11 @@ const TechnicianPaymentManagement: React.FC = () => {
                               startDate: "",
                               endDate: "",
                             });
+                            setSearchInput(""); // Also clear search input
+                            // Clear any pending search timeout
+                            if (searchTimeoutRef.current) {
+                              clearTimeout(searchTimeoutRef.current);
+                            }
                           }}
                         >
                           Clear Filters

@@ -20,8 +20,13 @@ interface TechnicianPaymentForExport {
     _id: string;
     property: {
       _id: string;
-      name: string;
-      address: string;
+      address: {
+        street: string;
+        suburb: string;
+        state: string;
+        postcode: string;
+        fullAddress: string;
+      };
     };
     jobType: string;
     dueDate: string;
@@ -66,7 +71,9 @@ export const transformPaymentsForCSV = (payments: TechnicianPaymentForExport[]):
     'Technician Phone': payment.technicianId?.phone || 'N/A',
     'Job ID': payment.jobId?.job_id || 'N/A',
     'Job Type': payment.jobType || 'N/A',
-    'Property': payment.jobId?.property?.name || payment.jobId?.property?.address || 'N/A',
+    'Property': payment.jobId?.property?.address?.fullAddress ||
+                payment.jobId?.property?.address?.street ||
+                'N/A',
     'Amount': formatCurrency(payment.amount || 0),
     'Status': payment.status || 'N/A',
     'Job Completed Date': payment.jobCompletedAt ? formatDate(payment.jobCompletedAt) : 'N/A',

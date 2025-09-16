@@ -40,8 +40,13 @@ interface TechnicianPayment {
     _id: string;
     property: {
       _id: string;
-      name: string;
-      address: string;
+      address: {
+        street: string;
+        suburb: string;
+        state: string;
+        postcode: string;
+        fullAddress: string;
+      };
     };
     jobType: string;
     dueDate: string;

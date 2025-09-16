@@ -16,7 +16,12 @@ export interface PropertyManager {
   assignedProperties: AssignedProperty[];
   owner: {
     ownerType: "Agency";
-    ownerId: string;
+    ownerId: string | {
+      _id: string;
+      companyName: string;
+      email: string;
+      phone: string;
+    };
   };
   address: {
     street?: string;
@@ -59,6 +64,7 @@ export interface PropertyManagerFilters {
   status?: string;
   availabilityStatus?: string;
   search?: string;
+  agencyId?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }
@@ -172,6 +178,7 @@ class PropertyManagerService {
       if (filters?.availabilityStatus)
         params.append("availabilityStatus", filters.availabilityStatus);
       if (filters?.search) params.append("search", filters.search);
+      if (filters?.agencyId) params.append("agencyId", filters.agencyId);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
       if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
 

@@ -151,7 +151,7 @@
           font-size: 0.875rem;
           background: white;
           cursor: pointer;
-          min-width: 200px;
+          min-width: 180px;
 
           &:focus {
             outline: none;
@@ -315,6 +315,20 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+
+        .agency-name {
+          color: #9ca3af;
+          font-size: 0.75rem;
+          margin-top: 0.25rem;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+
+          svg {
+            width: 0.875rem;
+            height: 0.875rem;
+          }
         }
       }
 

@@ -247,7 +247,7 @@ export const agencyService = {
   // Get all agencies
   getAllAgencies: async (): Promise<AgencyResponse> => {
     try {
-      const response = await api.get<ServerResponse>("/v1/agency/auth/all");
+      const response = await api.get<ServerResponse>("/v1/agency/auth/all?limit=100");
 
       if (response.data.status === "success" && response.data.data.agencies) {
         const mappedData = response.data.data.agencies.map(mapServerToClient);

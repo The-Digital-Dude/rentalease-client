@@ -23,6 +23,7 @@ import {
 import { useAppSelector } from "../../store";
 import {
   propertyManagerService,
+  agencyService,
   type PropertyManager,
   type PropertyManagerFilters,
   type CreatePropertyManagerData,
@@ -53,6 +54,8 @@ const PropertyManagerManagementPage = () => {
   const [activeTab, setActiveTab] = useState("directory");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
+  const [selectedAgencyId, setSelectedAgencyId] = useState("");
+  const [agencies, setAgencies] = useState<any[]>([]);
   const [propertyManagers, setPropertyManagers] = useState<PropertyManager[]>(
     []
   );
@@ -102,8 +105,29 @@ const PropertyManagerManagementPage = () => {
   // Get current user info for role-based display
   const { userType, name } = useAppSelector((state) => state.user);
 
+  // Check if user can see all property managers
+  const canSeeAllPropertyManagers = userType === "super_user" || userType === "team_member";
+  const canEditPropertyManagers = userType === "agency";
+
   // Debounced search
   const [searchDebounce, setSearchDebounce] = useState<number | null>(null);
+
+  // Fetch agencies for super users and team members
+  useEffect(() => {
+    const fetchAgencies = async () => {
+      if (canSeeAllPropertyManagers) {
+        try {
+          const response = await agencyService.getAllAgencies();
+          if (response.success && response.data) {
+            setAgencies(response.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch agencies:", error);
+        }
+      }
+    };
+    fetchAgencies();
+  }, [canSeeAllPropertyManagers]);
 
   // Handle search with debounce
   const handleSearch = useCallback(
@@ -120,6 +144,7 @@ const PropertyManagerManagementPage = () => {
           search: value,
           page: 1,
           limit: pagination.itemsPerPage,
+          ...(selectedAgencyId && { agencyId: selectedAgencyId }),
         });
       }, 500);
 
@@ -138,6 +163,7 @@ const PropertyManagerManagementPage = () => {
         page: currentPage,
         limit: pagination.itemsPerPage,
         ...filters,
+        ...(selectedAgencyId && { agencyId: selectedAgencyId }),
       });
 
       if (response.success && response.data.propertyManagers) {
@@ -509,7 +535,7 @@ const PropertyManagerManagementPage = () => {
   // Initial data fetch
   useEffect(() => {
     fetchPropertyManagers();
-  }, [currentPage]);
+  }, [currentPage, selectedAgencyId]);
 
   // Filter change handler
   useEffect(() => {
@@ -538,19 +564,26 @@ const PropertyManagerManagementPage = () => {
   }, [filterBy]);
 
   // Tab configuration
-  const tabs = [
-    {
-      id: "directory",
-      label: "Directory",
-      icon: RiBuilding2Line,
-    },
-
-    {
-      id: "add",
-      label: "Add Property Manager",
-      icon: RiUserAddLine,
-    },
-  ];
+  const tabs = canEditPropertyManagers
+    ? [
+        {
+          id: "directory",
+          label: "Directory",
+          icon: RiBuilding2Line,
+        },
+        {
+          id: "add",
+          label: "Add Property Manager",
+          icon: RiUserAddLine,
+        },
+      ]
+    : [
+        {
+          id: "directory",
+          label: "Directory",
+          icon: RiBuilding2Line,
+        },
+      ];
 
   const statuses = ["Active", "Inactive", "Suspended", "Pending"];
   const availabilityStatuses = ["Available", "Busy", "Unavailable", "On Leave"];
@@ -604,6 +637,25 @@ const PropertyManagerManagementPage = () => {
               </optgroup>
             </select>
           </div>
+          {canSeeAllPropertyManagers && (
+            <div className="filter-select">
+              <RiBuilding2Line className="filter-icon" />
+              <select
+                value={selectedAgencyId}
+                onChange={(e) => {
+                  setSelectedAgencyId(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="">All Agencies</option>
+                {agencies.map((agency) => (
+                  <option key={agency.id || agency._id} value={agency.id || agency._id}>
+                    {agency.name || agency.companyName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -651,6 +703,11 @@ const PropertyManagerManagementPage = () => {
                 <div className="header-info">
                   <h4>{propertyManager.fullName}</h4>
                   <p className="email">{propertyManager.email}</p>
+                  {canSeeAllPropertyManagers && propertyManager.owner?.ownerId && typeof propertyManager.owner.ownerId === 'object' && (
+                    <p className="agency-name">
+                      <RiBuilding2Line /> {propertyManager.owner.ownerId.companyName}
+                    </p>
+                  )}
                 </div>
                 <div className="status-badges">
                   <span
@@ -707,13 +764,16 @@ const PropertyManagerManagementPage = () => {
                 >
                   <RiEyeLine /> View
                 </button>
-                <button
-                  className="btn-secondary"
-                  onClick={() => handleEditPropertyManager(propertyManager)}
-                >
-                  <RiEditLine /> Edit
-                </button>
-                <div className="dropdown">
+                {canEditPropertyManagers && (
+                  <button
+                    className="btn-secondary"
+                    onClick={() => handleEditPropertyManager(propertyManager)}
+                  >
+                    <RiEditLine /> Edit
+                  </button>
+                )}
+                {canEditPropertyManagers && (
+                  <div className="dropdown">
                   <button
                     className="btn-icon dropdown-toggle"
                     onClick={() => toggleDropdown(propertyManager.id)}
@@ -767,6 +827,7 @@ const PropertyManagerManagementPage = () => {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           ))}

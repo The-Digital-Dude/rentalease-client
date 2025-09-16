@@ -1,4 +1,10 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type KeyboardEvent,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
@@ -89,67 +95,134 @@ const CompletedJobs = () => {
     itemsPerPage: 12,
   });
 
-  // Fetch completed jobs data
-  const fetchCompletedJobs = async (page: number = 1) => {
-    try {
-      setRefreshing(true);
-      setError(null);
-
-      // Build query parameters based on user role
-      const params = new URLSearchParams({
-        status: 'completed',
-        page: page.toString(),
-        limit: pagination.itemsPerPage.toString(),
-        sort: sortBy,
-      });
-
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-
-      if (filterPriority) {
-        params.append('priority', filterPriority);
-      }
-
-      if (filterRating) {
-        params.append('rating', filterRating);
-      }
-
-      // Role-based filtering
-      if (user.userType === 'agency') {
-        // Agency users only see their own jobs
-        params.append('agencyId', user.id || '');
-      }
-      // Super users and team members see all jobs (no additional filter needed)
-
-      const result = await agencyService.getJobs(`?${params.toString()}`);
-
-      if (result.status === "success") {
-        const completedJobs = result.data.jobs?.map((job: any) => ({
-          ...job,
-          completionTime: calculateCompletionTime(job.assignedDate, job.completedAt),
-        })) || [];
-        
-        setJobs(completedJobs);
-        setPagination({
-          currentPage: result.data.pagination?.currentPage || 1,
-          totalPages: result.data.pagination?.totalPages || 1,
-          totalItems: result.data.pagination?.totalItems || 0,
-          itemsPerPage: result.data.pagination?.itemsPerPage || 12,
-        });
-      } else {
-        throw new Error(result.message || "Failed to fetch completed jobs");
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch completed jobs:", error);
-      setError(error.message || "Failed to load completed jobs");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  // Safe date formatter to avoid invalid date
+  const formatDateSafely = (value?: string) => {
+    if (!value) return "-";
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
   };
 
-  const calculateCompletionTime = (assignedDate?: string, completedAt?: string): number => {
+  // Refs for debouncing and latest search value
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const latestSearchRef = useRef<string>("");
+
+  // Normalize completed timestamp from various possible fields
+  const getCompletedTimestamp = (job: any): string | undefined => {
+    return (
+      job?.completedAt ||
+      job?.completionDate ||
+      job?.jobCompletedAt ||
+      job?.completed_at ||
+      job?.completionDetails?.completedAt ||
+      undefined
+    );
+  };
+
+  // Fetch completed jobs data
+  const fetchCompletedJobs = useCallback(
+    async (
+      page: number = 1,
+      resetPagination: boolean = false,
+      searchValue?: string
+    ) => {
+      try {
+        if (resetPagination) {
+          setRefreshing(true);
+        } else {
+          setLoading(page === 1);
+        }
+        setError(null);
+
+        // Build query parameters based on user role
+        const params = new URLSearchParams({
+          status: "Completed",
+          page: page.toString(),
+          limit: pagination.itemsPerPage.toString(),
+          sort: sortBy,
+        });
+
+        const searchToUse =
+          searchValue !== undefined ? searchValue : latestSearchRef.current;
+        if (searchToUse && searchToUse.trim()) {
+          params.append("search", searchToUse.trim());
+        }
+
+        if (filterPriority) {
+          params.append("priority", filterPriority);
+        }
+
+        if (filterRating) {
+          params.append("rating", filterRating);
+        }
+
+        // Role-based filtering
+        if (user.userType === "agency") {
+          // Agency users only see their own jobs
+          params.append("agencyId", user.id || "");
+        }
+        // Super users and team members see all jobs (no additional filter needed)
+
+        const result = await agencyService.getJobs(params.toString());
+
+        if (result.status === "success") {
+          const completedJobs =
+            result.data.jobs?.map((job: any) => {
+              const completedTs = getCompletedTimestamp(job);
+              return {
+                ...job,
+                completedAt: completedTs,
+                completionTime: calculateCompletionTime(
+                  job.assignedDate,
+                  completedTs
+                ),
+              };
+            }) || [];
+
+          setJobs(completedJobs);
+          setPagination({
+            currentPage: result.data.pagination?.currentPage || 1,
+            totalPages: result.data.pagination?.totalPages || 1,
+            totalItems: result.data.pagination?.totalItems || 0,
+            itemsPerPage: result.data.pagination?.itemsPerPage || 12,
+          });
+        } else {
+          throw new Error(result.message || "Failed to fetch completed jobs");
+        }
+      } catch (error: any) {
+        console.error("Failed to fetch completed jobs:", error);
+        setError(error.message || "Failed to load completed jobs");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [
+      pagination.itemsPerPage,
+      sortBy,
+      filterPriority,
+      filterRating,
+      user.userType,
+      user.id,
+    ]
+  );
+
+  // Debounced search like Scheduled Jobs
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      searchTimeoutRef.current = setTimeout(() => {
+        fetchCompletedJobs(1, true, value);
+      }, 1000);
+    },
+    [fetchCompletedJobs]
+  );
+
+  const calculateCompletionTime = (
+    assignedDate?: string,
+    completedAt?: string
+  ): number => {
     if (!assignedDate || !completedAt) return 0;
     const assigned = new Date(assignedDate);
     const completed = new Date(completedAt);
@@ -160,24 +233,48 @@ const CompletedJobs = () => {
 
   useEffect(() => {
     fetchCompletedJobs();
-  }, [user.id, user.userType, sortBy]);
+  }, [user.id, user.userType, fetchCompletedJobs]);
+
+  // Trigger fetch when filters/sort change
+  useEffect(() => {
+    fetchCompletedJobs(1, true);
+  }, [filterPriority, filterRating, sortBy, fetchCompletedJobs]);
 
   const handleRefresh = () => {
-    fetchCompletedJobs(pagination.currentPage);
+    setSearchTerm("");
+    setFilterPriority("");
+    setFilterRating("");
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    latestSearchRef.current = "";
+    fetchCompletedJobs(1, true, "");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchCompletedJobs(1);
+  const handleSearchInputChange = (value: string) => {
+    setSearchTerm(value);
+    latestSearchRef.current = value;
+    debouncedSearch(value);
+  };
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      fetchCompletedJobs(1, true, searchTerm);
+    }
+  };
+
+  const handleSearchBlur = () => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    fetchCompletedJobs(1, true, latestSearchRef.current);
   };
 
   const handleFilterChange = (filterType: string, value: string) => {
-    if (filterType === 'priority') {
+    if (filterType === "priority") {
       setFilterPriority(value);
-    } else if (filterType === 'rating') {
+    } else if (filterType === "rating") {
       setFilterRating(value);
     }
-    fetchCompletedJobs(1);
   };
 
   const handleSortChange = (sort: string) => {
@@ -210,9 +307,12 @@ const CompletedJobs = () => {
     }
   };
 
-  const getCompletionBadge = (completionTime: number, estimatedDuration?: string) => {
+  const getCompletionBadge = (
+    completionTime: number,
+    estimatedDuration?: string
+  ) => {
     if (!estimatedDuration) return "completed";
-    
+
     const estimated = parseFloat(estimatedDuration) || 0;
     if (completionTime <= estimated * 0.8) return "fast";
     if (completionTime <= estimated * 1.2) return "on-time";
@@ -221,7 +321,7 @@ const CompletedJobs = () => {
 
   const renderRatingStars = (rating?: number) => {
     if (!rating) return null;
-    
+
     return (
       <div className="rating-stars">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -248,20 +348,28 @@ const CompletedJobs = () => {
             <RiCheckLine />
             Completed
           </span>
-          <div className={`completion-badge ${getCompletionBadge(job.completionTime, job.estimatedDuration)}`}>
-            {getCompletionBadge(job.completionTime, job.estimatedDuration) === "fast" && (
+          <div
+            className={`completion-badge ${getCompletionBadge(
+              job.completionTime,
+              job.estimatedDuration
+            )}`}
+          >
+            {getCompletionBadge(job.completionTime, job.estimatedDuration) ===
+              "fast" && (
               <>
                 <RiAwardLine />
                 <span>Fast Completion</span>
               </>
             )}
-            {getCompletionBadge(job.completionTime, job.estimatedDuration) === "on-time" && (
+            {getCompletionBadge(job.completionTime, job.estimatedDuration) ===
+              "on-time" && (
               <>
                 <RiCheckLine />
                 <span>On Time</span>
               </>
             )}
-            {getCompletionBadge(job.completionTime, job.estimatedDuration) === "delayed" && (
+            {getCompletionBadge(job.completionTime, job.estimatedDuration) ===
+              "delayed" && (
               <>
                 <RiTimeLine />
                 <span>Delayed</span>
@@ -276,7 +384,7 @@ const CompletedJobs = () => {
           <RiMapPinLine />
           <span>{job.property.address.fullAddress}</span>
         </div>
-        
+
         {job.description && (
           <div className="job-description">
             <p>{job.description}</p>
@@ -285,7 +393,9 @@ const CompletedJobs = () => {
 
         <div className="job-meta">
           <div className="job-priority">
-            <span className={`priority-badge ${getPriorityColor(job.priority)}`}>
+            <span
+              className={`priority-badge ${getPriorityColor(job.priority)}`}
+            >
               {job.priority} Priority
             </span>
           </div>
@@ -301,7 +411,7 @@ const CompletedJobs = () => {
         <div className="job-dates">
           <div className="completion-date">
             <RiCalendarLine />
-            <span>Completed: {new Date(job.completedAt).toLocaleDateString()}</span>
+            <span>Completed: {formatDateSafely(job.completedAt)}</span>
           </div>
           <div className="due-date">
             <RiCalendarLine />
@@ -316,7 +426,7 @@ const CompletedJobs = () => {
           </div>
         )}
 
-        {user.userType !== 'agency' && job.agency && (
+        {user.userType !== "agency" && job.agency && (
           <div className="job-agency">
             <RiBriefcaseLine />
             <span>Agency: {job.agency.name}</span>
@@ -374,9 +484,13 @@ const CompletedJobs = () => {
     );
   }
 
-  const averageRating = jobs.length > 0 
-    ? jobs.filter(j => j.rating).reduce((sum, j) => sum + (j.rating || 0), 0) / jobs.filter(j => j.rating).length 
-    : 0;
+  const averageRating =
+    jobs.length > 0
+      ? jobs
+          .filter((j) => j.rating)
+          .reduce((sum, j) => sum + (j.rating || 0), 0) /
+        jobs.filter((j) => j.rating).length
+      : 0;
 
   return (
     <div className="completed-jobs">
@@ -387,10 +501,9 @@ const CompletedJobs = () => {
             Completed Jobs
           </h1>
           <p>
-            {user.userType === 'agency' 
-              ? `Successfully completed jobs from your agency` 
-              : `All completed jobs across the system`
-            }
+            {user.userType === "agency"
+              ? `Successfully completed jobs from your agency`
+              : `All completed jobs across the system`}
           </p>
           <div className="header-stats">
             <span className="stat">
@@ -402,7 +515,18 @@ const CompletedJobs = () => {
               </span>
             )}
             <span className="stat">
-              <strong>{jobs.filter(j => getCompletionBadge(j.completionTime, j.estimatedDuration) === 'fast').length}</strong> fast completions
+              <strong>
+                {
+                  jobs.filter(
+                    (j) =>
+                      getCompletionBadge(
+                        j.completionTime,
+                        j.estimatedDuration
+                      ) === "fast"
+                  ).length
+                }
+              </strong>{" "}
+              fast completions
             </span>
           </div>
         </div>
@@ -418,62 +542,69 @@ const CompletedJobs = () => {
         </div>
       </div>
 
-      <div className="filters-section">
-        <form onSubmit={handleSearch} className="search-form">
+      <div
+        className={`filters-section ${
+          searchTerm || filterPriority || filterRating
+            ? "has-active-filters"
+            : ""
+        }`}
+      >
+        <div className="search-form">
           <div className="search-input">
             <RiSearchLine />
             <input
               type="text"
-              placeholder="Search completed jobs by type, property, or description..."
+              placeholder="Search completed jobs by job ID, property address, job type, or description..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              onBlur={handleSearchBlur}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            Search
-          </button>
-        </form>
+        </div>
 
         <div className="filter-options">
-          <div className="filter-group">
-            <label>Priority:</label>
-            <select
-              value={filterPriority}
-              onChange={(e) => handleFilterChange('priority', e.target.value)}
-            >
-              <option value="">All Priorities</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label>Rating:</label>
-            <select
-              value={filterRating}
-              onChange={(e) => handleFilterChange('rating', e.target.value)}
-            >
-              <option value="">All Ratings</option>
-              <option value="5">5 Stars</option>
-              <option value="4">4+ Stars</option>
-              <option value="3">3+ Stars</option>
-              <option value="2">2+ Stars</option>
-              <option value="1">1+ Stars</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label>Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-            >
-              <option value="completedAt">Completion Date</option>
-              <option value="rating">Rating</option>
-              <option value="priority">Priority</option>
-              <option value="completionTime">Completion Time</option>
-              <option value="jobType">Job Type</option>
-            </select>
+          <div className="filter-row">
+            <div className="filter-group">
+              <label>Priority:</label>
+              <select
+                value={filterPriority}
+                onChange={(e) => handleFilterChange("priority", e.target.value)}
+              >
+                <option value="">All Priorities</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>Rating:</label>
+              <select
+                value={filterRating}
+                onChange={(e) => handleFilterChange("rating", e.target.value)}
+              >
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4+ Stars</option>
+                <option value="3">3+ Stars</option>
+                <option value="2">2+ Stars</option>
+                <option value="1">1+ Stars</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>Sort by:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+              >
+                <option value="completedAt">Completion Date</option>
+                <option value="rating">Rating</option>
+                <option value="priority">Priority</option>
+                <option value="completionTime">Completion Time</option>
+                <option value="jobType">Job Type</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -504,9 +635,7 @@ const CompletedJobs = () => {
           </div>
         ) : (
           <>
-            <div className="jobs-grid">
-              {jobs.map(renderJobCard)}
-            </div>
+            <div className="jobs-grid">{jobs.map(renderJobCard)}</div>
 
             {pagination.totalPages > 1 && (
               <div className="pagination">
@@ -518,14 +647,12 @@ const CompletedJobs = () => {
                   <RiArrowLeftLine />
                   Previous
                 </button>
-                
+
                 <div className="page-info">
                   <span>
                     Page {pagination.currentPage} of {pagination.totalPages}
                   </span>
-                  <span>
-                    ({pagination.totalItems} total completed jobs)
-                  </span>
+                  <span>({pagination.totalItems} total completed jobs)</span>
                 </div>
 
                 <button

@@ -1,7 +1,15 @@
-@import '../ScheduledJobs/ScheduledJobs.scss';
+@import "../ScheduledJobs/ScheduledJobs.scss";
 
 .completed-jobs {
   @extend .scheduled-jobs;
+
+  .filters-section {
+    .filter-options {
+      .filter-row {
+        align-items: flex-end;
+      }
+    }
+  }
 
   .page-header {
     .header-content {
@@ -169,7 +177,7 @@
     .stat {
       &:nth-child(2) {
         color: #f59e0b;
-        
+
         strong {
           color: #d97706;
         }
@@ -177,7 +185,7 @@
 
       &:nth-child(3) {
         color: #10b981;
-        
+
         strong {
           color: #059669;
         }

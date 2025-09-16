@@ -23,6 +23,7 @@ import {
 import api from "../../services/api";
 import TechnicianPaymentTable from "../../components/TechnicianPaymentTable/TechnicianPaymentTable";
 import { getStatusColor, formatDate, formatCurrency } from "../../utils/paymentUtils";
+import { exportPaymentsToCSV, validatePaymentDataForExport, getExportSummary } from "../../utils/csvUtils";
 import "./TechnicianPaymentManagement.scss";
 
 interface TechnicianPayment {
@@ -96,6 +97,8 @@ const TechnicianPaymentManagement: React.FC = () => {
     endDate: "",
   });
   const [searchInput, setSearchInput] = useState(""); // Separate state for input
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedPayment, setSelectedPayment] =
     useState<TechnicianPayment | null>(null);
@@ -297,6 +300,48 @@ const TechnicianPaymentManagement: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
+  // Export functionality
+  const handleExport = async () => {
+    try {
+      setExportLoading(true);
+      setExportError(null);
+
+      // Fetch ALL payments with current filters (no pagination limit)
+      const params = new URLSearchParams({
+        limit: "9999", // Large number to get all results
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([, value]) => value !== "")
+        ),
+      });
+
+      const response = await api.get(`/v1/technician-payments?${params}`);
+
+      if (response.data.status === "success") {
+        const allPayments = response.data.data.payments || [];
+
+        // Validate data before export
+        validatePaymentDataForExport(allPayments);
+
+        // Export to CSV
+        exportPaymentsToCSV(allPayments);
+
+        // Show success message
+        const summary = getExportSummary(allPayments.length, filters);
+        alert(summary); // You can replace this with a toast notification
+
+      } else {
+        throw new Error(response.data.message || "Failed to fetch payment data for export");
+      }
+    } catch (err: any) {
+      console.error("Export error:", err);
+      const errorMessage = err.message || "Failed to export payments. Please try again.";
+      setExportError(errorMessage);
+      alert(`Export failed: ${errorMessage}`); // You can replace this with a toast notification
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const handleConfirmPaymentUpdate = () => {
     if (pendingPaymentAction) {
       handleUpdatePaymentStatus(pendingPaymentAction.paymentId, pendingPaymentAction.newStatus);
@@ -377,9 +422,14 @@ const TechnicianPaymentManagement: React.FC = () => {
               <RiRefreshLine className={refreshing ? "spinning" : ""} />
               {refreshing ? "Refreshing..." : "Refresh"}
             </button>
-            <button className="btn btn-outline">
-              <RiDownloadLine />
-              Export
+            <button
+              className="btn btn-outline"
+              onClick={handleExport}
+              disabled={exportLoading || loading}
+              title={exportLoading ? "Exporting data..." : "Export all payments to CSV"}
+            >
+              <RiDownloadLine className={exportLoading ? "spinning" : ""} />
+              {exportLoading ? "Exporting..." : "Export"}
             </button>
           </div>
         </div>

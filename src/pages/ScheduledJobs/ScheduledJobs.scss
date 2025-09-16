@@ -94,8 +94,6 @@
     margin-bottom: 2rem;
 
     .search-form {
-      margin-bottom: 1.5rem;
-
       .search-input {
         position: relative;
         max-width: 500px;
@@ -274,7 +272,7 @@
           border: none !important;
           outline: none !important;
         }
-        
+
         &:focus,
         &:focus-visible,
         &:active {
@@ -289,6 +287,7 @@
           margin-bottom: 1rem;
 
           .job-type {
+            border: none !important;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -307,7 +306,9 @@
           }
 
           .job-status {
+            border: none !important;
             .status-badge {
+              border: none !important;
               padding: 0.25rem 0.75rem;
               border-radius: 20px;
               font-size: 0.8rem;
@@ -375,7 +376,9 @@
             flex-wrap: wrap;
 
             .job-priority {
+              border: none !important;
               .priority-badge {
+                border: none !important;
                 padding: 0.2rem 0.5rem;
                 border-radius: 16px;
                 font-size: 0.75rem;

@@ -1,4 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type KeyboardEvent,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
@@ -84,6 +90,7 @@ const ScheduledJobs = () => {
 
   // Refs for debouncing
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const latestSearchRef = useRef<string>("");
 
   // Fetch scheduled jobs data
   const fetchScheduledJobs = useCallback(
@@ -107,9 +114,9 @@ const ScheduledJobs = () => {
           limit: pagination.itemsPerPage.toString(),
         });
 
-        // Use searchValue if provided, otherwise use searchInput
+        // Use provided value or latest typed (ref) to avoid immediate fetch on keystroke
         const searchToUse =
-          searchValue !== undefined ? searchValue : searchInput;
+          searchValue !== undefined ? searchValue : latestSearchRef.current;
         if (searchToUse.trim()) {
           params.append("search", searchToUse.trim());
           console.log("🔍 Searching for:", searchToUse.trim());
@@ -167,7 +174,6 @@ const ScheduledJobs = () => {
       filterJobType,
       filterDateRange.startDate,
       filterDateRange.endDate,
-      searchInput,
     ]
   );
 
@@ -182,7 +188,7 @@ const ScheduledJobs = () => {
       searchTimeoutRef.current = setTimeout(() => {
         console.log("🚀 Executing search after 1000ms delay for:", searchValue);
         fetchScheduledJobs(1, true, searchValue);
-      }, 1000); // 1000ms delay as requested by user
+      }, 1000); // 1000ms delay
     },
     [fetchScheduledJobs]
   );
@@ -216,7 +222,24 @@ const ScheduledJobs = () => {
   const handleSearchInputChange = (value: string) => {
     console.log("📝 Search input changed to:", value);
     setSearchInput(value);
+    latestSearchRef.current = value;
     debouncedSearch(value);
+  };
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      fetchScheduledJobs(1, true, searchInput);
+    }
+  };
+
+  const handleSearchBlur = () => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    fetchScheduledJobs(1, true, latestSearchRef.current);
   };
 
   const handlePriorityFilterChange = (priority: string) => {
@@ -472,6 +495,8 @@ const ScheduledJobs = () => {
               placeholder="Search by job ID, property address, job type, or description... (search as you type)"
               value={searchInput}
               onChange={(e) => handleSearchInputChange(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              onBlur={handleSearchBlur}
             />
           </div>
         </div>

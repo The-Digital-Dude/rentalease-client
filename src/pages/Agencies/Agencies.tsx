@@ -39,29 +39,29 @@ const Agencies = () => {
   }, [successMessage]);
 
   // Fetch agencies from API
-  useEffect(() => {
-    const fetchPropertyManagers = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const response = await agencyService.getAllAgencies();
+  const fetchAgencies = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await agencyService.getAllAgencies();
 
-        if (response.success) {
-          // Ensure we always have an array
-          setAgencies(Array.isArray(response.data) ? response.data : []);
-        } else {
-          setError(response.message || "Failed to fetch agencies");
-          setAgencies([]); // Set empty array on error
-        }
-      } catch (error: any) {
-        setError(error.message || "Failed to fetch agencies");
+      if (response.success) {
+        // Ensure we always have an array
+        setAgencies(Array.isArray(response.data) ? response.data : []);
+      } else {
+        setError(response.message || "Failed to fetch agencies");
         setAgencies([]); // Set empty array on error
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error: any) {
+      setError(error.message || "Failed to fetch agencies");
+      setAgencies([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchPropertyManagers();
+  useEffect(() => {
+    fetchAgencies();
   }, []);
 
   const filteredAgencies = (Array.isArray(agencies) ? agencies : []).filter(
@@ -111,17 +111,9 @@ const Agencies = () => {
         );
 
         if (response.success) {
-          setAgencies((prevAgencies) =>
-            prevAgencies.map((agency) =>
-              agency.id === editingAgency.id
-                ? {
-                    ...agency,
-                    ...updateData,
-                  }
-                : agency
-            )
-          );
           setSuccessMessage("Agency updated successfully!");
+          // Refetch agencies from server to ensure list is synchronized
+          await fetchAgencies();
         } else {
           setError(response.message || "Failed to update agency");
           return;
@@ -148,13 +140,10 @@ const Agencies = () => {
 
         const response = await agencyService.createAgency(newAgencyData);
 
-        if (
-          response.success &&
-          Array.isArray(response.data) &&
-          response.data.length > 0
-        ) {
-          setAgencies((prevAgencies) => [...prevAgencies, response.data[0]]);
+        if (response.success) {
           setSuccessMessage(response.message || "Agency created successfully!");
+          // Refetch agencies from server to ensure list is synchronized
+          await fetchAgencies();
         } else {
           setError(response.message || "Failed to create agency");
           return;

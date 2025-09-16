@@ -92,7 +92,7 @@ const AgencyFormModal = ({
     e.preventDefault();
     if (isSubmitting) return; // Prevent double submission
     onSubmit(formData);
-    setFormData(initialFormData);
+    // Don't reset form data here - let parent component handle it after successful response
   };
 
   const handleClose = () => {

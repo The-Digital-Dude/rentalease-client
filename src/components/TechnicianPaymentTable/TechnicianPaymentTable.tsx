@@ -3,19 +3,27 @@ import {
   RiSearchLine,
   RiFilterLine,
   RiMoneyDollarBoxLine,
-  RiTimeLine,
-  RiBriefcaseLine,
   RiCheckLine,
   RiCloseLine,
   RiLoaderLine,
+  RiUserLine,
+  RiCalendarLine,
+  RiEyeLine,
 } from "react-icons/ri";
 import Pagination from "../Pagination/Pagination";
+import { getStatusColor, formatDate, formatCurrency } from "../../utils/paymentUtils";
 import "./TechnicianPaymentTable.scss";
 
 interface TechnicianPayment {
   id: string;
   paymentNumber: string;
-  technicianId: string;
+  technicianId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
   jobId: {
     _id: string;
     property: string;
@@ -28,6 +36,8 @@ interface TechnicianPayment {
   amount: number;
   status: "Pending" | "Paid" | "Cancelled";
   jobCompletedAt: string;
+  paymentDate?: string;
+  notes?: string;
   createdAt: string;
 }
 
@@ -52,11 +62,18 @@ interface TechnicianPaymentTableProps {
   filters?: {
     status: string;
     jobType: string;
+    technicianId: string;
     search: string;
     startDate: string;
     endDate: string;
   };
-  onFilterChange?: (filters: any) => void;
+  onFilterChange?: (key: string, value: string) => void;
+  onPaymentAction?: (paymentId: string, action: string, payment: TechnicianPayment) => void;
+  searchInput?: string;
+  onSearchInputChange?: (value: string) => void;
+  onSearchKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onSearchBlur?: () => void;
+  showActions?: boolean;
 }
 
 const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
@@ -69,10 +86,17 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
   onPageChange,
   filters,
   onFilterChange,
+  onPaymentAction,
+  searchInput,
+  onSearchInputChange,
+  onSearchKeyPress,
+  onSearchBlur,
+  showActions = true,
 }) => {
   const [localFilters, setLocalFilters] = useState({
     status: filters?.status || "",
     jobType: filters?.jobType || "",
+    technicianId: filters?.technicianId || "",
     search: filters?.search || "",
     startDate: filters?.startDate || "",
     endDate: filters?.endDate || "",
@@ -90,56 +114,10 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     if (onFilterChange) {
-      onFilterChange(newFilters);
+      onFilterChange(key, value);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return "status-pending";
-      case "Paid":
-        return "status-paid";
-      case "Cancelled":
-        return "status-cancelled";
-      default:
-        return "status-default";
-    }
-  };
-
-  const getJobTypeIcon = (jobType: string) => {
-    switch (jobType) {
-      case "Gas":
-        return "🔥";
-      case "Electrical":
-        return "⚡";
-      case "Smoke":
-        return "🚨";
-      case "Repairs":
-        return "🔧";
-      case "Pool Safety":
-        return "🏊";
-      case "Routine Inspection":
-        return "📋";
-      default:
-        return "📋";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   if (loading) {
     return (
@@ -198,9 +176,17 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
               <RiSearchLine className="search-icon" />
               <input
                 type="text"
-                placeholder="Search payments..."
-                value={localFilters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
+                placeholder="Search by payment number, technician name, or job ID... (Press Enter or wait 1s)"
+                value={searchInput !== undefined ? searchInput : localFilters.search}
+                onChange={(e) => {
+                  if (onSearchInputChange) {
+                    onSearchInputChange(e.target.value);
+                  } else {
+                    handleFilterChange("search", e.target.value);
+                  }
+                }}
+                onKeyDown={onSearchKeyPress}
+                onBlur={onSearchBlur}
               />
             </div>
 
@@ -247,6 +233,28 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
                   <option value="Routine Inspection">Routine Inspection</option>
                 </select>
               </div>
+
+              <div className="filter-group">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  value={localFilters.startDate}
+                  onChange={(e) =>
+                    handleFilterChange("startDate", e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="filter-group">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  value={localFilters.endDate}
+                  onChange={(e) =>
+                    handleFilterChange("endDate", e.target.value)
+                  }
+                />
+              </div>
             </div>
           </div>
         )}
@@ -257,21 +265,45 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
           <thead>
             <tr>
               <th>Payment #</th>
-              <th>Job ID</th>
-              <th>Job Type</th>
+              <th>Technician</th>
+              <th>Job Details</th>
               <th>Amount</th>
-              <th>Completed Date</th>
               <th>Status</th>
-              <th>Created Date</th>
+              <th>Completed Date</th>
+              <th>Payment Date</th>
+              {showActions && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {payments.length === 0 ? (
               <tr>
-                <td colSpan={7} className="empty-state">
+                <td colSpan={showActions ? 8 : 7} className="empty-state">
                   <div className="empty-content">
                     <RiMoneyDollarBoxLine className="empty-icon" />
                     <p>No payments found</p>
+                    {Object.values(localFilters).some((f) => f !== "") && (
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => {
+                          const clearedFilters = {
+                            status: "",
+                            jobType: "",
+                            technicianId: "",
+                            search: "",
+                            startDate: "",
+                            endDate: "",
+                          };
+                          setLocalFilters(clearedFilters);
+                          if (onFilterChange) {
+                            Object.keys(clearedFilters).forEach(key => {
+                              onFilterChange(key, "");
+                            });
+                          }
+                        }}
+                      >
+                        Clear Filters
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -283,27 +315,32 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
                       {payment.paymentNumber}
                     </span>
                   </td>
-                  <td className="job-id">
-                    <span className="job-id-text">{payment.jobId.job_id}</span>
+                  <td className="technician">
+                    <div className="technician-info">
+                      <RiUserLine className="technician-icon" />
+                      <div className="technician-details">
+                        <span className="name">
+                          {payment.technicianId?.firstName || 'N/A'}{" "}
+                          {payment.technicianId?.lastName || ''}
+                        </span>
+                        <span className="email">
+                          {payment.technicianId?.email || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </td>
-                  <td className="job-type">
-                    <span className="job-type-icon">
-                      {getJobTypeIcon(payment.jobType)}
-                    </span>
-                    <span className="job-type-text">{payment.jobType}</span>
+                  <td className="job-details">
+                    <div className="job-info">
+                      <span className="job-id">
+                        #{payment.jobId?.job_id || 'N/A'}
+                      </span>
+                      <span className="job-type">{payment.jobType || 'N/A'}</span>
+                    </div>
                   </td>
                   <td className="amount">
                     <span className="amount-text">
                       {formatCurrency(payment.amount)}
                     </span>
-                  </td>
-                  <td className="completed-date">
-                    <div className="completed-date-info">
-                      <RiTimeLine className="completed-date-icon" />
-                      <span className="completed-date-text">
-                        {formatDate(payment.jobCompletedAt)}
-                      </span>
-                    </div>
                   </td>
                   <td className="status">
                     <span
@@ -314,14 +351,52 @@ const TechnicianPaymentTable: React.FC<TechnicianPaymentTableProps> = ({
                       {payment.status}
                     </span>
                   </td>
-                  <td className="created-date">
-                    <div className="created-date-info">
-                      <RiTimeLine className="created-date-icon" />
-                      <span className="created-date-text">
-                        {formatDate(payment.createdAt)}
+                  <td className="completed-date">
+                    <div className="date-info">
+                      <RiCalendarLine className="date-icon" />
+                      <span>{formatDate(payment.jobCompletedAt)}</span>
+                    </div>
+                  </td>
+                  <td className="payment-date">
+                    <div className="date-info">
+                      <RiCalendarLine className="date-icon" />
+                      <span>
+                        {payment.paymentDate
+                          ? formatDate(payment.paymentDate)
+                          : "-"}
                       </span>
                     </div>
                   </td>
+                  {showActions && (
+                    <td className="actions">
+                      <div className="action-buttons">
+                        <button
+                          className="btn btn-sm btn-outline"
+                          onClick={() => {
+                            if (onPaymentAction) {
+                              onPaymentAction(payment.id, "view", payment);
+                            }
+                          }}
+                          title="View Details"
+                        >
+                          <RiEyeLine />
+                        </button>
+                        {payment.status === "Pending" && (
+                          <button
+                            className="btn btn-sm btn-success"
+                            onClick={() => {
+                              if (onPaymentAction) {
+                                onPaymentAction(payment.id, "markPaid", payment);
+                              }
+                            }}
+                            title="Mark as Paid"
+                          >
+                            <RiCheckLine />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

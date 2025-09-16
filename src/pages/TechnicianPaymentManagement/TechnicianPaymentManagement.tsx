@@ -1,31 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   RiMoneyDollarBoxLine,
-  RiSearchLine,
-  RiFilterLine,
   RiDownloadLine,
-  RiEyeLine,
   RiCheckLine,
   RiTimeLine,
-  RiBriefcaseLine,
-  RiUserLine,
   RiRefreshLine,
   RiLoaderLine,
   RiErrorWarningLine,
   RiArrowUpLine as RiTrendingUpLine,
-  RiArrowDownLine as RiTrendingDownLine,
   RiPieChartLine,
   RiBarChartLine,
-  RiCalendarLine,
   RiInformationLine,
   RiCheckboxCircleLine,
 } from "react-icons/ri";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   PieChart,
@@ -33,6 +21,8 @@ import {
   Cell,
 } from "recharts";
 import api from "../../services/api";
+import TechnicianPaymentTable from "../../components/TechnicianPaymentTable/TechnicianPaymentTable";
+import { getStatusColor, formatDate, formatCurrency } from "../../utils/paymentUtils";
 import "./TechnicianPaymentManagement.scss";
 
 interface TechnicianPayment {
@@ -106,7 +96,6 @@ const TechnicianPaymentManagement: React.FC = () => {
     endDate: "",
   });
   const [searchInput, setSearchInput] = useState(""); // Separate state for input
-  const [showFilters, setShowFilters] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedPayment, setSelectedPayment] =
     useState<TechnicianPayment | null>(null);
@@ -219,7 +208,7 @@ const TechnicianPaymentManagement: React.FC = () => {
     // Set new timeout for debounced search
     searchTimeoutRef.current = setTimeout(() => {
       handleFilterChange("search", value);
-    }, 500); // 500ms debounce delay
+    }, 1000); // 1000ms (1 second) debounce delay
   };
 
   // Handle Enter key press for immediate search
@@ -321,33 +310,6 @@ const TechnicianPaymentManagement: React.FC = () => {
     setPendingPaymentAction(null);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return "status-pending";
-      case "Paid":
-        return "status-paid";
-      case "Cancelled":
-        return "status-cancelled";
-      default:
-        return "status-default";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
 
   const chartData = stats
     ? [
@@ -517,264 +479,37 @@ const TechnicianPaymentManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Filters and Search */}
-      <div className="filters-section">
-        <div className="search-filter-container">
-          <div className="search-box">
-            <RiSearchLine className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by payment number, technician name, or job ID... (Press Enter or wait 500ms)"
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onKeyPress={handleSearchKeyPress}
-              onBlur={handleSearchBlur}
-            />
-          </div>
-
-          <button
-            className={`filter-toggle ${showFilters ? "active" : ""}`}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <RiFilterLine />
-            Filters
-          </button>
-        </div>
-
-        {showFilters && (
-          <div className="filters-panel">
-            <div className="filter-row">
-              <div className="filter-group">
-                <label>Status</label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange("status", e.target.value)}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Paid">Paid</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              <div className="filter-group">
-                <label>Job Type</label>
-                <select
-                  value={filters.jobType}
-                  onChange={(e) =>
-                    handleFilterChange("jobType", e.target.value)
-                  }
-                >
-                  <option value="">All Job Types</option>
-                  <option value="Gas">Gas</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Smoke">Smoke</option>
-                  <option value="Repairs">Repairs</option>
-                  <option value="Pool Safety">Pool Safety</option>
-                  <option value="Routine Inspection">Routine Inspection</option>
-                </select>
-              </div>
-
-              <div className="filter-group">
-                <label>Start Date</label>
-                <input
-                  type="date"
-                  value={filters.startDate}
-                  onChange={(e) =>
-                    handleFilterChange("startDate", e.target.value)
-                  }
-                />
-              </div>
-
-              <div className="filter-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={filters.endDate}
-                  onChange={(e) =>
-                    handleFilterChange("endDate", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Payments Table */}
-      <div className="payments-table-section">
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Payment #</th>
-                <th>Technician</th>
-                <th>Job Details</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Completed Date</th>
-                <th>Payment Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="empty-state">
-                    <div className="empty-content">
-                      <RiMoneyDollarBoxLine className="empty-icon" />
-                      <p>No payments found</p>
-                      {Object.values(filters).some((f) => f !== "") && (
-                        <button
-                          className="btn btn-secondary"
-                          onClick={() => {
-                            setFilters({
-                              status: "",
-                              jobType: "",
-                              technicianId: "",
-                              search: "",
-                              startDate: "",
-                              endDate: "",
-                            });
-                            setSearchInput(""); // Also clear search input
-                            // Clear any pending search timeout
-                            if (searchTimeoutRef.current) {
-                              clearTimeout(searchTimeoutRef.current);
-                            }
-                          }}
-                        >
-                          Clear Filters
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td className="payment-number">
-                      <span className="payment-number-text">
-                        {payment.paymentNumber}
-                      </span>
-                    </td>
-                    <td className="technician">
-                      <div className="technician-info">
-                        <RiUserLine className="technician-icon" />
-                        <div className="technician-details">
-                          <span className="name">
-                            {payment.technicianId?.firstName || 'N/A'}{" "}
-                            {payment.technicianId?.lastName || ''}
-                          </span>
-                          <span className="email">
-                            {payment.technicianId?.email || 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="job-details">
-                      <div className="job-info">
-                        <span className="job-id">
-                          #{payment.jobId?.job_id || 'N/A'}
-                        </span>
-                        <span className="job-type">{payment.jobType || 'N/A'}</span>
-                      </div>
-                    </td>
-                    <td className="amount">
-                      <span className="amount-text">
-                        {formatCurrency(payment.amount)}
-                      </span>
-                    </td>
-                    <td className="status">
-                      <span
-                        className={`status-badge ${getStatusColor(
-                          payment.status
-                        )}`}
-                      >
-                        {payment.status}
-                      </span>
-                    </td>
-                    <td className="completed-date">
-                      <div className="date-info">
-                        <RiCalendarLine className="date-icon" />
-                        <span>{formatDate(payment.jobCompletedAt)}</span>
-                      </div>
-                    </td>
-                    <td className="payment-date">
-                      <div className="date-info">
-                        <RiCalendarLine className="date-icon" />
-                        <span>
-                          {payment.paymentDate
-                            ? formatDate(payment.paymentDate)
-                            : "-"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="actions">
-                      <div className="action-buttons">
-                        <button
-                          className="btn btn-sm btn-outline"
-                          onClick={() => {
-                            setSelectedPayment(payment);
-                            setShowPaymentDetails(true);
-                          }}
-                          title="View Details"
-                        >
-                          <RiEyeLine />
-                        </button>
-                        {payment.status === "Pending" && (
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() =>
-                              showPaymentConfirmation(payment.id, "Paid", payment)
-                            }
-                            title="Mark as Paid"
-                          >
-                            <RiCheckLine />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="pagination-container">
-            <div className="pagination-info">
-              Showing{" "}
-              {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
-              {Math.min(
-                pagination.currentPage * pagination.itemsPerPage,
-                pagination.totalItems
-              )}{" "}
-              of {pagination.totalItems} payments
-            </div>
-            <div className="pagination-controls">
-              <button
-                className="btn btn-sm"
-                disabled={!pagination.hasPrevPage}
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-              >
-                Previous
-              </button>
-              <span className="page-info">
-                Page {pagination.currentPage} of {pagination.totalPages}
-              </span>
-              <button
-                className="btn btn-sm"
-                disabled={!pagination.hasNextPage}
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <TechnicianPaymentTable
+        title="Payment Management"
+        payments={payments}
+        loading={loading}
+        error={error}
+        pagination={pagination}
+        statistics={stats ? {
+          statusCounts: {
+            Pending: stats.pendingCount,
+            Paid: stats.paidCount
+          },
+          totalPayments: stats.totalPayments
+        } : undefined}
+        onPageChange={handlePageChange}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        searchInput={searchInput}
+        onSearchInputChange={handleSearchChange}
+        onSearchKeyPress={handleSearchKeyPress}
+        onSearchBlur={handleSearchBlur}
+        onPaymentAction={(paymentId, action, payment) => {
+          if (action === "view") {
+            setSelectedPayment(payment);
+            setShowPaymentDetails(true);
+          } else if (action === "markPaid") {
+            showPaymentConfirmation(paymentId, "Paid", payment);
+          }
+        }}
+        showActions={true}
+      />
 
       {/* Payment Details Modal */}
       {showPaymentDetails && selectedPayment && (

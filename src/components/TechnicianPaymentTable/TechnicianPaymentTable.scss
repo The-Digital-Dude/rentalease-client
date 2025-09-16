@@ -123,9 +123,10 @@
       border-radius: 8px;
 
       .filter-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        display: flex;
+        flex-wrap: wrap;
         gap: 16px;
+        align-items: end;
 
         .filter-group {
           display: flex;
@@ -326,12 +327,20 @@
             &.empty-state {
               text-align: center;
               padding: 60px 24px;
+              position: relative;
 
               .empty-content {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                justify-content: center;
                 gap: 12px;
+                margin: auto;
 
                 .empty-icon {
                   font-size: 2rem;
@@ -342,6 +351,152 @@
                   margin: 0;
                   color: #6b7280;
                   font-size: 0.875rem;
+                }
+
+                .btn {
+                  padding: 8px 16px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  background: #ffffff;
+                  color: #374151;
+                  font-size: 0.875rem;
+                  cursor: pointer;
+                  transition: all 0.2s;
+
+                  &:hover {
+                    background: #f9fafb;
+                    border-color: #9ca3af;
+                  }
+
+                  &.btn-secondary {
+                    background: #6b7280;
+                    border-color: #6b7280;
+                    color: #ffffff;
+
+                    &:hover {
+                      background: #4b5563;
+                      border-color: #4b5563;
+                    }
+                  }
+                }
+              }
+            }
+
+            &.technician {
+              .technician-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .technician-icon {
+                  color: #6b7280;
+                  font-size: 0.875rem;
+                }
+
+                .technician-details {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 2px;
+
+                  .name {
+                    font-weight: 500;
+                    color: #374151;
+                  }
+
+                  .email {
+                    font-size: 0.75rem;
+                    color: #6b7280;
+                  }
+                }
+              }
+            }
+
+            &.job-details {
+              .job-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+
+                .job-id {
+                  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+                  font-size: 0.75rem;
+                  color: #6b7280;
+                  background: #f3f4f6;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  width: fit-content;
+                }
+
+                .job-type {
+                  font-weight: 500;
+                  color: #374151;
+                }
+              }
+            }
+
+            &.payment-date,
+            &.completed-date {
+              .date-info {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+
+                .date-icon {
+                  color: #6b7280;
+                  font-size: 0.875rem;
+                }
+
+                span {
+                  font-size: 0.875rem;
+                  color: #374151;
+                }
+              }
+            }
+
+            &.actions {
+              .action-buttons {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+
+                .btn {
+                  padding: 6px 8px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 4px;
+                  background: #ffffff;
+                  color: #374151;
+                  font-size: 0.75rem;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+
+                  &:hover {
+                    background: #f9fafb;
+                    border-color: #9ca3af;
+                  }
+
+                  &.btn-outline {
+                    border-color: #d1d5db;
+                    color: #6b7280;
+
+                    &:hover {
+                      border-color: #3b82f6;
+                      color: #3b82f6;
+                    }
+                  }
+
+                  &.btn-success {
+                    background: #10b981;
+                    border-color: #10b981;
+                    color: #ffffff;
+
+                    &:hover {
+                      background: #059669;
+                      border-color: #059669;
+                    }
+                  }
                 }
               }
             }

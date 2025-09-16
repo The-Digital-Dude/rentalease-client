@@ -91,18 +91,23 @@ const TeamMemberManagement = () => {
     e.preventDefault();
 
     try {
-      await teamMemberService.createTeamMember({
+      const response = await teamMemberService.createTeamMember({
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
 
+      console.log("Team member created successfully:", response);
       toast.success("Team member created successfully!");
       setShowCreateModal(false);
       setFormData({ name: "", email: "", password: "", status: "Active" });
-      fetchTeamMembers();
+
+      // Refresh the team members list
+      await fetchTeamMembers();
     } catch (error: any) {
-      toast.error(error.message || "Failed to create team member");
+      console.error("Failed to create team member:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create team member";
+      toast.error(errorMessage);
     }
   };
 
@@ -112,19 +117,24 @@ const TeamMemberManagement = () => {
     if (!selectedTeamMember) return;
 
     try {
-      await teamMemberService.updateTeamMember(selectedTeamMember._id, {
+      const response = await teamMemberService.updateTeamMember(selectedTeamMember._id, {
         name: formData.name,
         email: formData.email,
         status: formData.status,
       });
 
+      console.log("Team member updated successfully:", response);
       toast.success("Team member updated successfully!");
       setShowEditModal(false);
       setSelectedTeamMember(null);
       setFormData({ name: "", email: "", password: "", status: "Active" });
-      fetchTeamMembers();
+
+      // Refresh the team members list
+      await fetchTeamMembers();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update team member");
+      console.error("Failed to update team member:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update team member";
+      toast.error(errorMessage);
     }
   };
 

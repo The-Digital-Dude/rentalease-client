@@ -5,7 +5,20 @@ export interface TeamMember {
   name: string;
   email: string;
   status: 'Active' | 'Inactive';
-  createdBy: string;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  updatedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  agency?: {
+    _id: string;
+    companyName: string;
+  };
   createdAt: string;
   lastUpdated: string;
   lastLogin?: string;

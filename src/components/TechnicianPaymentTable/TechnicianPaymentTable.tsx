@@ -26,7 +26,11 @@ interface TechnicianPayment {
   };
   jobId: {
     _id: string;
-    property: string;
+    property: {
+      _id: string;
+      name: string;
+      address: string;
+    };
     jobType: string;
     dueDate: string;
     description: string;

@@ -3,7 +3,11 @@ import { RiCloseLine, RiLoader4Line, RiSaveLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
 import AgencySearchDropdown from "../AgencySearchDropdown";
-import { propertyManagerService, type Agency } from "../../services";
+import {
+  propertyManagerService,
+  type Agency,
+  VALID_STATES,
+} from "../../services";
 import "./PropertyManagerFormModal.scss";
 
 interface PropertyManagerFormData {
@@ -53,7 +57,8 @@ const PropertyManagerFormModal = ({
   onClose,
   onSuccess,
 }: PropertyManagerFormModalProps) => {
-  const [formData, setFormData] = useState<PropertyManagerFormData>(initialFormData);
+  const [formData, setFormData] =
+    useState<PropertyManagerFormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<PropertyManagerFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
@@ -186,7 +191,9 @@ const PropertyManagerFormModal = ({
         },
       };
 
-      const response = await propertyManagerService.createPropertyManager(propertyManagerData);
+      const response = await propertyManagerService.createPropertyManager(
+        propertyManagerData
+      );
 
       if (response.success) {
         toast.success(
@@ -197,7 +204,9 @@ const PropertyManagerFormModal = ({
           onSuccess();
         }
       } else {
-        throw new Error(response.message || "Failed to create Property Manager");
+        throw new Error(
+          response.message || "Failed to create Property Manager"
+        );
       }
     } catch (error: any) {
       console.error("Error creating Property Manager:", error);
@@ -368,7 +377,9 @@ const PropertyManagerFormModal = ({
                 required
               />
               {formErrors.confirmPassword && (
-                <span className="error-message">{formErrors.confirmPassword}</span>
+                <span className="error-message">
+                  {formErrors.confirmPassword}
+                </span>
               )}
             </div>
           </div>
@@ -412,14 +423,11 @@ const PropertyManagerFormModal = ({
                 disabled={isSubmitting}
               >
                 <option value="">Select state</option>
-                <option value="NSW">New South Wales</option>
-                <option value="VIC">Victoria</option>
-                <option value="QLD">Queensland</option>
-                <option value="WA">Western Australia</option>
-                <option value="SA">South Australia</option>
-                <option value="TAS">Tasmania</option>
-                <option value="ACT">Australian Capital Territory</option>
-                <option value="NT">Northern Territory</option>
+                {VALID_STATES.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-group">

@@ -15,9 +15,6 @@ const PropertyManagerManagement = lazy(
 const TechnicianDashboard = lazy(
   () => import("../pages/TechnicianDashboard/TechnicianDashboard")
 );
-const StaffDashboard = lazy(
-  () => import("../pages/StaffDashboard/StaffDashboard")
-);
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const AgencyJobs = lazy(() => import("../pages/AgencyJobs/AgencyJobs"));
 const Contacts = lazy(
@@ -71,7 +68,6 @@ export const routeConfig = (userType: UserType) => {
     jobs: Jobs,
     technician: Technician,
     propertyManagerManagement: PropertyManagerManagement,
-    staff: StaffDashboard,
     agencies: Agencies,
     agencyJobs: AgencyJobs,
     contacts: Contacts,

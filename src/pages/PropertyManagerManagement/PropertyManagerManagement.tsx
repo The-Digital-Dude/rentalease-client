@@ -24,6 +24,7 @@ import { useAppSelector } from "../../store";
 import {
   propertyManagerService,
   agencyService,
+  VALID_STATES,
   type PropertyManager,
   type PropertyManagerFilters,
   type CreatePropertyManagerData,
@@ -110,7 +111,8 @@ const PropertyManagerManagementPage = () => {
   const { userType, name } = useAppSelector((state) => state.user);
 
   // Check if user can see all property managers
-  const canSeeAllPropertyManagers = userType === "super_user" || userType === "team_member";
+  const canSeeAllPropertyManagers =
+    userType === "super_user" || userType === "team_member";
   const canEditPropertyManagers = userType === "agency";
 
   // Debounced search
@@ -677,7 +679,10 @@ const PropertyManagerManagementPage = () => {
               >
                 <option value="">All Agencies</option>
                 {agencies.map((agency) => (
-                  <option key={agency.id || agency._id} value={agency.id || agency._id}>
+                  <option
+                    key={agency.id || agency._id}
+                    value={agency.id || agency._id}
+                  >
                     {agency.name || agency.companyName}
                   </option>
                 ))}
@@ -731,11 +736,14 @@ const PropertyManagerManagementPage = () => {
                 <div className="header-info">
                   <h4>{propertyManager.fullName}</h4>
                   <p className="email">{propertyManager.email}</p>
-                  {canSeeAllPropertyManagers && propertyManager.owner?.ownerId && typeof propertyManager.owner.ownerId === 'object' && (
-                    <p className="agency-name">
-                      <RiBuilding2Line /> {propertyManager.owner.ownerId.companyName}
-                    </p>
-                  )}
+                  {canSeeAllPropertyManagers &&
+                    propertyManager.owner?.ownerId &&
+                    typeof propertyManager.owner.ownerId === "object" && (
+                      <p className="agency-name">
+                        <RiBuilding2Line />{" "}
+                        {propertyManager.owner.ownerId.companyName}
+                      </p>
+                    )}
                 </div>
                 <div className="status-badges">
                   <span
@@ -802,59 +810,60 @@ const PropertyManagerManagementPage = () => {
                 )}
                 {canEditPropertyManagers && (
                   <div className="dropdown">
-                  <button
-                    className="btn-icon dropdown-toggle"
-                    onClick={() => toggleDropdown(propertyManager.id)}
-                    title="More actions"
-                  >
-                    <RiMoreLine />
-                  </button>
-                  <div
-                    className={`dropdown-menu ${
-                      openDropdown === propertyManager.id ? "show" : ""
-                    }`}
-                  >
-                    <div className="dropdown-section">
-                      <h5>Status</h5>
-                      {statuses.map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => {
-                            handleStatusUpdate(propertyManager.id, status);
-                            setOpenDropdown(null);
-                          }}
-                          className={
-                            propertyManager.status === status ? "active" : ""
-                          }
-                        >
-                          {status}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="dropdown-section">
-                      <h5>Availability</h5>
-                      {availabilityStatuses.map((availability) => (
-                        <button
-                          key={availability}
-                          onClick={() => {
-                            handleAvailabilityUpdate(
-                              propertyManager.id,
+                    <button
+                      className="btn-icon dropdown-toggle"
+                      onClick={() => toggleDropdown(propertyManager.id)}
+                      title="More actions"
+                    >
+                      <RiMoreLine />
+                    </button>
+                    <div
+                      className={`dropdown-menu ${
+                        openDropdown === propertyManager.id ? "show" : ""
+                      }`}
+                    >
+                      <div className="dropdown-section">
+                        <h5>Status</h5>
+                        {statuses.map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              handleStatusUpdate(propertyManager.id, status);
+                              setOpenDropdown(null);
+                            }}
+                            className={
+                              propertyManager.status === status ? "active" : ""
+                            }
+                          >
+                            {status}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="dropdown-section">
+                        <h5>Availability</h5>
+                        {availabilityStatuses.map((availability) => (
+                          <button
+                            key={availability}
+                            onClick={() => {
+                              handleAvailabilityUpdate(
+                                propertyManager.id,
+                                availability
+                              );
+                              setOpenDropdown(null);
+                            }}
+                            className={
+                              propertyManager.availabilityStatus ===
                               availability
-                            );
-                            setOpenDropdown(null);
-                          }}
-                          className={
-                            propertyManager.availabilityStatus === availability
-                              ? "active"
-                              : ""
-                          }
-                        >
-                          {availability}
-                        </button>
-                      ))}
+                                ? "active"
+                                : ""
+                            }
+                          >
+                            {availability}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
                 )}
               </div>
             </div>
@@ -1039,14 +1048,11 @@ const PropertyManagerManagementPage = () => {
               onChange={handleInputChange}
             >
               <option value="">Select state</option>
-              <option value="NSW">New South Wales</option>
-              <option value="VIC">Victoria</option>
-              <option value="QLD">Queensland</option>
-              <option value="WA">Western Australia</option>
-              <option value="SA">South Australia</option>
-              <option value="TAS">Tasmania</option>
-              <option value="ACT">Australian Capital Territory</option>
-              <option value="NT">Northern Territory</option>
+              {VALID_STATES.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
             </select>
           </div>
           <div className="form-group">

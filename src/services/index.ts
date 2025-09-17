@@ -8,6 +8,7 @@ export { default as staffService } from "./staffService";
 export { notificationService } from "./notificationService";
 export { default as dashboardService } from "./dashboardService";
 export { default as subscriptionService } from "./subscriptionService";
+export { default as propertyService, VALID_STATES } from "./propertyService";
 
 // Re-export types from jobService
 export type {

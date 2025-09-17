@@ -7,7 +7,6 @@ export { default as Agencies } from "./Agencies";
 export { default as JobManagement } from "./JobManagement";
 export { default as Properties } from "./Properties";
 export { default as PropertyAssignment } from "./PropertyAssignment";
-export { default as Staff } from "./Technician";
 export { default as PropertyManagerManagement } from "./PropertyManagerManagement";
 export { default as RegionManagement } from "./RegionManagement";
 export { default as RegionalDashboard } from "./RegionalDashboard";

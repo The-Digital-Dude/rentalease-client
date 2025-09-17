@@ -153,95 +153,39 @@ const Properties = () => {
       address: {
         street: property.address?.street || "",
         suburb: property.address?.suburb || "",
-        state: property.address?.state || "NSW",
+        state: property.address?.state || "",
         postcode: property.address?.postcode || "",
         fullAddress:
           property.address?.fullAddress || property.fullAddress || "",
       },
+      fullAddress: property.fullAddress,
       propertyType: property.propertyType,
       region: property.region as PropertyCardType["region"],
-      agency: property.agency || {
-        _id: "",
-        companyName: "",
-        contactPerson: "",
-        email: "",
-        phone: "",
-      },
+      agency: property.agency
+        ? {
+            _id: property.agency._id,
+            companyName: property.agency.companyName,
+            contactPerson: property.agency.contactPerson,
+            email: property.agency.email,
+            phone: property.agency.phone,
+          }
+        : undefined,
+      assignedPropertyManager: property.assignedPropertyManager
+        ? {
+            firstName: property.assignedPropertyManager.firstName,
+            lastName: property.assignedPropertyManager.lastName,
+            email: property.assignedPropertyManager.email,
+            phone: property.assignedPropertyManager.phone,
+          }
+        : undefined,
       currentTenant: property.currentTenant,
       currentLandlord: property.currentLandlord,
-      complianceSchedule: {
-        gasCompliance: {
-          nextInspection:
-            property.complianceSchedule?.gasCompliance?.nextInspection,
-          required:
-            property.complianceSchedule?.gasCompliance?.required ?? true,
-          status:
-            property.complianceSchedule?.gasCompliance?.status ?? "Due Soon",
-        },
-        electricalSafety: {
-          nextInspection:
-            property.complianceSchedule?.electricalSafety?.nextInspection,
-          required:
-            property.complianceSchedule?.electricalSafety?.required ?? true,
-          status:
-            property.complianceSchedule?.electricalSafety?.status ?? "Due Soon",
-        },
-        smokeAlarms: {
-          nextInspection:
-            property.complianceSchedule?.smokeAlarms?.nextInspection,
-          required: property.complianceSchedule?.smokeAlarms?.required ?? true,
-          status:
-            property.complianceSchedule?.smokeAlarms?.status ?? "Due Soon",
-        },
-        poolSafety: {
-          nextInspection:
-            property.complianceSchedule?.poolSafety?.nextInspection,
-          required: property.complianceSchedule?.poolSafety?.required ?? false,
-          status:
-            property.complianceSchedule?.poolSafety?.status ?? "Not Required",
-        },
-      },
+      complianceSchedule: property.complianceSchedule,
+      complianceSummary: property.complianceSummary,
       notes: property.notes,
-      // Sample data for emails, comments, and documents - replace with real API data
-      emails: [
-        {
-          id: "email1",
-          subject: "Property Inspection Schedule",
-          from: "admin@rentalease.com",
-          to: property.currentTenant?.email || "tenant@example.com",
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          content: "Scheduled inspection for next week"
-        }
-      ],
-      comments: [
-        {
-          id: "comment1",
-          author: "Property Manager",
-          content: "Recent maintenance completed successfully. All systems operational.",
-          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ],
-      documents: [
-        {
-          id: "doc1",
-          name: "Lease Agreement.pdf",
-          type: "pdf",
-          size: 245760,
-          uploadDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          url: "/documents/lease-agreement.pdf"
-        },
-        {
-          id: "doc2",
-          name: "Inspection Report.jpg",
-          type: "image",
-          size: 1024000,
-          uploadDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          url: "/documents/inspection-report.jpg"
-        }
-      ],
-      isActive: true, // Default to true since it's not in the service interface
+      hasOverdueCompliance: property.hasOverdueCompliance,
       createdAt: property.createdAt,
-      updatedAt: property.updatedAt || property.createdAt,
+      updatedAt: property.updatedAt,
     })
   );
 

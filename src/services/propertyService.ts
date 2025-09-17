@@ -22,6 +22,16 @@ export interface PropertyLandlord {
   phone: string;
 }
 
+export interface PropertyDocument {
+  id?: string;
+  name: string;
+  type?: string;
+  size?: number;
+  url?: string;
+  cloudinaryId?: string;
+  uploadDate?: string;
+}
+
 export interface ComplianceItem {
   nextInspection?: string;
   required?: boolean;
@@ -57,6 +67,13 @@ export interface Property {
     phone?: string;
   };
   propertyManager?: string;
+  assignedPropertyManager?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  } | null;
   rentAmount?: number;
   currentTenant: PropertyTenant;
   currentLandlord: PropertyLandlord;
@@ -64,6 +81,7 @@ export interface Property {
   notes?: string;
   hasOverdueCompliance?: boolean;
   complianceSummary?: ComplianceSummary;
+  documents?: PropertyDocument[];
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   RiArrowLeftLine,
@@ -12,13 +12,18 @@ import {
   RiCalendarLine,
   RiMoneyDollarBoxLine,
   RiFileListLine,
+  RiUploadLine,
+  RiDownloadLine,
 } from "react-icons/ri";
-import propertyService from "../../services/propertyService";
-import type { Property } from "../../services/propertyService";
+import propertyService, {
+  type Property,
+  type PropertyDocument,
+} from "../../services/propertyService";
 import { formatDateTime } from "../../utils";
 import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
+import toast from "react-hot-toast";
 
 const PropertyProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,56 +34,64 @@ const PropertyProfile: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<PropertyDocument[]>([]);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadProperty = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await propertyService.getProperty(id);
+      if (response.status === "success") {
+        setProperty(response.data.property);
+        setDocuments(response.data.property.documents ?? []);
+      } else {
+        setError(response.message || "Failed to load property");
+        setProperty(null);
+        setDocuments([]);
+      }
+    } catch (loadError: any) {
+      console.error("Error loading property:", loadError);
+      setError(loadError.message || "Failed to load property");
+      setProperty(null);
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const loadJobs = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setJobsLoading(true);
+      setJobsError(null);
+      const response = await jobService.getJobs({ property: id, limit: 100 });
+      if (response.success && Array.isArray(response.data)) {
+        const jobsData = response.data.filter(
+          (item: any) => item.job_id && item.property && item.jobType
+        ) as Job[];
+        setJobs(jobsData);
+      } else {
+        setJobsError(response.message || "Failed to load jobs");
+        setJobs([]);
+      }
+    } catch (loadJobsError: any) {
+      setJobsError(loadJobsError.message || "Failed to load jobs");
+      setJobs([]);
+    } finally {
+      setJobsLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    const loadProperty = async () => {
-      if (!id) return;
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await propertyService.getProperty(id);
-        if (response.status === "success") {
-          setProperty(response.data.property);
-        } else {
-          setError(response.message || "Failed to load property");
-        }
-      } catch (error: any) {
-        console.error("Error loading property:", error);
-        setError(error.message || "Failed to load property");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const loadJobs = async () => {
-      if (!id) return;
-      try {
-        setJobsLoading(true);
-        setJobsError(null);
-        // Fetch jobs for this property using the property id as a filter
-        const response = await jobService.getJobs({ property: id, limit: 100 });
-        if (response.success && Array.isArray(response.data)) {
-          // Type guard to ensure we have Job objects
-          const jobsData = response.data.filter(
-            (item: any) => item.job_id && item.property && item.jobType
-          ) as Job[];
-          setJobs(jobsData);
-        } else {
-          setJobsError(response.message || "Failed to load jobs");
-        }
-      } catch (error: any) {
-        setJobsError(error.message || "Failed to load jobs");
-        setJobs([]);
-      } finally {
-        setJobsLoading(false);
-      }
-    };
-
     loadProperty();
     loadJobs();
-  }, [id]);
+  }, [loadProperty, loadJobs]);
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
@@ -109,6 +122,66 @@ const PropertyProfile: React.FC = () => {
   const handleContactTenant = () => alert("Contact Tenant action");
   const handleContactLandlord = () => alert("Contact Landlord action");
   const handleContactAgency = () => alert("Contact Agency action");
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDocumentUpload = async (files: File[]) => {
+    if (!id || files.length === 0) {
+      return;
+    }
+
+    try {
+      setDocumentUploading(true);
+      const responses = await Promise.all(
+        files.map((file) => propertyService.uploadDocument(id, file))
+      );
+
+      const latest = responses[responses.length - 1];
+
+      if (latest?.status === "success") {
+        const updatedProperty = latest.data.property;
+        setProperty(updatedProperty);
+        setDocuments(updatedProperty.documents ?? []);
+        toast.success(
+          files.length === 1
+            ? "Document uploaded successfully."
+            : `${files.length} documents uploaded successfully.`
+        );
+      } else {
+        toast.error(latest?.message || "Failed to upload documents.");
+      }
+    } catch (uploadError: any) {
+      console.error("Document upload error:", uploadError);
+      toast.error(uploadError?.message || "Failed to upload documents.");
+    } finally {
+      setDocumentUploading(false);
+    }
+  };
+
+  const handleFileInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (selectedFiles.length) {
+      void handleDocumentUpload(selectedFiles);
+    }
+    event.target.value = "";
+  };
+
+  const formatFileSize = (size?: number) => {
+    if (!size || Number.isNaN(size)) {
+      return "—";
+    }
+    if (size < 1024) {
+      return `${size} B`;
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   // Helper to group jobs
   const upcomingJobs = jobs.filter(
@@ -175,34 +248,6 @@ const PropertyProfile: React.FC = () => {
       amount: 2200,
       status: "Paid",
       notes: "October rent",
-    },
-  ];
-
-  // Add mock documents data
-  const mockDocuments = [
-    {
-      name: "Lease Agreement.pdf",
-      type: "Lease",
-      uploaded: "2023-09-01",
-      url: "#",
-    },
-    {
-      name: "Gas Compliance Cert.pdf",
-      type: "Compliance",
-      uploaded: "2024-01-10",
-      url: "#",
-    },
-    {
-      name: "Smoke Alarm Report.pdf",
-      type: "Inspection",
-      uploaded: "2024-02-15",
-      url: "#",
-    },
-    {
-      name: "Pool Safety Cert.pdf",
-      type: "Compliance",
-      uploaded: "2023-12-20",
-      url: "#",
     },
   ];
 
@@ -659,34 +704,75 @@ const PropertyProfile: React.FC = () => {
           </table>
         </div>
 
-        {/* Documents Section */}
-        {/*
         <div className="profile-section">
           <h2>
             <RiFileListLine /> Documents
           </h2>
-          <table className="jobs-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Uploaded</th>
-                <th>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockDocuments.map((doc, idx) => (
-                <tr key={idx}>
-                  <td>{doc.name}</td>
-                  <td>{doc.type}</td>
-                  <td>{doc.uploaded}</td>
-                  <td><a href={doc.url} download>Download</a></td>
-                </tr>
+          <div className="documents-upload">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              onChange={handleFileInputChange}
+              hidden
+            />
+            <button
+              type="button"
+              className="documents-upload__button"
+              onClick={handleUploadClick}
+              disabled={documentUploading}
+            >
+              <RiUploadLine />
+              <span>{documentUploading ? "Uploading…" : "Upload documents"}</span>
+            </button>
+            <p className="documents-upload__hint">
+              Supports PDF, DOC, DOCX, JPG, PNG (max 10MB per file)
+            </p>
+          </div>
+
+          {documents.length > 0 ? (
+            <div className="documents-list">
+              {documents.map((doc) => (
+                <div
+                  key={doc.id || doc.url || `${doc.name}-${doc.uploadDate}`}
+                  className="document-item"
+                >
+                  <div className="document-info">
+                    <div className="document-header">
+                      <span className="document-name">{doc.name}</span>
+                      <span className="document-size">{formatFileSize(doc.size)}</span>
+                    </div>
+                    <div className="document-meta">
+                      <span className="document-type">{doc.type || "Document"}</span>
+                      {doc.uploadDate && (
+                        <span className="document-date">
+                          {formatDateTime(doc.uploadDate)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {doc.url ? (
+                    <button
+                      type="button"
+                      className="download-btn"
+                      title="Download"
+                      onClick={() => window.open(doc.url!, "_blank", "noopener")}
+                    >
+                      <RiDownloadLine />
+                    </button>
+                  ) : (
+                    <button type="button" className="download-btn" disabled>
+                      <RiDownloadLine />
+                    </button>
+                  )}
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <div className="documents-empty">No documents uploaded yet.</div>
+          )}
         </div>
-        */}
 
         {/* Activity Log Section */}
         {/*

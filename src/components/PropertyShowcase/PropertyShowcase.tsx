@@ -10,36 +10,88 @@ import './PropertyShowcase.scss';
 const sampleProperties: Property[] = [
   {
     id: "DEMO001",
-    address: "123 Demo Street, Example City VIC 3000",
+    address: {
+      street: "123 Demo Street",
+      suburb: "Example City",
+      state: "VIC",
+      postcode: "3000",
+      fullAddress: "123 Demo Street, Example City VIC 3000",
+    },
+    fullAddress: "123 Demo Street, Example City VIC 3000",
     propertyType: "Apartment",
     propertyManager: "Demo Property Group",
     region: "Example Region",
-    leaseStartDate: "2024-01-15",
-    leaseEndDate: "2024-12-14",
-    tenantName: "John Demo",
-    tenantEmail: "john.demo@example.com",
-    tenantPhone: "0412 345 678",
-    landlordName: "Sarah Example",
-    landlordEmail: "sarah.example@email.com",
-    landlordPhone: "0423 567 890",
-    createdDate: "2024-01-10",
-    lastInspection: "2024-01-15",
-    nextInspection: "2024-04-15",
-    notes: "This is a demonstration property showing the PropertyCard component with all features.",
+    currentTenant: {
+      name: "John Demo",
+      email: "john.demo@example.com",
+      phone: "0412 345 678",
+    },
+    currentLandlord: {
+      name: "Sarah Example",
+      email: "sarah.example@email.com",
+      phone: "0423 567 890",
+    },
+    agency: {
+      _id: "agency-demo",
+      companyName: "Demo Realty",
+      contactPerson: "Alex Agent",
+      email: "contact@demorealty.com",
+      phone: "1300 000 000",
+    },
+    complianceSchedule: {
+      gasCompliance: { status: "Compliant" },
+      electricalSafety: { status: "Due Soon" },
+      smokeAlarms: { status: "Compliant" },
+      poolSafety: { status: "Not Required" },
+    },
+    complianceSummary: {
+      compliant: 2,
+      dueSoon: 1,
+      overdue: 0,
+    },
+    bedrooms: 2,
+    notes:
+      "This is a demonstration property showing the PropertyCard component with all features.",
   },
   {
     id: "DEMO002",
-    address: "456 Sample Avenue, Test Town NSW 2000",
+    address: {
+      street: "456 Sample Avenue",
+      suburb: "Test Town",
+      state: "NSW",
+      postcode: "2000",
+      fullAddress: "456 Sample Avenue, Test Town NSW 2000",
+    },
+    fullAddress: "456 Sample Avenue, Test Town NSW 2000",
     propertyType: "House",
     propertyManager: "Sample Rentals",
     region: "Test Region",
-    landlordName: "Michael Test",
-    landlordEmail: "michael.test@email.com",
-    landlordPhone: "0434 678 901",
-    createdDate: "2024-01-05",
-    nextInspection: "2024-04-20",
+    currentLandlord: {
+      name: "Michael Test",
+      email: "michael.test@email.com",
+      phone: "0434 678 901",
+    },
+    agency: {
+      _id: "agency-sample",
+      companyName: "Sample Rentals",
+      contactPerson: "Taylor Manager",
+      email: "hello@samplerentals.com",
+      phone: "1300 111 111",
+    },
+    complianceSchedule: {
+      gasCompliance: { status: "Due Soon" },
+      electricalSafety: { status: "Compliant" },
+      smokeAlarms: { status: "Compliant" },
+      poolSafety: { status: "Not Required" },
+    },
+    complianceSummary: {
+      compliant: 3,
+      dueSoon: 1,
+      overdue: 0,
+    },
+    bedrooms: 3,
     notes: "Vacant property available for rent.",
-  }
+  },
 ];
 
 interface PropertyShowcaseProps {
@@ -48,11 +100,11 @@ interface PropertyShowcaseProps {
 
 const PropertyShowcase: React.FC<PropertyShowcaseProps> = ({ className = '' }) => {
   const handlePropertyEdit = (property: Property) => {
-    alert(`Edit property: ${property.address}`);
+    alert(`Edit property: ${property.fullAddress || property.address.fullAddress}`);
   };
 
   const handlePropertyView = (property: Property) => {
-    alert(`View property details: ${property.address}`);
+    alert(`View property details: ${property.fullAddress || property.address.fullAddress}`);
   };
 
   const handleAddProperty = () => {

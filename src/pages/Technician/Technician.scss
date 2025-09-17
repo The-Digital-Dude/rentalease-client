@@ -1705,9 +1705,11 @@
 
         th,
         td {
-          padding: 0.75rem 1rem;
+          padding: 0.5rem 0.75rem;
           text-align: left;
           border-bottom: 1px solid var(--border-color, #e1e5e9);
+          vertical-align: middle;
+          line-height: 1.4;
         }
 
         th {

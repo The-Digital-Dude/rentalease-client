@@ -64,6 +64,7 @@ const labelMap: Record<string, string> = {
   teamMembers: "Team Members",
   subscription: "Subscription",
   messages: "Messages",
+  regionalDashboard: "Regional Dashboard",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -95,6 +96,7 @@ const iconMap: Record<string, React.ReactNode> = {
   teamMembers: <MdGroup />,
   subscription: <MdCreditCard />,
   messages: <MdEmail />,
+  regionalDashboard: <MdMap />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

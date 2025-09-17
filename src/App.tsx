@@ -29,6 +29,8 @@ import {
 import PropertyProfile from "./pages/PropertyProfile";
 import AgencyProfile from "./pages/AgencyProfile";
 import JobProfile from "./pages/JobProfile";
+import TechnicianProfile from "./pages/TechnicianProfile";
+import PropertyManagerProfile from "./pages/PropertyManagerProfile";
 import InspectionBooking from "./pages/InspectionBooking";
 import DevDashboard from "./pages/DevDashboard";
 import { Settings, Profile } from "./pages";
@@ -180,6 +182,12 @@ const App = () => {
 
                   {/* Job Profile Route */}
                   <Route path="/jobs/:id" element={<JobProfile />} />
+
+                  {/* Technician Profile Route */}
+                  <Route path="/technicians/:id" element={<TechnicianProfile />} />
+
+                  {/* Property Manager Profile Route */}
+                  <Route path="/property-managers/:id" element={<PropertyManagerProfile />} />
 
                   {/* Default Route */}
                   <Route

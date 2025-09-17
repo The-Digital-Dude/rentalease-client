@@ -26,6 +26,7 @@ import {
   MdCode,
   MdCreditCard,
   MdEmail,
+  MdPhone,
 } from "react-icons/md";
 import "./Sidebar.scss";
 
@@ -64,6 +65,7 @@ const labelMap: Record<string, string> = {
   subscription: "Subscription",
   messages: "Messages",
   regionalDashboard: "Regional Dashboard",
+  "lead-management": "Lead Management",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -95,6 +97,7 @@ const iconMap: Record<string, React.ReactNode> = {
   subscription: <MdCreditCard />,
   messages: <MdEmail />,
   regionalDashboard: <MdMap />,
+  "lead-management": <MdPhone />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

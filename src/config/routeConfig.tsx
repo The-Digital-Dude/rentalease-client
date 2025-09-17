@@ -23,6 +23,7 @@ const Contacts = lazy(
 const Reports = lazy(
   () => import("../pages/ReportsAnalytics/ReportsAnalytics")
 );
+const LeadManagement = lazy(() => import("../pages/LeadManagement"));
 const RegionManagement = lazy(
   () => import("../pages/RegionManagement/RegionManagement")
 );
@@ -71,6 +72,7 @@ export const routeConfig = (userType: UserType) => {
     agencies: Agencies,
     agencyJobs: AgencyJobs,
     contacts: Contacts,
+    "lead-management": LeadManagement,
     reports: Reports,
     region: RegionManagement,
     compliance: PropertyCompliance,

@@ -8,6 +8,7 @@ export { default as JobManagement } from "./JobManagement";
 export { default as Properties } from "./Properties";
 export { default as PropertyAssignment } from "./PropertyAssignment";
 export { default as PropertyManagerManagement } from "./PropertyManagerManagement";
+export { default as LeadManagement } from "./LeadManagement";
 export { default as RegionManagement } from "./RegionManagement";
 export { default as RegionalDashboard } from "./RegionalDashboard";
 export { default as ReportsAnalytics } from "./ReportsAnalytics";

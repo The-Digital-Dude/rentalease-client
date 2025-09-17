@@ -490,6 +490,26 @@ class PropertyService {
     }
   }
 
+  // Document Delete
+  async deleteDocument(
+    propertyId: string,
+    documentId: string
+  ): Promise<PropertyResponse> {
+    try {
+      const response: AxiosResponse<PropertyResponse> = await api.delete(
+        `${this.baseUrl}/${propertyId}/documents/${documentId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to delete document",
+        }
+      );
+    }
+  }
+
   // Toggle Property Doubt Status
   async togglePropertyDoubt(id: string): Promise<PropertyResponse> {
     try {

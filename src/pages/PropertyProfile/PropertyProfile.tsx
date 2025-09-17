@@ -14,6 +14,7 @@ import {
   RiFileListLine,
   RiUploadLine,
   RiDownloadLine,
+  RiDeleteBinLine,
 } from "react-icons/ri";
 import { jsPDF } from "jspdf";
 import propertyService, {
@@ -41,6 +42,9 @@ const PropertyProfile: React.FC = () => {
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [documentUploading, setDocumentUploading] = useState(false);
+  const [documentDeleting, setDocumentDeleting] = useState<string | null>(null);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [firstDeleteConfirmation, setFirstDeleteConfirmation] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoDataUrlRef = useRef<string | null>(null);
 
@@ -174,6 +178,49 @@ const PropertyProfile: React.FC = () => {
       void handleDocumentUpload(selectedFiles);
     }
     event.target.value = "";
+  };
+
+  const handleDeleteDocument = async (documentId: string, documentName: string) => {
+    if (!id) return;
+
+    // First confirmation
+    if (firstDeleteConfirmation !== documentId) {
+      setFirstDeleteConfirmation(documentId);
+      toast("Click delete again to confirm deletion of " + documentName, {
+        icon: "⚠️",
+        duration: 4000,
+      });
+
+      // Clear first confirmation after 5 seconds
+      setTimeout(() => {
+        setFirstDeleteConfirmation(null);
+      }, 5000);
+      return;
+    }
+
+    // Second confirmation
+    try {
+      setDocumentDeleting(documentId);
+      setDeletingDocumentId(documentId);
+      setFirstDeleteConfirmation(null);
+
+      const response = await propertyService.deleteDocument(id, documentId);
+
+      if (response.status === "success") {
+        const updatedProperty = response.data.property;
+        setProperty(prev => prev ? { ...prev, documents: updatedProperty.documents ?? [] } : null);
+        setDocuments(updatedProperty.documents ?? []);
+        toast.success("Document deleted successfully.");
+      } else {
+        toast.error(response.message || "Failed to delete document.");
+      }
+    } catch (deleteError: any) {
+      console.error("Document deletion error:", deleteError);
+      toast.error(deleteError?.message || "Failed to delete document.");
+    } finally {
+      setDocumentDeleting(null);
+      setDeletingDocumentId(null);
+    }
   };
 
   const formatFileSize = (size?: number) => {
@@ -1232,20 +1279,41 @@ const PropertyProfile: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  {doc.url ? (
+                  <div className="document-actions">
+                    {doc.url ? (
+                      <button
+                        type="button"
+                        className="download-btn"
+                        title="Download"
+                        onClick={() => window.open(doc.url!, "_blank", "noopener")}
+                      >
+                        <RiDownloadLine />
+                      </button>
+                    ) : (
+                      <button type="button" className="download-btn" disabled>
+                        <RiDownloadLine />
+                      </button>
+                    )}
                     <button
                       type="button"
-                      className="download-btn"
-                      title="Download"
-                      onClick={() => window.open(doc.url!, "_blank", "noopener")}
+                      className={`delete-btn ${
+                        firstDeleteConfirmation === doc.id ? "confirm-delete" : ""
+                      }`}
+                      title={
+                        firstDeleteConfirmation === doc.id
+                          ? "Click again to confirm deletion"
+                          : "Delete document"
+                      }
+                      onClick={() => handleDeleteDocument(doc.id!, doc.name)}
+                      disabled={documentDeleting === doc.id}
                     >
-                      <RiDownloadLine />
+                      {documentDeleting === doc.id ? (
+                        <div className="spinner-small"></div>
+                      ) : (
+                        <RiDeleteBinLine />
+                      )}
                     </button>
-                  ) : (
-                    <button type="button" className="download-btn" disabled>
-                      <RiDownloadLine />
-                    </button>
-                  )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { RiAddLine, RiSearchLine, RiFilterLine } from "react-icons/ri";
+import toast from "react-hot-toast";
 import {
   AgencyCard,
   AgencyFormModal,
@@ -49,11 +50,11 @@ const Agencies = () => {
         // Ensure we always have an array
         setAgencies(Array.isArray(response.data) ? response.data : []);
       } else {
-        setError(response.message || "Failed to fetch agencies");
+        toast.error(response.message || "Failed to fetch agencies");
         setAgencies([]); // Set empty array on error
       }
     } catch (error: any) {
-      setError(error.message || "Failed to fetch agencies");
+      toast.error(error.message || "Failed to fetch agencies");
       setAgencies([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -111,17 +112,17 @@ const Agencies = () => {
         );
 
         if (response.success) {
-          setSuccessMessage("Agency updated successfully!");
+          toast.success("Agency updated successfully!");
           // Refetch agencies from server to ensure list is synchronized
           await fetchAgencies();
         } else {
-          setError(response.message || "Failed to update agency");
+          toast.error(response.message || "Failed to update agency");
           return;
         }
       } else {
         // Add new agency (include password)
         if (!formData.password) {
-          setError("Password is required for new agencies");
+          toast.error("Password is required for new agencies");
           return;
         }
 
@@ -141,11 +142,11 @@ const Agencies = () => {
         const response = await agencyService.createAgency(newAgencyData);
 
         if (response.success) {
-          setSuccessMessage(response.message || "Agency created successfully!");
+          toast.success(response.message || "Agency created successfully!");
           // Refetch agencies from server to ensure list is synchronized
           await fetchAgencies();
         } else {
-          setError(response.message || "Failed to create agency");
+          toast.error(response.message || "Failed to create agency");
           return;
         }
       }
@@ -153,7 +154,7 @@ const Agencies = () => {
       setShowForm(false);
       setEditingAgency(null);
     } catch (error: any) {
-      setError(error.message || "Failed to save agency");
+      toast.error(error.message || "Failed to save agency");
     } finally {
       setSubmitLoading(false);
     }
@@ -177,12 +178,12 @@ const Agencies = () => {
         setAgencies((prevAgencies) =>
           prevAgencies.filter((agency) => agency.id !== id)
         );
-        setSuccessMessage("Agency deleted successfully!");
+        toast.success("Agency deleted successfully!");
       } else {
-        setError(response.message || "Failed to delete agency");
+        toast.error(response.message || "Failed to delete agency");
       }
     } catch (error: any) {
-      setError(error.message || "Failed to delete agency");
+      toast.error(error.message || "Failed to delete agency");
     }
   };
 
@@ -194,14 +195,14 @@ const Agencies = () => {
       const response = await agencyService.resendCredentialsEmail(id);
 
       if (response.success) {
-        setSuccessMessage(
+        toast.success(
           response.message || "Credentials email sent successfully!"
         );
       } else {
-        setError(response.message || "Failed to send credentials email");
+        toast.error(response.message || "Failed to send credentials email");
       }
     } catch (error: any) {
-      setError(error.message || "Failed to send credentials email");
+      toast.error(error.message || "Failed to send credentials email");
     }
   };
 

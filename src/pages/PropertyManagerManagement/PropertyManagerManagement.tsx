@@ -28,6 +28,7 @@ import {
   type PropertyManagerFilters,
   type CreatePropertyManagerData,
 } from "../../services";
+import PropertyManagerFormModal from "../../components/PropertyManagerFormModal";
 import "./PropertyManagerManagement.scss";
 import toast from "react-hot-toast";
 
@@ -98,6 +99,9 @@ const PropertyManagerManagementPage = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingPropertyManager, setViewingPropertyManager] =
     useState<PropertyManager | null>(null);
+
+  // Add Property Manager Modal state
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Dropdown state
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -317,6 +321,27 @@ const PropertyManagerManagementPage = () => {
     resetForm();
   };
 
+  // Handle successful property manager creation
+  const handleAddSuccess = () => {
+    setShowAddModal(false);
+    // Refresh the property manager list
+    fetchPropertyManagers({
+      page: 1,
+      limit: pagination.itemsPerPage,
+      search: searchTerm,
+      ...(filterBy !== "all" && {
+        ...(filterBy === "active" ||
+        filterBy === "inactive" ||
+        filterBy === "suspended" ||
+        filterBy === "pending"
+          ? {
+              status: filterBy.charAt(0).toUpperCase() + filterBy.slice(1),
+            }
+          : { availabilityStatus: filterBy }),
+      }),
+    });
+  };
+
   // Toggle dropdown
   const toggleDropdown = (propertyManagerId: string) => {
     setOpenDropdown(
@@ -388,12 +413,15 @@ const PropertyManagerManagementPage = () => {
         }
       } else {
         // Create new property manager
+        // TODO: This legacy form needs to be updated to include agency selection
+        // For now, using a placeholder. The new modal form handles this properly.
         const propertyManagerData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
+          agencyId: "placeholder-agency-id", // TODO: Add agency selection to this form
           address: {
             street: formData.address.street || undefined,
             suburb: formData.address.suburb || undefined,
@@ -1234,12 +1262,25 @@ const PropertyManagerManagementPage = () => {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>PropertyManager Management</h1>
-        <p>
-          {userType === "agency"
-            ? "Manage your property managers, contractors, and their property assignments"
-            : "Manage your property managers and their property assignments"}
-        </p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1>PropertyManager Management</h1>
+            <p>
+              {userType === "agency"
+                ? "Manage your property managers, contractors, and their property assignments"
+                : "Manage your property managers and their property assignments"}
+            </p>
+          </div>
+          {(userType === "super_user" || userType === "team_member") && (
+            <button
+              className="btn-primary add-property-manager-btn"
+              onClick={() => setShowAddModal(true)}
+            >
+              <RiUserAddLine />
+              Add Property Manager
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="property-manager-tabs">
@@ -1267,6 +1308,13 @@ const PropertyManagerManagementPage = () => {
       {/* Modals */}
       {showViewModal && renderViewModal()}
       {showEditModal && renderEditModal()}
+
+      {/* Add Property Manager Modal */}
+      <PropertyManagerFormModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   );
 };

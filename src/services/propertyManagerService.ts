@@ -75,6 +75,7 @@ export interface CreatePropertyManagerData {
   email: string;
   phone: string;
   password: string;
+  agencyId: string;
   address?: {
     street?: string;
     suburb?: string;

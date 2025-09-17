@@ -15,6 +15,7 @@ import {
   RiUploadLine,
   RiDownloadLine,
 } from "react-icons/ri";
+import { jsPDF } from "jspdf";
 import propertyService, {
   type Property,
   type PropertyDocument,
@@ -23,6 +24,7 @@ import { formatDateTime } from "../../utils";
 import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
+import invoiceService, { type Invoice } from "../../services/invoiceService";
 import toast from "react-hot-toast";
 
 const PropertyProfile: React.FC = () => {
@@ -34,9 +36,13 @@ const PropertyProfile: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [invoicesError, setInvoicesError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [documentUploading, setDocumentUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoDataUrlRef = useRef<string | null>(null);
 
   const loadProperty = useCallback(async () => {
     if (!id) return;
@@ -183,73 +189,506 @@ const PropertyProfile: React.FC = () => {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Helper to group jobs
-  const upcomingJobs = jobs.filter(
-    (job) => job.status === "Pending" || job.status === "Scheduled"
-  );
-  const historyJobs = jobs.filter(
-    (job) => job.status === "Completed" || job.status === "Overdue"
+  const fetchInvoicesForJobs = useCallback(
+    async (jobList: Job[]) => {
+      const invoiceIds = new Set<string>();
+      const jobsNeedingLookup: string[] = [];
+
+      jobList.forEach((job) => {
+        const invoiceRef = job.invoice;
+
+        if (typeof invoiceRef === "string" && invoiceRef.trim().length > 0) {
+          invoiceIds.add(invoiceRef);
+          return;
+        }
+
+        if (invoiceRef && typeof invoiceRef === "object") {
+          const derivedId = invoiceRef._id || invoiceRef.id;
+
+          if (derivedId) {
+            invoiceIds.add(derivedId);
+            return;
+          }
+        }
+
+        if (job.hasInvoice && job.id) {
+          jobsNeedingLookup.push(job.id);
+        }
+      });
+
+      const fetchedInvoicesMap = new Map<string, Invoice>();
+      const errors: string[] = [];
+
+      for (const invoiceId of invoiceIds) {
+        try {
+          const response = await invoiceService.getInvoiceById(invoiceId);
+          if (response.status === "success" && response.data?.invoice) {
+            fetchedInvoicesMap.set(response.data.invoice.id, response.data.invoice);
+          }
+        } catch (error) {
+          console.error(`Failed to load invoice ${invoiceId}:`, error);
+          errors.push(`Invoice ${invoiceId}`);
+        }
+      }
+
+      for (const jobId of jobsNeedingLookup) {
+        try {
+          const response = await invoiceService.getInvoiceByJobId(jobId);
+          if (response.status === "success" && response.data?.invoice) {
+            fetchedInvoicesMap.set(response.data.invoice.id, response.data.invoice);
+          }
+        } catch (error) {
+          console.error(`Failed to load invoice for job ${jobId}:`, error);
+          errors.push(`Job ${jobId}`);
+        }
+      }
+
+      const fetchedInvoices = Array.from(fetchedInvoicesMap.values()).sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
+
+      return { invoices: fetchedInvoices, errors };
+    },
+    []
   );
 
-  // Add mock billing data
-  const mockBilling = [
-    {
-      date: "2024-04-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "April rent",
-    },
-    {
-      date: "2024-03-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "March rent",
-    },
-    {
-      date: "2024-02-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "February rent",
-    },
-    {
-      date: "2024-01-15",
-      type: "Maintenance",
-      amount: 350,
-      status: "Paid",
-      notes: "Plumbing repair",
-    },
-    {
-      date: "2024-01-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "January rent",
-    },
-    {
-      date: "2023-12-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "December rent",
-    },
-    {
-      date: "2023-11-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "November rent",
-    },
-    {
-      date: "2023-10-01",
-      type: "Rent",
-      amount: 2200,
-      status: "Paid",
-      notes: "October rent",
-    },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadInvoicesForProperty = async () => {
+      if (jobsLoading) {
+        return;
+      }
+
+      if (jobs.length === 0) {
+        if (isMounted) {
+          setInvoices([]);
+          setInvoicesError(null);
+          setInvoicesLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) {
+        setInvoicesLoading(true);
+        setInvoicesError(null);
+      }
+
+      try {
+        const { invoices: fetchedInvoices, errors } = await fetchInvoicesForJobs(jobs);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setInvoices(fetchedInvoices);
+        setInvoicesError(
+          fetchedInvoices.length === 0 && errors.length > 0
+            ? "Failed to load invoices for this property."
+            : null
+        );
+      } catch (error) {
+        console.error("Failed to fetch invoices for property:", error);
+        if (isMounted) {
+          setInvoices([]);
+          setInvoicesError("Failed to load invoices for this property.");
+        }
+      } finally {
+        if (isMounted) {
+          setInvoicesLoading(false);
+        }
+      }
+    };
+
+    void loadInvoicesForProperty();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobs, jobsLoading, fetchInvoicesForJobs]);
+
+  const getInvoiceJobDetails = (invoice: Invoice) => {
+    const invoiceJobId =
+      typeof invoice.jobId === "string"
+        ? invoice.jobId
+        : invoice.jobId?._id || (invoice.jobId as { id?: string })?.id;
+
+    if (!invoiceJobId) {
+      return null;
+    }
+
+    return jobs.find((job) => job.id === invoiceJobId);
+  };
+
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return "—";
+    }
+
+    return new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const getInvoiceStatusLabel = (invoice: Invoice) => {
+    switch (invoice.status) {
+      case "Paid":
+        return invoice.paidAt
+          ? `Paid on ${formatDateTime(invoice.paidAt)}`
+          : "Paid";
+      case "Sent":
+        return "Sent - awaiting payment";
+      case "Pending":
+      default:
+        return "Pending payment";
+    }
+  };
+
+  const hexToRgb = (hex: string) => {
+    const sanitized = hex.replace("#", "");
+    const bigint = parseInt(sanitized, 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255,
+    };
+  };
+
+  const ensureLogoDataUrl = async () => {
+    if (logoDataUrlRef.current) {
+      return logoDataUrlRef.current;
+    }
+
+    try {
+      const response = await fetch("/rentalease-logo.png");
+      if (!response.ok) {
+        throw new Error("Logo not found");
+      }
+      const blob = await response.blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result);
+          } else {
+            reject(new Error("Failed to read logo"));
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+      logoDataUrlRef.current = dataUrl;
+      return dataUrl;
+    } catch (loadLogoError) {
+      console.error("Unable to load logo for PDF:", loadLogoError);
+      return null;
+    }
+  };
+
+  const getTechnicianDisplayName = (
+    technician: Job["assignedTechnician"]
+  ): string => {
+    if (!technician) {
+      return "Unassigned";
+    }
+
+    if (typeof technician === "string") {
+      return technician.trim() || "Unassigned";
+    }
+
+    if (technician.fullName && technician.fullName.trim()) {
+      return technician.fullName.trim();
+    }
+
+    if (technician.name && technician.name.trim()) {
+      return technician.name.trim();
+    }
+
+    const firstName = technician.firstName?.trim();
+    const lastName = technician.lastName?.trim();
+    const combined = [firstName, lastName].filter(Boolean).join(" ");
+
+    return combined || "Unassigned";
+  };
+
+  const handleDownloadInvoice = async (invoice: Invoice) => {
+    try {
+      const relatedJob = getInvoiceJobDetails(invoice);
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageMargin = 20;
+      const primaryBlue = hexToRgb("#0f4c75");
+      const deepBlue = hexToRgb("#103a5c");
+      const softTeal = hexToRgb("#46b48c");
+      const textPrimary = hexToRgb("#1f2a36");
+      const textMuted = hexToRgb("#6b7280");
+      const divider = hexToRgb("#e2e8f0");
+
+      doc.setFillColor(primaryBlue.r, primaryBlue.g, primaryBlue.b);
+      doc.rect(0, 0, pageWidth, 58, "F");
+
+      const logoDataUrl = await ensureLogoDataUrl();
+      if (logoDataUrl) {
+        const logoHeight = 24;
+        const logoWidth = 24 * (802 / 404); // maintain supplied ratio
+        doc.addImage(logoDataUrl, "PNG", pageMargin, 16, logoWidth, logoHeight);
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("RentalEase Invoice", pageMargin + 70, 25, { baseline: "alphabetic" });
+
+      doc.setFontSize(12);
+      doc.text(
+        `Invoice #: ${invoice.invoiceNumber || invoice.id}`,
+        pageMargin + 70,
+        38
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(226, 232, 240);
+      doc.text(
+        property.address.fullAddress,
+        pageMargin + 70,
+        50,
+        {
+          maxWidth: pageWidth - (pageMargin + 70) - 20,
+        }
+      );
+
+      doc.setTextColor(210, 224, 237);
+      doc.text(
+        `Status: ${getInvoiceStatusLabel(invoice)}`,
+        pageWidth - pageMargin,
+        20,
+        { align: "right" }
+      );
+      doc.text(
+        `Issued: ${formatDateTime(invoice.sentAt || invoice.createdAt)}`,
+        pageWidth - pageMargin,
+        32,
+        { align: "right" }
+      );
+
+      doc.setDrawColor(0, 0, 0, 0);
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(pageMargin, 70, pageWidth - pageMargin * 2, 40, 6, 6, "F");
+
+      doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("Invoice Summary", pageMargin + 12, 84);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+      doc.text(
+        `Payment Reference: ${invoice.paymentReference || "Not provided"}`,
+        pageMargin + 12,
+        96
+      );
+      doc.text(
+        `Payment Method: ${invoice.paymentMethod || "—"}`,
+        pageMargin + 12,
+        108
+      );
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(primaryBlue.r, primaryBlue.g, primaryBlue.b);
+      doc.text(
+        formatCurrency(invoice.totalCost),
+        pageWidth - pageMargin - 12,
+        108,
+        { align: "right" }
+      );
+
+      const formatDateForPdf = (value?: string | null) => {
+        if (!value) {
+          return "—";
+        }
+        return new Date(value).toLocaleDateString("en-AU", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        });
+      };
+
+      const formatCurrencyForPdf = (value?: number | null) => {
+        if (value === null || value === undefined || Number.isNaN(value)) {
+          return "—";
+        }
+
+        return new Intl.NumberFormat("en-AU", {
+          style: "currency",
+          currency: "AUD",
+          minimumFractionDigits: 2,
+        }).format(value);
+      };
+
+      let cursorY = 128;
+
+      if (relatedJob) {
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(pageMargin, cursorY - 6, pageWidth - pageMargin * 2, 38, 6, 6, "F");
+        doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
+        doc.setFont("helvetica", "bold");
+        doc.text("Job & Compliance", pageMargin + 12, cursorY + 6);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+        doc.text(`Job ID: ${relatedJob.job_id}`, pageMargin + 12, cursorY + 16);
+        doc.text(`Type: ${relatedJob.jobType}`, pageMargin + 12, cursorY + 24);
+        doc.text(
+          `Technician: ${getTechnicianDisplayName(relatedJob.assignedTechnician)}`,
+          pageMargin + 140,
+          cursorY + 16
+        );
+        doc.text(
+          `Scheduled / Completed: ${formatDateForPdf(
+            relatedJob.completedAt || relatedJob.dueDate
+          )}`,
+          pageMargin + 140,
+          cursorY + 24
+        );
+        cursorY += 50;
+      }
+
+      const tableX = pageMargin;
+      const tableWidth = pageWidth - pageMargin * 2;
+      const columnWidths = [tableWidth * 0.5, tableWidth * 0.15, tableWidth * 0.15, tableWidth * 0.2];
+      const columnTitles = ["Line Item", "Qty", "Rate", "Amount"];
+
+      doc.setFillColor(deepBlue.r, deepBlue.g, deepBlue.b);
+      doc.roundedRect(tableX, cursorY - 6, tableWidth, 18, 6, 6, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+
+      let columnCursorX = tableX + 10;
+      columnTitles.forEach((title, index) => {
+        doc.text(title, columnCursorX, cursorY + 4);
+        columnCursorX += columnWidths[index];
+      });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
+
+      cursorY += 18;
+      let rowStripe = false;
+
+      if (invoice.items && invoice.items.length > 0) {
+        invoice.items.forEach((item) => {
+          if (rowStripe) {
+            doc.setFillColor(248, 250, 252);
+            doc.rect(tableX, cursorY - 6, tableWidth, 14, "F");
+          }
+          rowStripe = !rowStripe;
+
+          columnCursorX = tableX + 10;
+          doc.text(item.name || "Item", columnCursorX, cursorY);
+          columnCursorX += columnWidths[0];
+
+          doc.text(`${item.quantity ?? 0}`, columnCursorX, cursorY);
+          columnCursorX += columnWidths[1];
+
+          doc.text(
+            formatCurrencyForPdf(item.rate),
+            columnCursorX,
+            cursorY
+          );
+          columnCursorX += columnWidths[2];
+
+          doc.text(
+            formatCurrencyForPdf(item.amount),
+            columnCursorX,
+            cursorY
+          );
+
+          cursorY += 14;
+        });
+      } else {
+        doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+        doc.text("No invoice line items available.", tableX + 10, cursorY);
+        cursorY += 14;
+      }
+
+      doc.setTextColor(divider.r, divider.g, divider.b);
+      doc.setLineWidth(0.6);
+      doc.line(tableX, cursorY, tableX + tableWidth, cursorY);
+
+      cursorY += 10;
+      const totalsX = tableX + tableWidth * 0.55;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+      doc.text("Subtotal", totalsX, cursorY);
+      doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
+      doc.text(
+        formatCurrencyForPdf(invoice.subtotal),
+        tableX + tableWidth,
+        cursorY,
+        { align: "right" }
+      );
+
+      cursorY += 8;
+      doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+      doc.text("Tax", totalsX, cursorY);
+      doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
+      doc.text(
+        formatCurrencyForPdf(invoice.tax),
+        tableX + tableWidth,
+        cursorY,
+        { align: "right" }
+      );
+
+      cursorY += 9;
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(primaryBlue.r, primaryBlue.g, primaryBlue.b);
+      doc.text("Amount Due", totalsX, cursorY);
+      doc.setFontSize(13);
+      doc.setTextColor(softTeal.r, softTeal.g, softTeal.b);
+      doc.text(
+        formatCurrencyForPdf(invoice.totalCost),
+        tableX + tableWidth,
+        cursorY,
+        { align: "right" }
+      );
+
+      cursorY += 16;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
+      doc.text(
+        invoice.notes?.trim() || invoice.description || "Thank you for partnering with RentalEase.",
+        pageMargin,
+        cursorY,
+        {
+          maxWidth: pageWidth - pageMargin * 2,
+        }
+      );
+
+      doc.setFillColor(primaryBlue.r, primaryBlue.g, primaryBlue.b);
+      doc.rect(0, doc.internal.pageSize.getHeight() - 28, pageWidth, 28, "F");
+      doc.setFontSize(10);
+      doc.setTextColor(226, 232, 240);
+      doc.text(
+        "RentalEase • Simplifying Property Compliance & Billing",
+        pageMargin,
+        doc.internal.pageSize.getHeight() - 12
+      );
+
+      doc.save(`Invoice-${invoice.invoiceNumber || invoice.id}.pdf`);
+      toast.success("Invoice PDF downloaded.");
+    } catch (error) {
+      console.error("Failed to generate invoice PDF:", error);
+      toast.error("Unable to generate invoice PDF.");
+    }
+  };
 
   // Add mock activity log data
   const mockActivityLog = [
@@ -344,12 +783,14 @@ const PropertyProfile: React.FC = () => {
     <div className="page-container property-profile-page">
       {/* Header */}
       <div className="profile-header redesigned-header">
-        <button onClick={handleBack} className="back-btn">
-          <RiArrowLeftLine />
-          Back
-        </button>
         <div className="header-content">
-          <h1>{property.address.fullAddress}</h1>
+          <div className="header-title">
+            <button onClick={handleBack} className="back-btn">
+              <RiArrowLeftLine />
+              Back
+            </button>
+            <h1>{property.address.fullAddress}</h1>
+          </div>
           <p className="property-type">{property.propertyType}</p>
         </div>
         {/* <div className="header-actions">
@@ -661,11 +1102,7 @@ const PropertyProfile: React.FC = () => {
                         <td>{formatDateTime(job.dueDate)}</td>
                         <td>{job.status}</td>
                         <td>{job.priority}</td>
-                        <td>
-                          {typeof job.assignedTechnician === "string"
-                            ? job.assignedTechnician
-                            : job.assignedTechnician?.fullName || "Unassigned"}
-                        </td>
+                        <td>{getTechnicianDisplayName(job.assignedTechnician)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -688,18 +1125,61 @@ const PropertyProfile: React.FC = () => {
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Notes</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {mockBilling.map((bill, idx) => (
-                <tr key={idx}>
-                  <td>{bill.date}</td>
-                  <td>{bill.type}</td>
-                  <td>${bill.amount.toLocaleString()}</td>
-                  <td>{bill.status}</td>
-                  <td>{bill.notes}</td>
+              {invoicesLoading ? (
+                <tr>
+                  <td colSpan={6}>Loading invoices...</td>
                 </tr>
-              ))}
+              ) : invoicesError && invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="error-state">
+                    {invoicesError}
+                  </td>
+                </tr>
+              ) : invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>No invoices found for this property yet.</td>
+                </tr>
+              ) : (
+                invoices.map((invoice) => {
+                  const relatedJob = getInvoiceJobDetails(invoice);
+                  const issueDate = invoice.paidAt || invoice.sentAt || invoice.createdAt;
+
+                  return (
+                    <tr key={invoice.id}>
+                      <td>{formatDateTime(issueDate)}</td>
+                      <td>{relatedJob?.jobType || invoice.description || "Invoice"}</td>
+                      <td>{formatCurrency(invoice.totalCost)}</td>
+                      <td>{getInvoiceStatusLabel(invoice)}</td>
+                      <td>
+                        <div className="invoice-notes">
+                          <span>{invoice.description || "No description provided."}</span>
+                          <small>
+                            Invoice #{invoice.invoiceNumber}
+                            {relatedJob?.job_id ? ` - Job ${relatedJob.job_id}` : ""}
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="download-invoice-btn"
+                          onClick={() => {
+                            void handleDownloadInvoice(invoice);
+                          }}
+                          title="Download invoice (PDF)"
+                          aria-label={`Download invoice ${invoice.invoiceNumber}`}
+                        >
+                          <RiDownloadLine />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

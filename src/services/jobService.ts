@@ -34,7 +34,15 @@ export interface Job {
     | "Pool Safety"
     | "Routine Inspection";
   dueDate: string;
-  assignedTechnician: string | { fullName: string } | null;
+  assignedTechnician:
+    | string
+    | {
+        fullName?: string;
+        name?: string;
+        firstName?: string;
+        lastName?: string;
+      }
+    | null;
   status: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
@@ -46,6 +54,18 @@ export interface Job {
     laborCost: number;
     totalCost: number;
   };
+  hasInvoice?: boolean;
+  invoice?:
+    | string
+    | {
+        _id?: string;
+        id?: string;
+        invoiceNumber?: string;
+        status?: string;
+        totalCost?: number;
+        createdAt?: string;
+        paidAt?: string | null;
+      };
   notes?: string;
   owner?: {
     ownerType: "SuperUser" | "Agency";

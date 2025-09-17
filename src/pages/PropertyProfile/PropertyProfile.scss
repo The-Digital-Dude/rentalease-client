@@ -12,44 +12,62 @@
     box-shadow: 0 2px 12px rgba(52, 152, 219, 0.07);
     padding: 32px 36px 24px 36px;
     margin-bottom: 32px;
-    position: relative;
-  }
-
-  .redesigned-header .back-btn {
-    position: absolute;
-    left: 24px;
-    top: 32px;
-    background: none;
-    border: none;
-    color: #3498db;
-    font-size: 1.1rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  .redesigned-header .back-btn:hover {
-    color: #217dbb;
+    gap: 24px;
   }
 
   .header-content {
     flex: 1;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
   }
+
+  .redesigned-header .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .redesigned-header .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #ffffff;
+    border: 1px solid #d6e2ef;
+    border-radius: 10px;
+    color: #2a7ec3;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    margin: 0;
+  }
+
+  .redesigned-header .back-btn:hover {
+    background: #2a7ec3;
+    color: #ffffff;
+    border-color: #2a7ec3;
+  }
+
+  .redesigned-header .back-btn svg {
+    font-size: 1rem;
+  }
+
   .redesigned-header .header-content h1 {
     font-size: 1.35rem;
     font-weight: 600;
     color: #222f3e;
-    margin-bottom: 0.15rem;
+    margin: 0;
     letter-spacing: 0.2px;
   }
+
   .redesigned-header .header-content .property-type {
     font-size: 0.98rem;
     color: #8395a7;
     font-weight: 500;
-    margin-top: 0.1rem;
   }
 
   .header-actions {
@@ -593,6 +611,50 @@
 
   tr:hover {
     background: #f7fafc;
+  }
+}
+
+.invoice-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  span {
+    line-height: 1.4;
+    color: #374151;
+  }
+
+  small {
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+}
+
+.download-invoice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #d6e2ef;
+  background: #ffffff;
+  color: #2a7ec3;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    background: #2a7ec3;
+    color: #ffffff;
+    border-color: #2a7ec3;
+    box-shadow: 0 8px 16px rgba(42, 126, 195, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(42, 126, 195, 0.35);
+    outline-offset: 2px;
   }
 }
 

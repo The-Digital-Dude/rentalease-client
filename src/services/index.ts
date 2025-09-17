@@ -10,6 +10,7 @@ export { default as dashboardService } from "./dashboardService";
 export { default as subscriptionService } from "./subscriptionService";
 export { default as propertyService, VALID_STATES } from "./propertyService";
 export { default as leadService } from "./leadService";
+export { default as invoiceService } from "./invoiceService";
 
 // Re-export types from jobService
 export type {
@@ -19,6 +20,13 @@ export type {
   JobFilters,
   JobApiResponse,
 } from "./jobService";
+
+export type {
+  Invoice,
+  InvoiceItem,
+  InvoiceResponse,
+  InvoicesListResponse,
+} from "./invoiceService";
 
 // Re-export types from staffService
 export type {

@@ -30,7 +30,7 @@ const statusOptions: Array<{ value: LeadStatus; label: string }> = (
   Object.entries(statusLabels) as Array<[LeadStatus, string]>
 ).map(([value, label]) => ({ value, label }));
 
-type SortField = "createdAt" | "firstName" | "lastName" | "status";
+type SortField = "createdAt" | "firstName" | "lastName" | "profession" | "status";
 
 type SortOptionValue =
   | "createdAt:desc"
@@ -39,6 +39,8 @@ type SortOptionValue =
   | "firstName:desc"
   | "lastName:asc"
   | "lastName:desc"
+  | "profession:asc"
+  | "profession:desc"
   | "status:asc"
   | "status:desc";
 
@@ -49,6 +51,8 @@ const sortOptions: Array<{ value: SortOptionValue; label: string }> = [
   { value: "firstName:desc", label: "First name Z-A" },
   { value: "lastName:asc", label: "Last name A-Z" },
   { value: "lastName:desc", label: "Last name Z-A" },
+  { value: "profession:asc", label: "Profession A-Z" },
+  { value: "profession:desc", label: "Profession Z-A" },
   { value: "status:asc", label: "Status A-Z" },
   { value: "status:desc", label: "Status Z-A" },
 ];
@@ -62,22 +66,6 @@ const exportRangeOptions: Array<{ value: ExportRange; label: string }> = [
   { value: "custom", label: "Custom range" },
 ];
 
-const formatSource = (source?: string) => {
-  if (!source) {
-    return "Website";
-  }
-
-  const cleaned = source.replace(/[_-]+/g, " ").trim();
-
-  if (!cleaned) {
-    return "Website";
-  }
-
-  return cleaned
-    .split(/\s+/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
 
 const LeadManagement = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -317,7 +305,7 @@ const LeadManagement = () => {
         "Email",
         "Phone",
         "Status",
-        "Source",
+        "Profession",
         "Message",
         "Notes",
       ];
@@ -329,7 +317,7 @@ const LeadManagement = () => {
         lead.email,
         lead.phone ?? "",
         statusLabels[lead.status] || lead.status,
-        formatSource(lead.source),
+        lead.profession ?? "",
         lead.message,
         lead.notes ?? "",
       ]);
@@ -453,7 +441,7 @@ const LeadManagement = () => {
             type="text"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Search by name, email, phone, or message"
+            placeholder="Search by name, email, phone, profession, or message"
             aria-label="Search leads"
           />
         </div>
@@ -534,7 +522,7 @@ const LeadManagement = () => {
               <th>Email</th>
               <th>Phone</th>
               <th>Status</th>
-              <th>Source</th>
+              <th>Profession</th>
               <th>Created</th>
               <th>Message</th>
               <th>Actions</th>
@@ -579,7 +567,13 @@ const LeadManagement = () => {
                       {statusLabels[lead.status] || lead.status}
                     </span>
                   </td>
-                  <td>{formatSource(lead.source)}</td>
+                  <td>
+                    {lead.profession ? (
+                      <span>{lead.profession}</span>
+                    ) : (
+                      <span className="lead-management__muted">—</span>
+                    )}
+                  </td>
                   <td>{formatDate(lead.createdAt)}</td>
                   <td>
                     <span className="lead-management__message" title={lead.message}>

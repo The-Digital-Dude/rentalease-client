@@ -13,9 +13,9 @@ export interface Lead {
   lastName: string;
   email: string;
   phone?: string;
+  profession?: string;
   message: string;
   status: LeadStatus;
-  source?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -34,7 +34,7 @@ export interface FetchLeadsParams {
   limit?: number;
   status?: LeadStatus;
   search?: string;
-  sortBy?: "createdAt" | "firstName" | "lastName" | "email" | "status";
+  sortBy?: "createdAt" | "firstName" | "lastName" | "email" | "profession" | "status";
   sortOrder?: "asc" | "desc";
   startDate?: string;
   endDate?: string;
@@ -60,9 +60,9 @@ interface ServerLead {
   lastName: string;
   email: string;
   phone?: string;
+  profession?: string;
   message: string;
   status: LeadStatus;
-  source?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -99,9 +99,9 @@ const normalizeLead = (lead: ServerLead): Lead => ({
   lastName: lead.lastName,
   email: lead.email,
   phone: lead.phone || undefined,
+  profession: lead.profession || undefined,
   message: lead.message,
   status: lead.status,
-  source: lead.source,
   notes: lead.notes,
   createdAt: lead.createdAt,
   updatedAt: lead.updatedAt,

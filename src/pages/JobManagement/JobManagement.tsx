@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { 
-  RiAddLine, 
-  RiToolsLine, 
-  RiFilterLine, 
-  RiTimeLine, 
-  RiFireLine, 
-  RiCheckboxCircleLine, 
-  RiGroupLine 
+import { useSelector } from "react-redux";
+import {
+  RiAddLine,
+  RiToolsLine,
+  RiFilterLine,
+  RiTimeLine,
+  RiFireLine,
+  RiCheckboxCircleLine,
+  RiGroupLine
 } from "react-icons/ri";
 import {
   JobFormModal,
@@ -20,6 +21,7 @@ import propertyService from "../../services/propertyService";
 import type {
   Job as ServiceJob,
   CreateJobData,
+  JobFilters,
 } from "../../services/jobService";
 import type { Technician as ServiceTechnician } from "../../services/technicianService";
 import type { Property } from "../../services/propertyService";
@@ -27,11 +29,12 @@ import type { ComponentJob } from "../../utils/jobAdapter";
 import { adaptServiceJobToComponentJob } from "../../utils/jobAdapter";
 import type { ComponentTechnician } from "../../utils/technicianAdapter";
 import { adaptServiceTechnicianToComponentTechnician } from "../../utils/technicianAdapter";
+import type { RootState } from "../../store";
 import "./JobManagement.scss";
 
 interface JobFormData {
   propertyId: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
+  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs" | "Pool Safety" | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string;
   priority: "Low" | "Medium" | "High" | "Urgent";
@@ -48,12 +51,28 @@ const initialFormData: JobFormData = {
 };
 
 const JobManagement = () => {
+  // Get user information for role-based access control
+  const user = useSelector((state: RootState) => state.user);
+
+  // Job data state
   const [jobs, setJobs] = useState<ComponentJob[]>([]);
   const [technicians, setTechnicians] = useState<ComponentTechnician[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+
+  // Filter and search state
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+
+  // UI state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState<JobFormData>(initialFormData);
   const [draggedJob, setDraggedJob] = useState<ComponentJob | null>(null);
@@ -63,34 +82,37 @@ const JobManagement = () => {
   const [isAssigningJob, setIsAssigningJob] = useState(false);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
 
+  // Check if user can create jobs (super_user or team_member)
+  const canCreateJobs = user.userType === "super_user" || user.userType === "team_member";
+
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  // Refetch jobs when pagination or filters change
+  useEffect(() => {
+    fetchJobs();
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter, typeFilter]);
 
   const fetchInitialData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Fetch jobs, technicians, and properties in parallel
-      const [jobsResponse, techResponse, propertiesResponse] =
-        await Promise.all([
-          jobService.getJobs(),
-          technicianService.getTechnicians(),
-          propertyService.getProperties({ limit: 100 }),
-        ]);
+      // Fetch technicians and properties (not jobs - that's handled separately)
+      const [techResponse, propertiesResponse] = await Promise.all([
+        technicianService.getTechnicians(),
+        propertyService.getProperties({ limit: 100 }),
+      ]);
 
       // Log responses for debugging
-      console.log("Jobs Response:", jobsResponse);
       console.log("Tech Response:", techResponse);
       console.log("Properties Response:", propertiesResponse);
-
-      let componentTechnicians: ComponentTechnician[] = [];
 
       if (techResponse.status === "success" && techResponse.data.technicians) {
         const technicianData = techResponse.data
           .technicians as ServiceTechnician[];
-        componentTechnicians = technicianData.map(
+        const componentTechnicians = technicianData.map(
           adaptServiceTechnicianToComponentTechnician
         );
         setTechnicians(componentTechnicians);
@@ -101,23 +123,14 @@ const JobManagement = () => {
         setError(errorMessage);
       }
 
-      if (jobsResponse.success && jobsResponse.data) {
-        const componentJobs = (jobsResponse.data as ServiceJob[]).map((job) =>
-          adaptServiceJobToComponentJob(job, componentTechnicians)
-        );
-        setJobs(componentJobs);
-      } else {
-        const errorMessage = jobsResponse.message || "Failed to fetch jobs";
-        console.error("Jobs fetch error:", errorMessage);
-        setError(errorMessage);
-        return; // Exit early if jobs fetch fails
-      }
-
       if (propertiesResponse.status === "success" && propertiesResponse.data) {
         setProperties(propertiesResponse.data.properties);
       } else {
         setError(propertiesResponse.message || "Failed to fetch properties");
       }
+
+      // Fetch jobs with pagination
+      await fetchJobs();
     } catch (err) {
       console.error("Fetch error:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -126,16 +139,66 @@ const JobManagement = () => {
     }
   };
 
-  // Filter jobs based on search and filters
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.propertyAddress.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || job.status === statusFilter;
-    const matchesType = typeFilter === "all" || job.jobType === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  const fetchJobs = async () => {
+    try {
+      setError(null);
+
+      // Build filter object
+      const filters: JobFilters = {
+        page: currentPage,
+        limit: itemsPerPage,
+        sortBy: "dueDate",
+        sortOrder: "asc",
+      };
+
+      // Add search filter
+      if (searchTerm.trim()) {
+        filters.search = searchTerm.trim();
+      }
+
+      // Add status filter
+      if (statusFilter !== "all") {
+        filters.status = statusFilter;
+      }
+
+      // Add job type filter
+      if (typeFilter !== "all") {
+        filters.jobType = typeFilter;
+      }
+
+      const jobsResponse = await jobService.getJobs(filters);
+
+      console.log("Jobs Response:", jobsResponse);
+
+      if (jobsResponse.success && jobsResponse.data) {
+        // Update pagination info
+        if (jobsResponse.pagination) {
+          setCurrentPage(jobsResponse.pagination.currentPage);
+          setTotalPages(jobsResponse.pagination.totalPages);
+          setTotalItems(jobsResponse.pagination.totalItems);
+          setHasNextPage(jobsResponse.pagination.hasNextPage);
+          setHasPrevPage(jobsResponse.pagination.hasPrevPage);
+          setItemsPerPage(jobsResponse.pagination.itemsPerPage);
+        }
+
+        // Adapt jobs to component format
+        const componentJobs = (jobsResponse.data as ServiceJob[]).map((job) =>
+          adaptServiceJobToComponentJob(job, technicians)
+        );
+        setJobs(componentJobs);
+      } else {
+        const errorMessage = jobsResponse.message || "Failed to fetch jobs";
+        console.error("Jobs fetch error:", errorMessage);
+        setError(errorMessage);
+      }
+    } catch (err) {
+      console.error("Fetch jobs error:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch jobs");
+    }
+  };
+
+  // Jobs are now filtered server-side, so we can use them directly
+  const filteredJobs = jobs;
 
   // Get urgent/overdue jobs
   const urgentJobs = jobs.filter(
@@ -395,13 +458,15 @@ const JobManagement = () => {
               <RiFilterLine />
               Filter Jobs
             </button>
-            <button
-              className="action-btn primary"
-              onClick={() => setShowCreateForm(true)}
-            >
-              <RiAddLine />
-              Create New Job
-            </button>
+            {canCreateJobs && (
+              <button
+                className="action-btn primary"
+                onClick={() => setShowCreateForm(true)}
+              >
+                <RiAddLine />
+                Create New Job
+              </button>
+            )}
           </div>
         </div>
         
@@ -486,6 +551,87 @@ const JobManagement = () => {
         isAssigningJob={isAssigningJob}
         assigningJobId={assigningJobId}
       />
+
+      {/* Pagination Controls */}
+      <div className="pagination-section">
+        <div className="pagination-info">
+          <span>
+            Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} jobs
+          </span>
+          <div className="items-per-page">
+            <label>Items per page:</label>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1); // Reset to first page when changing items per page
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="pagination-controls">
+          <button
+            disabled={!hasPrevPage}
+            onClick={() => setCurrentPage(1)}
+            className="pagination-btn"
+          >
+            First
+          </button>
+          <button
+            disabled={!hasPrevPage}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className="pagination-btn"
+          >
+            Previous
+          </button>
+
+          <div className="page-numbers">
+            {[...Array(Math.min(5, totalPages))].map((_, index) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = index + 1;
+              } else if (currentPage <= 3) {
+                pageNum = index + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + index;
+              } else {
+                pageNum = currentPage - 2 + index;
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            disabled={!hasNextPage}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className="pagination-btn"
+          >
+            Next
+          </button>
+          <button
+            disabled={!hasNextPage}
+            onClick={() => setCurrentPage(totalPages)}
+            className="pagination-btn"
+          >
+            Last
+          </button>
+        </div>
+      </div>
 
       {/* Create Job Form Modal */}
       <JobFormModal

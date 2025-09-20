@@ -6,7 +6,9 @@ import { allowedRoutes, defaultRoutes } from "./roleBasedRoutes";
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
 const DevDashboard = lazy(() => import("../pages/DevDashboard/DevDashboard"));
 const Properties = lazy(() => import("../pages/Properties/Properties"));
-const PropertyAssignment = lazy(() => import("../pages/PropertyAssignment/PropertyAssignment"));
+const PropertyAssignment = lazy(
+  () => import("../pages/PropertyAssignment/PropertyAssignment")
+);
 const Jobs = lazy(() => import("../pages/JobManagement/JobManagement"));
 const Technician = lazy(() => import("../pages/Technician/Technician"));
 const PropertyManagerManagement = lazy(
@@ -40,20 +42,35 @@ const MyJobs = lazy(() => import("../pages/Technician/MyJobs"));
 const ActiveJobs = lazy(() => import("../pages/Technician/ActiveJobs"));
 const OverdueJobs = lazy(() => import("../pages/Technician/OverdueJobs"));
 const CompletedJobs = lazy(() => import("../pages/Technician/CompletedJobs"));
-const ScheduledJobs = lazy(() => import("../pages/ScheduledJobs/ScheduledJobs"));
-const SystemOverdueJobs = lazy(() => import("../pages/OverdueJobs/OverdueJobs"));
-const SystemCompletedJobs = lazy(() => import("../pages/CompletedJobs/CompletedJobs"));
+const ScheduledJobs = lazy(
+  () => import("../pages/ScheduledJobs/ScheduledJobs")
+);
+const SystemOverdueJobs = lazy(
+  () => import("../pages/OverdueJobs/OverdueJobs")
+);
+const SystemCompletedJobs = lazy(
+  () => import("../pages/CompletedJobs/CompletedJobs")
+);
 const MyPayments = lazy(() => import("../pages/Technician/MyPayments"));
 const TeamMemberManagement = lazy(
   () => import("../pages/TeamMemberManagement/TeamMemberManagement")
 );
 const TechnicianPaymentManagement = lazy(
-  () => import("../pages/TechnicianPaymentManagement/TechnicianPaymentManagement")
+  () =>
+    import("../pages/TechnicianPaymentManagement/TechnicianPaymentManagement")
 );
 const Subscription = lazy(() => import("../pages/Subscription/Subscription"));
-const EmailCommunication = lazy(() => import("../pages/EmailCommunication").then(module => ({ default: module.EmailCommunication })));
+const EmailCommunication = lazy(() =>
+  import("../pages/EmailCommunication").then((module) => ({
+    default: module.EmailCommunication,
+  }))
+);
 const Messages = lazy(() => import("../pages/Messages/Messages"));
-const RegionalDashboard = lazy(() => import("../pages/RegionalDashboard/RegionalDashboard"));
+const RegionalDashboard = lazy(
+  () => import("../pages/RegionalDashboard/RegionalDashboard")
+);
+const BeyondCompliance = lazy(() => import("../pages/BeyondCompliance"));
+const QuotationManagement = lazy(() => import("../pages/QuotationManagement/QuotationManagement"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -92,6 +109,8 @@ export const routeConfig = (userType: UserType) => {
     subscription: Subscription,
     messages: Messages,
     regionalDashboard: RegionalDashboard,
+    "beyond-compliance": BeyondCompliance,
+    "quotation-management": QuotationManagement,
   };
 
   // Generate routes based on user permissions

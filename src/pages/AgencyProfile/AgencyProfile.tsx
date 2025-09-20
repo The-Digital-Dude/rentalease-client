@@ -23,9 +23,18 @@ import {
   RiVipCrown2Line,
   RiSettings2Line,
   RiExternalLinkFill,
+  RiServiceLine,
+  RiAddLine,
+  RiDeleteBinLine,
+  RiEditLine as RiEdit2Line,
+  RiSendPlaneLine,
+  RiCloseCircleLine,
+  RiFileList3Line,
+  RiMoneyDollarCircleLine,
 } from "react-icons/ri";
 import { agencyService } from "../../services/agencyService";
 import subscriptionService from "../../services/subscriptionService";
+import { quotationService, propertyService } from "../../services";
 import type { AgencyProfile as AgencyProfileType } from "../../services/agencyService";
 import { formatDateTime } from "../../utils";
 import { useAppSelector } from "../../store";
@@ -41,7 +50,7 @@ const AgencyProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "properties" | "jobs" | "propertyManagers"
+    "overview" | "properties" | "jobs" | "propertyManagers" | "beyondCompliance"
   >("overview");
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [toast, setToast] = useState<{
@@ -94,11 +103,13 @@ const AgencyProfile: React.FC = () => {
   const handleManageSubscription = async () => {
     try {
       setLoadingPortal(true);
-      
+
       // For super users, pass the agency ID
-      const requestData = userType === 'super_user' ? { agencyId: id } : {};
-      
-      const portalUrl = await subscriptionService.createPortalSession(requestData);
+      const requestData = userType === "super_user" ? { agencyId: id } : {};
+
+      const portalUrl = await subscriptionService.createPortalSession(
+        requestData
+      );
       window.open(portalUrl, "_blank");
       setToast({
         message: "Billing portal opened in new tab",
@@ -179,14 +190,14 @@ const AgencyProfile: React.FC = () => {
 
   const handleStatCardClick = (cardType: string) => {
     switch (cardType) {
-      case 'properties':
-        setActiveTab('properties');
+      case "properties":
+        setActiveTab("properties");
         break;
-      case 'jobs':
-        setActiveTab('jobs');
+      case "jobs":
+        setActiveTab("jobs");
         break;
-      case 'propertyManagers':
-        setActiveTab('propertyManagers');
+      case "propertyManagers":
+        setActiveTab("propertyManagers");
         break;
       default:
         break;
@@ -311,14 +322,14 @@ const AgencyProfile: React.FC = () => {
       {/* Stats Cards */}
       <div className="stats-grid">
         {statsCards.map((stat, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className={`stat-card ${stat.color} clickable`}
             onClick={() => handleStatCardClick(stat.clickAction)}
             role="button"
             tabIndex={0}
             onKeyPress={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 handleStatCardClick(stat.clickAction);
               }
             }}
@@ -368,6 +379,15 @@ const AgencyProfile: React.FC = () => {
         >
           <RiTeamLine />
           Property Managers ({statistics?.totalPropertyManagers || 0})
+        </button>
+        <button
+          className={`tab-btn ${
+            activeTab === "beyondCompliance" ? "active" : ""
+          }`}
+          onClick={() => setActiveTab("beyondCompliance")}
+        >
+          <RiServiceLine />
+          Beyond Compliance
         </button>
       </div>
 
@@ -429,8 +449,22 @@ const AgencyProfile: React.FC = () => {
                       {agency?.subscription ? (
                         <div className="subscription-details">
                           <PillBadge
-                            planType={agency.subscription.planType as "starter" | "pro" | "enterprise" | "trial"}
-                            status={agency.subscription.status as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid"}
+                            planType={
+                              agency.subscription.planType as
+                                | "starter"
+                                | "pro"
+                                | "enterprise"
+                                | "trial"
+                            }
+                            status={
+                              agency.subscription.status as
+                                | "trial"
+                                | "active"
+                                | "past_due"
+                                | "canceled"
+                                | "incomplete"
+                                | "unpaid"
+                            }
                             size="medium"
                           />
                         </div>
@@ -462,12 +496,26 @@ const AgencyProfile: React.FC = () => {
                   <div className="subscription-header">
                     <div className="plan-info">
                       <PillBadge
-                        planType={agency.subscription.planType as "starter" | "pro" | "enterprise" | "trial"}
-                        status={agency.subscription.status as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid"}
+                        planType={
+                          agency.subscription.planType as
+                            | "starter"
+                            | "pro"
+                            | "enterprise"
+                            | "trial"
+                        }
+                        status={
+                          agency.subscription.status as
+                            | "trial"
+                            | "active"
+                            | "past_due"
+                            | "canceled"
+                            | "incomplete"
+                            | "unpaid"
+                        }
                         size="medium"
                       />
                     </div>
-                    <button 
+                    <button
                       className="btn-secondary manage-subscription"
                       onClick={handleManageSubscription}
                       disabled={loadingPortal}
@@ -489,19 +537,29 @@ const AgencyProfile: React.FC = () => {
                     {agency.subscription.subscriptionStartDate && (
                       <div className="detail-item">
                         <label>Started</label>
-                        <span>{formatDateTime(agency.subscription.subscriptionStartDate)}</span>
+                        <span>
+                          {formatDateTime(
+                            agency.subscription.subscriptionStartDate
+                          )}
+                        </span>
                       </div>
                     )}
                     {agency.subscription.subscriptionEndDate && (
                       <div className="detail-item">
                         <label>Next Billing</label>
-                        <span>{formatDateTime(agency.subscription.subscriptionEndDate)}</span>
+                        <span>
+                          {formatDateTime(
+                            agency.subscription.subscriptionEndDate
+                          )}
+                        </span>
                       </div>
                     )}
                     {agency.subscription.trialEndsAt && (
                       <div className="detail-item">
                         <label>Trial Ends</label>
-                        <span>{formatDateTime(agency.subscription.trialEndsAt)}</span>
+                        <span>
+                          {formatDateTime(agency.subscription.trialEndsAt)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -623,14 +681,14 @@ const AgencyProfile: React.FC = () => {
                 </thead>
                 <tbody>
                   {properties.map((property) => (
-                    <tr 
+                    <tr
                       key={property.id}
                       className="property-row clickable"
                       onClick={() => handleViewProperty(property.id)}
                       role="button"
                       tabIndex={0}
                       onKeyPress={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           handleViewProperty(property.id);
                         }
                       }}
@@ -705,14 +763,14 @@ const AgencyProfile: React.FC = () => {
                 </thead>
                 <tbody>
                   {jobs.map((job) => (
-                    <tr 
+                    <tr
                       key={job.id}
                       className="job-row clickable"
                       onClick={() => handleViewJob(job.id)}
                       role="button"
                       tabIndex={0}
                       onKeyPress={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           handleViewJob(job.id);
                         }
                       }}
@@ -833,6 +891,136 @@ const AgencyProfile: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Beyond Compliance Tab Content */}
+        {activeTab === "beyondCompliance" && (
+          <div className="tab-content">
+            <div className="section-header">
+              <h2>Beyond Compliance Services</h2>
+              <div className="section-actions">
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setToast({
+                      message: "Request New Service modal coming soon!",
+                      type: "info",
+                    });
+                  }}
+                >
+                  <RiAddLine />
+                  Request New Service
+                </button>
+              </div>
+            </div>
+
+            <div className="quotations-overview">
+              <div className="stats-cards">
+                <div className="stat-card">
+                  <div className="stat-icon">
+                    <RiFileList3Line />
+                  </div>
+                  <div className="stat-content">
+                    <h3>0</h3>
+                    <p>Total Requests</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">
+                    <RiTimeLine />
+                  </div>
+                  <div className="stat-content">
+                    <h3>0</h3>
+                    <p>Pending</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">
+                    <RiCheckboxCircleLine />
+                  </div>
+                  <div className="stat-content">
+                    <h3>0</h3>
+                    <p>Accepted</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">
+                    <RiMoneyDollarBoxLine />
+                  </div>
+                  <div className="stat-content">
+                    <h3>$0</h3>
+                    <p>Total Value</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="quotations-list">
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <RiServiceLine />
+                </div>
+                <h3>No Beyond Compliance Requests Yet</h3>
+                <p>
+                  Request quotations for services like cleaning, utility
+                  connections, landscaping, and more to expand your service
+                  offerings.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setToast({
+                      message: "Test quotation creation coming soon!",
+                      type: "info",
+                    });
+                  }}
+                >
+                  <RiAddLine />
+                  Create Your First Request
+                </button>
+              </div>
+            </div>
+
+            <div className="test-section">
+              <h3>🧪 Testing Interface</h3>
+              <p>Quick actions to test the Beyond Compliance workflow:</p>
+              <div className="test-buttons">
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    setToast({
+                      message: "Testing quotation request API endpoint...",
+                      type: "info",
+                    });
+                  }}
+                >
+                  Test Quotation Request
+                </button>
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    setToast({
+                      message: "Testing quotation response API endpoint...",
+                      type: "info",
+                    });
+                  }}
+                >
+                  Test Quotation Response
+                </button>
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    setToast({
+                      message: "Testing complete workflow...",
+                      type: "info",
+                    });
+                  }}
+                >
+                  Test Full Workflow
+                </button>
+              </div>
             </div>
           </div>
         )}

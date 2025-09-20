@@ -115,6 +115,11 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
+  margin-bottom: 0px;
+}
+
+.btn-primary svg {
+  margin-bottom: 0px;
 }
 
 .btn-primary {

@@ -1144,6 +1144,121 @@
       }
     }
   }
+
+  // Beyond Compliance Specific Styles
+  .quotations-overview {
+    margin-bottom: 2rem;
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .stat-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          font-size: 1.25rem;
+        }
+
+        .stat-content {
+          h3 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1f2937;
+          }
+
+          p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+  }
+
+  .quotations-list {
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .empty-icon {
+        margin: 0 auto 1.5rem;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #9ca3af;
+      }
+
+      h3 {
+        margin: 0 0 0.5rem;
+        color: #1f2937;
+        font-size: 1.25rem;
+      }
+
+      p {
+        margin: 0 0 2rem;
+        color: #6b7280;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+  }
+
+  .test-section {
+    margin-top: 2rem;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 2rem;
+
+    h3 {
+      margin: 0 0 0.5rem;
+      color: #1f2937;
+      font-size: 1.125rem;
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      color: #6b7280;
+    }
+
+    .test-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+    }
+  }
 }
 
 @keyframes spin {

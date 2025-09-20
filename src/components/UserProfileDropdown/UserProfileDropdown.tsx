@@ -20,13 +20,18 @@ const UserProfileDropdown: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  
-  const { name, email, userType, avatar } = useAppSelector((state) => state.user);
+
+  const { name, email, userType, avatar } = useAppSelector(
+    (state) => state.user
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -80,12 +85,16 @@ const UserProfileDropdown: React.FC = () => {
             {avatar ? (
               <img src={avatar} alt={name || "User"} />
             ) : (
-              <span className="avatar-initials">{name ? getInitials(name) : "U"}</span>
+              <span className="avatar-initials">
+                {name ? getInitials(name) : "U"}
+              </span>
             )}
           </div>
           <div className="profile-info">
             <span className="profile-name">{name || "User"}</span>
-            <RiArrowDownSLine className={`dropdown-arrow ${isOpen ? "open" : ""}`} />
+            <RiArrowDownSLine
+              className={`dropdown-arrow ${isOpen ? "open" : ""}`}
+            />
           </div>
         </button>
 
@@ -121,13 +130,19 @@ const UserProfileDropdown: React.FC = () => {
                 <RiEditLine />
                 <span>Edit Profile</span>
               </button>
-              
-              <button className="dropdown-item" onClick={() => navigate("/settings")}>
+
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/settings")}
+              >
                 <RiSettings3Line />
                 <span>Settings</span>
               </button>
 
-              <button className="dropdown-item" onClick={() => navigate("/profile")}>
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/profile")}
+              >
                 <RiUserLine />
                 <span>View Profile</span>
               </button>

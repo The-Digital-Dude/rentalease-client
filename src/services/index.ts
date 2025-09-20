@@ -11,6 +11,7 @@ export { default as subscriptionService } from "./subscriptionService";
 export { default as propertyService, VALID_STATES } from "./propertyService";
 export { default as leadService } from "./leadService";
 export { default as invoiceService } from "./invoiceService";
+export { default as quotationService } from "./quotationService";
 
 // Re-export types from jobService
 export type {
@@ -27,6 +28,16 @@ export type {
   InvoiceResponse,
   InvoicesListResponse,
 } from "./invoiceService";
+
+export type {
+  Quotation,
+  CreateQuotationRequest,
+  UpdateQuotationRequest,
+  RespondToQuotationRequest,
+  QuotationListResponse,
+  SingleQuotationResponse,
+  QuotationStatsResponse,
+} from "./quotationService";
 
 // Re-export types from staffService
 export type {

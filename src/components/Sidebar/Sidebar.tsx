@@ -1,9 +1,10 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../store";
 import { allowedRoutes } from "../../config/roleBasedRoutes";
 import type { UserType } from "../../store/userSlice";
 import { UserProfile } from "../UserProfile";
 import { useSidebar } from "../../contexts/SidebarContext";
+
 import {
   MdDashboard,
   MdBusiness,
@@ -27,7 +28,9 @@ import {
   MdCreditCard,
   MdEmail,
   MdPhone,
+  MdMiscellaneousServices,
 } from "react-icons/md";
+import { RiFileList3Line } from "react-icons/ri";
 import "./Sidebar.scss";
 
 interface SidebarProps {
@@ -66,6 +69,8 @@ const labelMap: Record<string, string> = {
   messages: "Messages",
   regionalDashboard: "Regional Dashboard",
   "lead-management": "Lead Management",
+  "beyond-compliance": "Beyond Compliance",
+  "quotation-management": "Quotation Management",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -98,11 +103,14 @@ const iconMap: Record<string, React.ReactNode> = {
   messages: <MdEmail />,
   regionalDashboard: <MdMap />,
   "lead-management": <MdPhone />,
+  "beyond-compliance": <MdMiscellaneousServices />,
+  "quotation-management": <RiFileList3Line />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { userType } = useAppSelector((state) => state.user);
   const location = useLocation();
+  const navigate = useNavigate();
   const { isCollapsed } = useSidebar();
 
   if (!userType) {
@@ -112,7 +120,11 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const userRoutes = allowedRoutes[userType as UserType] || [];
 
   return (
-    <aside className={`sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""}`}>
+    <aside
+      className={`sidebar ${isOpen ? "open" : ""} ${
+        isCollapsed ? "collapsed" : ""
+      }`}
+    >
       <nav className="sidebar-nav">
         {userRoutes.map((route) => {
           const routePath = `/${route}`;
@@ -131,7 +143,11 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           );
         })}
       </nav>
-      <UserProfile />
+      <UserProfile
+        onClick={() => {
+          return navigate;
+        }}
+      />
       <div className="sidebar-footer">
         <p className="developer-credit">
           Developed By{" "}

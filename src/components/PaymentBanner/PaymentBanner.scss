@@ -89,6 +89,10 @@
       svg {
         width: 16px;
         height: 16px;
+
+        &.spinning {
+          animation: spin 1s linear infinite;
+        }
       }
 
       @media (max-width: 768px) {
@@ -209,6 +213,15 @@
     100% {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 }

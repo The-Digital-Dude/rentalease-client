@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../store";
 import { logout } from "../../store/userSlice";
 import { useNavigate } from "react-router-dom";
 import ProfileEditModal from "./ProfileEditModal";
+import subscriptionService from "../../services/subscriptionService";
 import {
   RiUserLine,
   RiEditLine,
@@ -11,12 +12,14 @@ import {
   RiShieldUserLine,
   RiMailLine,
   RiArrowDownSLine,
+  RiMoneyDollarBoxLine,
 } from "react-icons/ri";
 import "./UserProfileDropdown.scss";
 
 const UserProfileDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -70,6 +73,21 @@ const UserProfileDropdown: React.FC = () => {
   const handleEditProfile = () => {
     setShowEditModal(true);
     setIsOpen(false);
+  };
+
+  const handleManageSubscription = async () => {
+    setIsLoadingSubscription(true);
+    setIsOpen(false);
+
+    try {
+      const portalUrl = await subscriptionService.createPortalSession();
+      window.open(portalUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Failed to create subscription portal session:", error);
+      alert("Failed to open subscription management. Please try again.");
+    } finally {
+      setIsLoadingSubscription(false);
+    }
   };
 
   return (
@@ -146,6 +164,22 @@ const UserProfileDropdown: React.FC = () => {
                 <RiUserLine />
                 <span>View Profile</span>
               </button>
+
+              {/* Show Manage Subscription only for Agency users */}
+              {(userType === "agency" || userType === "Agency") && (
+                <button
+                  className="dropdown-item"
+                  onClick={handleManageSubscription}
+                  disabled={isLoadingSubscription}
+                >
+                  <RiMoneyDollarBoxLine />
+                  <span>
+                    {isLoadingSubscription
+                      ? "Opening..."
+                      : "Manage Subscription"}
+                  </span>
+                </button>
+              )}
             </div>
 
             <div className="dropdown-divider" />

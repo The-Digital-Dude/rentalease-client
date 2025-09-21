@@ -1,8 +1,10 @@
+import { useState } from "react";
 import {
   RiAlertLine,
   RiSdCardLine,
   RiInformationLine,
   RiTimeLine,
+  RiLoaderLine,
 } from "react-icons/ri";
 import "./PaymentBanner.scss";
 
@@ -21,6 +23,7 @@ const PaymentBanner = ({
   trialEndsAt,
   onStartPayment,
 }: PaymentBannerProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-AU", {
       style: "currency",
@@ -38,11 +41,22 @@ const PaymentBanner = ({
     });
   };
 
-  const handlePaymentClick = () => {
-    if (paymentLinkUrl) {
-      window.open(paymentLinkUrl, "_blank", "noopener,noreferrer");
-    } else if (onStartPayment) {
-      onStartPayment();
+  const handlePaymentClick = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+
+    setIsLoading(true);
+
+    try {
+      if (paymentLinkUrl) {
+        window.open(paymentLinkUrl, "_blank", "noopener,noreferrer");
+      } else if (onStartPayment) {
+        await onStartPayment();
+      }
+    } catch (error) {
+      console.error("Payment action failed:", error);
+      // Error handling is done in the parent component
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,10 +154,10 @@ const PaymentBanner = ({
           <button
             className="btn btn-primary"
             onClick={handlePaymentClick}
-            disabled={!paymentLinkUrl && !onStartPayment}
+            disabled={isLoading || (!paymentLinkUrl && !onStartPayment)}
           >
-            <RiSdCardLine />
-            {actionText}
+            {isLoading ? <RiLoaderLine className="spinning" /> : <RiSdCardLine />}
+            {isLoading ? "Loading..." : actionText}
           </button>
         </div>
       </div>

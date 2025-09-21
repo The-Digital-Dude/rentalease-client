@@ -70,6 +70,7 @@ import {
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
 import jobService from "../../services/jobService";
+import subscriptionService from "../../services/subscriptionService";
 import "./AgencyDashboard.scss";
 
 // Utility function to check authentication
@@ -420,6 +421,17 @@ const AgencyDashboard = () => {
   const handleRefresh = () => {
     fetchDashboardData();
     fetchSubscriptionData();
+  };
+
+  // Handle subscription management
+  const handleManageSubscription = async () => {
+    try {
+      const portalUrl = await subscriptionService.createPortalSession();
+      window.open(portalUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Failed to create subscription portal session:", error);
+      alert("Failed to open subscription management. Please try again.");
+    }
   };
 
   // Navigation handlers for stat cards
@@ -786,6 +798,7 @@ const AgencyDashboard = () => {
             subscriptionAmount={subscriptionData.amount}
             paymentLinkUrl={subscriptionData.paymentLinkUrl}
             trialEndsAt={subscriptionData.trialEndsAt}
+            onStartPayment={handleManageSubscription}
           />
         )}
 

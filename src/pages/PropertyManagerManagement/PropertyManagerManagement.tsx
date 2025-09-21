@@ -113,7 +113,8 @@ const PropertyManagerManagementPage = () => {
   // Check if user can see all property managers
   const canSeeAllPropertyManagers =
     userType === "super_user" || userType === "team_member";
-  const canEditPropertyManagers = userType === "agency";
+  const canEditPropertyManagers =
+    userType === "agency" || userType === "super_user" || userType === "team_member";
 
   // Debounced search
   const [searchDebounce, setSearchDebounce] = useState<number | null>(null);
@@ -220,14 +221,17 @@ const PropertyManagerManagementPage = () => {
       errors.phone = "Phone number is required";
     }
 
-    if (!formData.password) {
-      errors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters long";
-    }
+    // Password is only required when creating new property manager
+    if (!editingPropertyManager) {
+      if (!formData.password) {
+        errors.password = "Password is required";
+      } else if (formData.password.length < 8) {
+        errors.password = "Password must be at least 8 characters long";
+      }
 
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+      if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = "Passwords do not match";
+      }
     }
 
     setFormErrors(errors);

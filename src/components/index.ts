@@ -47,6 +47,7 @@ export { EmailSidebar } from "./EmailSidebar";
 export { EmailDetail } from "./EmailDetail";
 export { FloatingActionButton } from "./FloatingActionButton";
 export { SidebarToggle } from "./SidebarToggle";
+export { PaymentBanner } from "./PaymentBanner";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

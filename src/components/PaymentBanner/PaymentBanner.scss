@@ -1,0 +1,214 @@
+.payment-banner {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+  }
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
+  .banner-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .banner-text {
+    flex: 1;
+    min-width: 0;
+
+    h4 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+  }
+
+  .banner-actions {
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      align-self: stretch;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      @media (max-width: 768px) {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  // Warning variant (pending payment, incomplete)
+  &.warning {
+    background-color: #fff8e1;
+    border-color: #ffb74d;
+    color: #e65100;
+
+    &::before {
+      background-color: #ff9800;
+    }
+
+    .banner-icon {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+
+    .banner-actions .btn.btn-primary {
+      background-color: #ff9800;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #f57c00;
+      }
+    }
+  }
+
+  // Danger variant (past due, payment failed)
+  &.danger {
+    background-color: #ffebee;
+    border-color: #ef5350;
+    color: #c62828;
+
+    &::before {
+      background-color: #f44336;
+    }
+
+    .banner-icon {
+      background-color: #ffcdd2;
+      color: #d32f2f;
+    }
+
+    .banner-actions .btn.btn-primary {
+      background-color: #f44336;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #d32f2f;
+      }
+    }
+  }
+
+  // Info variant (trial active)
+  &.info {
+    background-color: #e3f2fd;
+    border-color: #42a5f5;
+    color: #1565c0;
+
+    &::before {
+      background-color: #2196f3;
+    }
+
+    .banner-icon {
+      background-color: #bbdefb;
+      color: #1976d2;
+    }
+
+    .banner-actions .btn.btn-primary {
+      background-color: #2196f3;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #1976d2;
+      }
+    }
+  }
+
+  // Success variant (if needed for other states)
+  &.success {
+    background-color: #e8f5e8;
+    border-color: #66bb6a;
+    color: #2e7d32;
+
+    &::before {
+      background-color: #4caf50;
+    }
+
+    .banner-icon {
+      background-color: #c8e6c9;
+      color: #388e3c;
+    }
+
+    .banner-actions .btn.btn-primary {
+      background-color: #4caf50;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background-color: #388e3c;
+      }
+    }
+  }
+
+  // Animation for entrance
+  animation: slideInFromTop 0.3s ease-out;
+
+  @keyframes slideInFromTop {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

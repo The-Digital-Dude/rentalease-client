@@ -23,6 +23,7 @@ export interface Agency {
   complianceLevel: string;
   status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
+  subscriptionAmount?: number;
   subscription?: AgencySubscription;
 }
 
@@ -273,7 +274,7 @@ export const agencyService = {
 
   // Create new agency
   createAgency: async (
-    agency: Omit<Agency, "id"> & { password?: string }
+    agency: Omit<Agency, "id"> & { password?: string; subscriptionAmount?: number }
   ): Promise<AgencyResponse> => {
     try {
       // Map client data to server format
@@ -286,6 +287,7 @@ export const agencyService = {
         region: agency.region,
         compliance: agency.complianceLevel,
         password: agency.password, // Required for new agencies
+        subscriptionAmount: agency.subscriptionAmount, // Required for new agencies
       };
 
       const response = await api.post<CreateAgencyResponse>(

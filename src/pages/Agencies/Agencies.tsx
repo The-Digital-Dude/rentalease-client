@@ -86,6 +86,7 @@ const Agencies = () => {
     complianceLevel: string;
     status: "active" | "inactive" | "pending" | "suspended";
     password?: string;
+    subscriptionAmount?: number;
   }) => {
     try {
       setSubmitLoading(true);
@@ -120,9 +121,14 @@ const Agencies = () => {
           return;
         }
       } else {
-        // Add new agency (include password)
+        // Add new agency (include password and subscription amount)
         if (!formData.password) {
           toast.error("Password is required for new agencies");
+          return;
+        }
+
+        if (!formData.subscriptionAmount || formData.subscriptionAmount < 1 || formData.subscriptionAmount > 100000) {
+          toast.error("Subscription amount must be between $1 and $100,000");
           return;
         }
 
@@ -137,6 +143,7 @@ const Agencies = () => {
           status: formData.status,
           outstandingAmount: 0, // Keep for now to satisfy interface
           password: formData.password,
+          subscriptionAmount: formData.subscriptionAmount,
         };
 
         const response = await agencyService.createAgency(newAgencyData);

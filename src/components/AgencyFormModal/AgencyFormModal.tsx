@@ -6,7 +6,7 @@ import "./AgencyFormModal.scss";
 interface Agency {
   id: string;
   name: string;
-  abn: string;
+  abn: number;
   contactPerson: string;
   contactEmail: string;
   contactPhone: string;
@@ -18,7 +18,7 @@ interface Agency {
 
 interface AgencyFormData {
   name: string;
-  abn: string;
+  abn: number | string;
   contactPerson: string;
   contactEmail: string;
   contactPhone: string;
@@ -26,6 +26,7 @@ interface AgencyFormData {
   complianceLevel: string;
   status: "active" | "inactive" | "pending" | "suspended";
   password?: string;
+  subscriptionAmount?: number | string;
 }
 
 interface AgencyFormModalProps {
@@ -48,6 +49,7 @@ const initialFormData: AgencyFormData = {
   complianceLevel: "",
   status: "active",
   password: "",
+  subscriptionAmount: 99,
 };
 
 const AgencyFormModal = ({
@@ -82,10 +84,25 @@ const AgencyFormModal = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Handle number inputs properly
+    if (name === 'subscriptionAmount' || name === 'abn') {
+      const numericValue = value === '' ? '' : Number(value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // Prevent scroll wheel from changing number inputs
+  const handleNumberInputWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -125,13 +142,18 @@ const AgencyFormModal = ({
           <div className="form-group">
             <label htmlFor="abn">ABN</label>
             <input
-              type="text"
+              type="number"
               id="abn"
               name="abn"
               value={formData.abn}
               onChange={handleInputChange}
+              onWheel={handleNumberInputWheel}
               disabled={isSubmitting}
               required
+              min="10000000000"
+              max="99999999999"
+              step="1"
+              placeholder="11 digit ABN"
             />
           </div>
           <div className="form-group">
@@ -222,6 +244,29 @@ const AgencyFormModal = ({
               <option value="suspended">Suspended</option>
             </select>
           </div>
+          {/* Subscription amount field only for new agencies */}
+          {!editingAgency && (
+            <div className="form-group">
+              <label htmlFor="subscriptionAmount">Monthly Subscription Amount (AUD)</label>
+              <input
+                type="number"
+                id="subscriptionAmount"
+                name="subscriptionAmount"
+                value={formData.subscriptionAmount || ""}
+                onChange={handleInputChange}
+                onWheel={handleNumberInputWheel}
+                placeholder="99"
+                min="1"
+                max="100000"
+                step="1"
+                disabled={isSubmitting}
+                required
+              />
+              <small style={{ color: "#666", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                Amount between $1 and $100,000 AUD per month
+              </small>
+            </div>
+          )}
           {/* Password field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">

@@ -43,6 +43,7 @@ import {
   RiInformationLine,
   RiBriefcaseLine,
 } from "react-icons/ri";
+import { PaymentBanner } from "../../components";
 import {
   BarChart,
   Bar,
@@ -221,6 +222,12 @@ const AgencyDashboard = () => {
     totalPropertyManagers: 0,
   });
   const [error, setError] = useState<string | null>(null);
+  const [subscriptionData, setSubscriptionData] = useState<{
+    status: string;
+    amount: number;
+    paymentLinkUrl?: string;
+    trialEndsAt?: string;
+  } | null>(null);
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -341,12 +348,48 @@ const AgencyDashboard = () => {
       : 0;
   };
 
+  // Fetch subscription data
+  const fetchSubscriptionData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/v1/subscription/status', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success') {
+          setSubscriptionData({
+            status: data.subscription.status,
+            amount: data.subscription.amount,
+            paymentLinkUrl: data.subscription.paymentLinkUrl,
+            trialEndsAt: data.subscription.trialEndsAt,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching subscription data:', error);
+      // Fallback to default state if API fails
+      setSubscriptionData({
+        status: 'pending_payment',
+        amount: 0,
+        paymentLinkUrl: '',
+        trialEndsAt: '',
+      });
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchSubscriptionData();
   }, []);
 
   const handleRefresh = () => {
     fetchDashboardData();
+    fetchSubscriptionData();
   };
 
   // Navigation handlers for stat cards
@@ -705,6 +748,16 @@ const AgencyDashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Payment Banner */}
+        {subscriptionData && (
+          <PaymentBanner
+            subscriptionStatus={subscriptionData.status}
+            subscriptionAmount={subscriptionData.amount}
+            paymentLinkUrl={subscriptionData.paymentLinkUrl}
+            trialEndsAt={subscriptionData.trialEndsAt}
+          />
+        )}
 
         {/* Enhanced Statistics Cards */}
         <div className="stats-overview">

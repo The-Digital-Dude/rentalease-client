@@ -547,4 +547,590 @@
   .performance-grid {
     grid-template-columns: 1fr;
   }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .performance-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Executive Dashboard Styles
+.executive-dashboard {
+  .kpi-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+
+      .kpi-period {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+
+        h5 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 1rem 0;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .kpi-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 1rem;
+
+          .kpi-card {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+
+            .kpi-value {
+              font-size: 1.5rem;
+              font-weight: 700;
+              color: #1e293b;
+              margin-bottom: 0.25rem;
+            }
+
+            .kpi-label {
+              font-size: 0.75rem;
+              color: #64748b;
+              margin-bottom: 0.5rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+            }
+
+            .kpi-growth {
+              font-size: 0.75rem;
+              font-weight: 600;
+              padding: 0.25rem 0.5rem;
+              border-radius: 9999px;
+
+              &.positive {
+                background: #d1fae5;
+                color: #065f46;
+              }
+
+              &.negative {
+                background: #fee2e2;
+                color: #991b1b;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .business-health-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+
+      .health-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .health-icon {
+          font-size: 2rem;
+          color: #3b82f6;
+          background: #dbeafe;
+          padding: 1rem;
+          border-radius: 0.75rem;
+        }
+
+        .health-content {
+          flex: 1;
+
+          .health-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+          }
+
+          .health-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+          }
+
+          .health-breakdown {
+            font-size: 0.75rem;
+            color: #64748b;
+          }
+
+          .health-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+
+            &.excellent {
+              background: #d1fae5;
+              color: #065f46;
+            }
+
+            &.good {
+              background: #dbeafe;
+              color: #1e40af;
+            }
+
+            &.needs-improvement {
+              background: #fef3c7;
+              color: #92400e;
+            }
+          }
+
+          .health-trend {
+            font-size: 0.75rem;
+            color: #64748b;
+          }
+        }
+      }
+    }
+  }
+
+  .alerts-section {
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .alerts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+
+      .alert {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid;
+
+        .alert-icon {
+          font-size: 1.5rem;
+        }
+
+        .alert-content {
+          .alert-count {
+            font-size: 1.25rem;
+            font-weight: 700;
+          }
+
+          .alert-label {
+            font-size: 0.875rem;
+          }
+        }
+
+        &.critical {
+          background: #fef2f2;
+          border-color: #fee2e2;
+          color: #991b1b;
+
+          .alert-icon {
+            color: #dc2626;
+          }
+        }
+
+        &.warning {
+          background: #fffbeb;
+          border-color: #fef3c7;
+          color: #92400e;
+
+          .alert-icon {
+            color: #f59e0b;
+          }
+        }
+
+        &.info {
+          background: #eff6ff;
+          border-color: #dbeafe;
+          color: #1e40af;
+
+          .alert-icon {
+            color: #3b82f6;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Operational Analytics Styles
+.operational-analytics {
+  .resource-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .utilization-summary {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+
+      .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .summary-label {
+          font-size: 0.875rem;
+          color: #64748b;
+        }
+
+        .summary-value {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #1e293b;
+        }
+      }
+    }
+
+    .technician-workload {
+      h5 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+
+      .workload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+
+        .workload-card {
+          background: white;
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
+
+          .workload-header {
+            margin-bottom: 1rem;
+
+            strong {
+              font-size: 1rem;
+              color: #1e293b;
+              display: block;
+            }
+
+            .trade-type {
+              font-size: 0.875rem;
+              color: #64748b;
+            }
+          }
+
+          .workload-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .metric-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 0.875rem;
+
+              .metric-value {
+                font-weight: 600;
+
+                &.high {
+                  color: #dc2626;
+                }
+
+                &.medium {
+                  color: #f59e0b;
+                }
+
+                &.low {
+                  color: #10b981;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .job-analytics-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+
+      .analytics-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+
+        h5 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 1rem 0;
+        }
+
+        .job-type-list,
+        .completion-time-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+
+          .job-type-item,
+          .completion-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+
+            .job-type-header,
+            .completion-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+
+              .job-type-name,
+              .job-type {
+                font-weight: 600;
+                color: #1e293b;
+              }
+
+              .job-type-count,
+              .avg-time {
+                font-size: 0.875rem;
+                color: #64748b;
+              }
+            }
+
+            .job-type-metrics,
+            .completion-range {
+              display: flex;
+              gap: 1rem;
+              font-size: 0.75rem;
+              color: #64748b;
+
+              .metric {
+                display: flex;
+                gap: 0.25rem;
+
+                .value {
+                  font-weight: 600;
+                  color: #374151;
+                }
+              }
+
+              .sample-size {
+                margin-left: auto;
+                font-style: italic;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .property-insights-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .insights-summary {
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .property-frequency {
+      h5 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+
+      .property-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .property-item {
+          padding: 1rem;
+          background: white;
+          border-radius: 0.5rem;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+          .property-address {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+          }
+
+          .property-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #64748b;
+
+            span {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .regional-performance-section {
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .performance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+
+      .performance-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+
+        .performance-header {
+          margin-bottom: 1rem;
+
+          strong {
+            font-size: 1rem;
+            color: #1e293b;
+            display: block;
+          }
+
+          .region-state {
+            font-size: 0.875rem;
+            color: #64748b;
+          }
+        }
+
+        .performance-metrics {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+
+            .completion-rate {
+              font-weight: 600;
+
+              &.excellent {
+                color: #10b981;
+              }
+
+              &.good {
+                color: #3b82f6;
+              }
+
+              &.needs-improvement {
+                color: #f59e0b;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 } 

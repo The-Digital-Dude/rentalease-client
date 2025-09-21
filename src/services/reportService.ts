@@ -63,6 +63,125 @@ export interface TechnicianPaymentsReportResponse {
   data: TechnicianPayment[];
 }
 
+export interface ExecutiveDashboard {
+  kpis: {
+    today: {
+      newJobs: number;
+      completedJobs: number;
+      revenue: number;
+      growth: {
+        newJobs: string;
+        completedJobs: string;
+        revenue: string;
+      };
+    };
+    thisWeek: {
+      newJobs: number;
+      completedJobs: number;
+      revenue: number;
+      growth: {
+        newJobs: string;
+        completedJobs: string;
+        revenue: string;
+      };
+    };
+    thisMonth: {
+      newJobs: number;
+      completedJobs: number;
+      revenue: number;
+      growth: {
+        newJobs: string;
+        completedJobs: string;
+        revenue: string;
+      };
+    };
+    yearToDate: {
+      newJobs: number;
+      completedJobs: number;
+      revenue: number;
+    };
+  };
+  businessHealth: {
+    totalActiveEntities: {
+      agencies: number;
+      properties: number;
+      technicians: number;
+      managers: number;
+      total: number;
+    };
+    jobCompletionRate: number;
+    avgJobValue: number;
+    customerSatisfaction: number;
+    technicianUtilization: number;
+  };
+  alerts: {
+    critical: number;
+    warnings: number;
+    info: number;
+  };
+  lastUpdated: string;
+}
+
+export interface OperationalAnalytics {
+  resourceUtilization: {
+    technicianWorkload: Array<{
+      name: string;
+      tradeType: string;
+      totalJobs: number;
+      activeJobs: number;
+      completedThisMonth: number;
+      utilizationRate: number;
+    }>;
+    totalActiveTechnicians: number;
+    avgUtilization: string;
+  };
+  jobAnalytics: {
+    typeDistribution: Array<{
+      jobType: string;
+      count: number;
+      completed: number;
+      completionRate: number;
+      avgCompletionTime: number;
+    }>;
+    timeToCompletion: Array<{
+      jobType: string;
+      avgCompletionTime: number;
+      minCompletionTime: number;
+      maxCompletionTime: number;
+      count: number;
+    }>;
+    totalJobTypes: number;
+  };
+  propertyInsights: {
+    jobFrequency: Array<{
+      address: any;
+      totalJobs: number;
+      recentJobs: number;
+      avgJobsPerMonth: number;
+    }>;
+    totalPropertiesWithJobs: number;
+  };
+  regionalPerformance: Array<{
+    companyName: string;
+    state: string;
+    totalProperties: number;
+    totalJobs: number;
+    completedJobs: number;
+    completionRate: number;
+  }>;
+  lastUpdated: string;
+}
+
+export interface ExecutiveDashboardResponse {
+  status: "success" | "error";
+  data: ExecutiveDashboard;
+}
+
+export interface OperationalAnalyticsResponse {
+  status: "success" | "error";
+  data: OperationalAnalytics;
+}
+
 class ReportService {
   private baseUrl = "/v1/properties/reports";
 
@@ -130,6 +249,38 @@ class ReportService {
         error?.response?.data || {
           status: "error",
           message: "Failed to fetch technician payments report",
+        }
+      );
+    }
+  }
+
+  async getExecutiveDashboard(): Promise<ExecutiveDashboardResponse> {
+    try {
+      const response: AxiosResponse<ExecutiveDashboardResponse> = await api.get(
+        `/v1/dashboard/executive-dashboard`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch executive dashboard data",
+        }
+      );
+    }
+  }
+
+  async getOperationalAnalytics(): Promise<OperationalAnalyticsResponse> {
+    try {
+      const response: AxiosResponse<OperationalAnalyticsResponse> = await api.get(
+        `/v1/dashboard/operational-analytics`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch operational analytics data",
         }
       );
     }

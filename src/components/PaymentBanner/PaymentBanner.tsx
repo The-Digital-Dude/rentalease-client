@@ -46,8 +46,8 @@ const PaymentBanner = ({
     }
   };
 
-  // Don't show banner for active subscriptions
-  if (subscriptionStatus === "active") {
+  // Don't show banner for active or trialing subscriptions
+  if (subscriptionStatus === "active" || subscriptionStatus === "trialing") {
     return null;
   }
 
@@ -70,6 +70,7 @@ const PaymentBanner = ({
       break;
 
     case "trial":
+    case "trialing":
       bannerClass += " info";
       icon = <RiTimeLine />;
       title = "Free Trial Active";
@@ -92,6 +93,7 @@ const PaymentBanner = ({
       break;
 
     case "incomplete":
+    case "incomplete_expired":
       bannerClass += " warning";
       icon = <RiSdCardLine />;
       title = "Payment Setup Incomplete";
@@ -101,8 +103,28 @@ const PaymentBanner = ({
       actionText = "Complete Setup";
       break;
 
+    case "canceled":
+    case "cancelled":
+      bannerClass += " danger";
+      icon = <RiAlertLine />;
+      title = "Subscription Canceled";
+      message = `Your subscription has been canceled. Reactivate your ${formatCurrency(
+        subscriptionAmount
+      )}/month subscription to continue using the CRM.`;
+      actionText = "Reactivate Subscription";
+      break;
+
+    case "unpaid":
+      bannerClass += " danger";
+      icon = <RiAlertLine />;
+      title = "Payment Overdue";
+      message = `Your subscription payment is overdue. Please update your payment method to avoid service interruption.`;
+      actionText = "Update Payment";
+      break;
+
     default:
-      // Don't show banner for unknown statuses
+      // Don't show banner for unknown statuses or active states
+      console.warn(`Unknown subscription status: ${subscriptionStatus}`);
       return null;
   }
 

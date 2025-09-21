@@ -348,10 +348,21 @@ const AgencyDashboard = () => {
       : 0;
   };
 
-  // Fetch subscription data
+  // Fetch subscription data with real-time Stripe integration
   const fetchSubscriptionData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      if (!token) {
+        console.warn('No authentication token found for subscription data');
+        setSubscriptionData({
+          status: 'pending_payment',
+          amount: 0,
+          paymentLinkUrl: '',
+          trialEndsAt: '',
+        });
+        return;
+      }
+
       const response = await fetch('/api/v1/subscription/status', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -361,23 +372,42 @@ const AgencyDashboard = () => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.status === 'success') {
-          setSubscriptionData({
-            status: data.subscription.status,
-            amount: data.subscription.amount,
-            paymentLinkUrl: data.subscription.paymentLinkUrl,
-            trialEndsAt: data.subscription.trialEndsAt,
+        if (data.status === 'success' && data.data?.subscription) {
+          const subscription = data.data.subscription;
+          console.log('Subscription data received:', {
+            status: subscription.status,
+            amount: subscription.amount,
+            hasActiveSubscription: subscription.hasActiveSubscription,
+            needsPayment: subscription.needsPayment,
+            debug: data.data.debug
           });
+
+          setSubscriptionData({
+            status: subscription.status,
+            amount: subscription.amount,
+            paymentLinkUrl: subscription.paymentLinkUrl,
+            trialEndsAt: subscription.trialEndsAt,
+          });
+        } else {
+          console.warn('Invalid subscription response format:', data);
+          throw new Error('Invalid response format');
         }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Subscription API error:', response.status, errorData);
+        throw new Error(errorData.message || `HTTP ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching subscription data:', error);
-      // Fallback to default state if API fails
+
+      // More intelligent fallback based on development environment
+      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+
       setSubscriptionData({
-        status: 'pending_payment',
-        amount: 0,
+        status: isDevelopment ? 'trial' : 'pending_payment', // Show trial in dev, payment required in prod
+        amount: isDevelopment ? 49 : 0,
         paymentLinkUrl: '',
-        trialEndsAt: '',
+        trialEndsAt: isDevelopment ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : '',
       });
     }
   };

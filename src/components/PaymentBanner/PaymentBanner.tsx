@@ -61,7 +61,11 @@ const PaymentBanner = ({
   };
 
   // Don't show banner for active or trialing subscriptions
-  if (subscriptionStatus === "active" || subscriptionStatus === "trialing") {
+  if (
+    subscriptionStatus === "active" ||
+    subscriptionStatus === "trialing" ||
+    subscriptionStatus === "trial"
+  ) {
     return null;
   }
 

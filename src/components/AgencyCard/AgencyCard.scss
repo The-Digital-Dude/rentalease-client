@@ -430,7 +430,34 @@
           &.canceled {
             background: #fee2e2;
             color: #991b1b;
-            
+
+            .subscription-icon {
+              color: #dc2626;
+            }
+          }
+
+          &.pending-payment {
+            background: #fef3c7;
+            color: #92400e;
+
+            .subscription-icon {
+              color: #d97706;
+            }
+          }
+
+          &.incomplete {
+            background: #fef3c7;
+            color: #92400e;
+
+            .subscription-icon {
+              color: #d97706;
+            }
+          }
+
+          &.unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+
             .subscription-icon {
               color: #dc2626;
             }

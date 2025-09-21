@@ -28,6 +28,18 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCredentialsConfirm, setShowCredentialsConfirm] = useState(false);
 
+  // Format subscription status for display
+  const formatStatus = (status: string) => {
+    return status
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Get CSS class for subscription status
+  const getStatusClass = (status: string) => {
+    return status.replace(/_/g, '-');
+  };
+
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDeleteConfirm(true);
@@ -184,9 +196,9 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
         <div className="subscription-info">
           {agency.subscription ? (
             <div className="subscription-status">
-              <div className={`subscription-badge ${agency.subscription.planType} ${agency.subscription.status}`}>
+              <div className={`subscription-badge ${agency.subscription.planType} ${getStatusClass(agency.subscription.status)}`}>
                 <RiVipCrown2Line className="subscription-icon" />
-                <span>{agency.subscription.planType.charAt(0).toUpperCase() + agency.subscription.planType.slice(1)} Plan - {agency.subscription.status.charAt(0).toUpperCase() + agency.subscription.status.slice(1)}</span>
+                <span>{formatStatus(agency.subscription.planType)} Plan - {formatStatus(agency.subscription.status)}</span>
               </div>
             </div>
           ) : (

@@ -412,9 +412,54 @@
           &.enterprise.active {
             background: #dcfce7;
             color: #166534;
-            
+
             .subscription-icon {
               color: #16a34a;
+            }
+          }
+
+          &.custom.active {
+            background: #dcfce7;
+            color: #166534;
+
+            .subscription-icon {
+              color: #16a34a;
+            }
+          }
+
+          &.custom.pending-payment {
+            background: #fef3c7;
+            color: #92400e;
+
+            .subscription-icon {
+              color: #d97706;
+            }
+          }
+
+          &.custom.incomplete {
+            background: #fef3c7;
+            color: #92400e;
+
+            .subscription-icon {
+              color: #d97706;
+            }
+          }
+
+          &.custom.past-due {
+            background: #fed7aa;
+            color: #c2410c;
+
+            .subscription-icon {
+              color: #ea580c;
+            }
+          }
+
+          &.custom.canceled {
+            background: #fee2e2;
+            color: #991b1b;
+
+            .subscription-icon {
+              color: #dc2626;
             }
           }
 

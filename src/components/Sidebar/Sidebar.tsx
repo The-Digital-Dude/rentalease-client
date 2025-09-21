@@ -29,6 +29,7 @@ import {
   MdEmail,
   MdPhone,
   MdMiscellaneousServices,
+  MdAssessment,
 } from "react-icons/md";
 import { RiFileList3Line } from "react-icons/ri";
 import "./Sidebar.scss";
@@ -49,7 +50,7 @@ const labelMap: Record<string, string> = {
   technician: "Technicians",
   propertyManagerManagement: "Property Managers",
   contacts: "Contacts",
-  // reports: "Reports",
+  reports: "Reports",
   payment: "Payment",
   compliance: "Compliance",
   region: "Region Management",
@@ -84,6 +85,7 @@ const iconMap: Record<string, React.ReactNode> = {
   technician: <MdPerson />,
   propertyManagerManagement: <MdPeople />,
   contacts: <MdContacts />,
+  reports: <MdAssessment />,
   payment: <MdPayment />,
   compliance: <MdVerifiedUser />,
   region: <MdMap />,

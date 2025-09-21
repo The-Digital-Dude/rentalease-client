@@ -9,11 +9,13 @@
       h3 {
         margin: 0;
         font-size: 1.5rem;
+        color: #2d3748;
       }
 
       p {
         margin: 0;
-        color: #666;
+        color: #718096;
+        margin-top: 0.25rem;
       }
     }
 
@@ -23,50 +25,202 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.75rem 1.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
         background: white;
+        color: #4a5568;
         cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #cbd5e0;
+          background: #f7fafc;
+        }
+      }
+    }
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: #718096;
+
+    .spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 2px solid #e2e8f0;
+      border-top: 2px solid #4299e1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .summary-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e0;
+      }
+
+      .card-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+
+        &.paid {
+          background: #c6f6d5;
+          color: #38a169;
+        }
+
+        &.pending {
+          background: #fef5e7;
+          color: #dd6b20;
+        }
+
+        &.average {
+          background: #bee3f8;
+          color: #3182ce;
+        }
+      }
+
+      .card-content {
+        h4 {
+          margin: 0;
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: #2d3748;
+          line-height: 1;
+        }
+
+        p {
+          margin: 0;
+          color: #718096;
+          font-size: 0.875rem;
+          margin-top: 0.25rem;
+        }
       }
     }
   }
 
   .payments-table {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+
     table {
       width: 100%;
       border-collapse: collapse;
 
-      th,
-      td {
-        padding: 1rem;
+      th {
+        background: #f7fafc;
+        padding: 1rem 1.5rem;
         text-align: left;
-        border-bottom: 1px solid #eee;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.875rem;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
       }
 
-      th {
-        background: #f8f9fa;
+      td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tr:hover {
+        background: #f8fafc;
+      }
+
+      .technician-cell {
+        strong {
+          color: #2d3748;
+          font-weight: 600;
+        }
+      }
+
+      .amount {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.95rem;
+      }
+
+      .date {
+        color: #718096;
+        font-size: 0.875rem;
       }
 
       .status-badge {
-        padding: 0.25rem 0.5rem;
-        border-radius: 1rem;
+        display: inline-block;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
 
         &.paid {
-          background: #d4edda;
-          color: #155724;
+          background: #c6f6d5;
+          color: #22543d;
         }
 
         &.pending {
-          background: #fff3cd;
-          color: #856404;
+          background: #fef5e7;
+          color: #c05621;
         }
 
         &.failed {
-          background: #f8d7da;
-          color: #721c24;
+          background: #fed7d7;
+          color: #c53030;
         }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .payments-table {
+      overflow-x: auto;
+
+      table {
+        min-width: 600px;
       }
     }
   }

@@ -2,7 +2,6 @@ import api from "./api";
 
 export interface SubscriptionStatus {
   status:
-    | "trial"
     | "active"
     | "past_due"
     | "canceled"
@@ -12,7 +11,6 @@ export interface SubscriptionStatus {
   billingPeriod: "monthly" | "yearly";
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
-  trialEndsAt?: string;
   limits: {
     properties: number;
   };
@@ -173,21 +171,6 @@ class SubscriptionService {
     return plans[planType as keyof typeof plans] || plans.starter;
   }
 
-  /**
-   * Format trial remaining time
-   */
-  getTrialRemainingTime(trialEndsAt?: string): string {
-    if (!trialEndsAt) return "Unknown";
-
-    const trialEnd = new Date(trialEndsAt);
-    const now = new Date();
-    const diffTime = trialEnd.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 0) return "Trial Expired";
-    if (diffDays === 1) return "1 day remaining";
-    return `${diffDays} days remaining`;
-  }
 
   /**
    * Get next billing date
@@ -212,9 +195,6 @@ class SubscriptionService {
   ): boolean {
     if (!subscription.hasActiveSubscription) return false;
 
-    // During trial, allow all actions
-    if (subscription.status === "trial") return true;
-
     // For active subscriptions, check based on limits
     if (subscription.status === "active") {
       return true; // Specific checks would be done against current usage
@@ -228,7 +208,6 @@ class SubscriptionService {
    */
   getStatusDisplay(status: string) {
     const statusMap = {
-      trial: { color: "blue", icon: "clock", label: "Free Trial" },
       active: { color: "green", icon: "check", label: "Active" },
       past_due: { color: "orange", icon: "warning", label: "Past Due" },
       canceled: { color: "red", icon: "x", label: "Cancelled" },

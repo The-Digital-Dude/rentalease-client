@@ -43,7 +43,6 @@ import {
   RiInformationLine,
   RiBriefcaseLine,
 } from "react-icons/ri";
-import { PaymentBanner } from "../../components";
 import {
   BarChart,
   Bar,
@@ -223,12 +222,6 @@ const AgencyDashboard = () => {
     totalPropertyManagers: 0,
   });
   const [error, setError] = useState<string | null>(null);
-  const [subscriptionData, setSubscriptionData] = useState<{
-    status: string;
-    amount: number;
-    paymentLinkUrl?: string;
-    trialEndsAt?: string;
-  } | null>(null);
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -283,9 +276,10 @@ const AgencyDashboard = () => {
         const performanceSummary = result.data.performanceSummary;
 
         // Calculate scheduled jobs from job status distribution
-        const scheduledJobsCount = result.data.jobStatusDistribution.find(
-          (status: any) => status.status.toLowerCase() === 'scheduled'
-        )?.count || 0;
+        const scheduledJobsCount =
+          result.data.jobStatusDistribution.find(
+            (status: any) => status.status.toLowerCase() === "scheduled"
+          )?.count || 0;
 
         const enhancedStats: AgencyStats = {
           totalProperties: quickStats.totalProperties,
@@ -349,78 +343,13 @@ const AgencyDashboard = () => {
       : 0;
   };
 
-  // Fetch subscription data with real-time Stripe integration
-  const fetchSubscriptionData = async () => {
-    try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      if (!token) {
-        console.warn('No authentication token found for subscription data');
-        setSubscriptionData({
-          status: 'pending_payment',
-          amount: 0,
-          paymentLinkUrl: '',
-          trialEndsAt: '',
-        });
-        return;
-      }
-
-      const response = await fetch('/api/v1/subscription/status', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'success' && data.data?.subscription) {
-          const subscription = data.data.subscription;
-          console.log('Subscription data received:', {
-            status: subscription.status,
-            amount: subscription.amount,
-            hasActiveSubscription: subscription.hasActiveSubscription,
-            needsPayment: subscription.needsPayment,
-            debug: data.data.debug
-          });
-
-          setSubscriptionData({
-            status: subscription.status,
-            amount: subscription.amount,
-            paymentLinkUrl: subscription.paymentLinkUrl,
-            trialEndsAt: subscription.trialEndsAt,
-          });
-        } else {
-          console.warn('Invalid subscription response format:', data);
-          throw new Error('Invalid response format');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Subscription API error:', response.status, errorData);
-        throw new Error(errorData.message || `HTTP ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error fetching subscription data:', error);
-
-      // More intelligent fallback based on development environment
-      const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
-
-      setSubscriptionData({
-        status: isDevelopment ? 'trial' : 'pending_payment', // Show trial in dev, payment required in prod
-        amount: isDevelopment ? 49 : 0,
-        paymentLinkUrl: '',
-        trialEndsAt: isDevelopment ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : '',
-      });
-    }
-  };
 
   useEffect(() => {
     fetchDashboardData();
-    fetchSubscriptionData();
   }, []);
 
   const handleRefresh = () => {
     fetchDashboardData();
-    fetchSubscriptionData();
   };
 
   // Handle subscription management
@@ -437,23 +366,23 @@ const AgencyDashboard = () => {
   // Navigation handlers for stat cards
   const handleStatCardClick = (statType: string) => {
     switch (statType) {
-      case 'properties':
-        navigate('/properties');
+      case "properties":
+        navigate("/properties");
         break;
-      case 'jobs':
-        navigate('/agencyJobs');
+      case "jobs":
+        navigate("/agencyJobs");
         break;
-      case 'completedJobs':
-        navigate('/completed-jobs');
+      case "completedJobs":
+        navigate("/completed-jobs");
         break;
-      case 'overdueJobs':
-        navigate('/overdue-jobs');
+      case "overdueJobs":
+        navigate("/overdue-jobs");
         break;
-      case 'scheduledJobs':
-        navigate('/scheduled-jobs');
+      case "scheduledJobs":
+        navigate("/scheduled-jobs");
         break;
-      case 'propertyManagers':
-        navigate('/propertyManagerManagement');
+      case "propertyManagers":
+        navigate("/propertyManagerManagement");
         break;
       default:
         break;
@@ -463,7 +392,7 @@ const AgencyDashboard = () => {
   const handleJobStatusUpdate = async (jobId: string, newStatus: string) => {
     try {
       const result = await jobService.updateJobStatus(jobId, newStatus as any);
-      
+
       if (result.success) {
         setJobs((prevJobs) =>
           prevJobs.map((job) =>
@@ -791,28 +720,18 @@ const AgencyDashboard = () => {
           </div>
         </div>
 
-        {/* Payment Banner */}
-        {subscriptionData && (
-          <PaymentBanner
-            subscriptionStatus={subscriptionData.status}
-            subscriptionAmount={subscriptionData.amount}
-            paymentLinkUrl={subscriptionData.paymentLinkUrl}
-            trialEndsAt={subscriptionData.trialEndsAt}
-            onStartPayment={handleManageSubscription}
-          />
-        )}
 
         {/* Enhanced Statistics Cards */}
         <div className="stats-overview">
-          <div 
-            className="stat-card primary clickable" 
-            onClick={() => handleStatCardClick('properties')}
+          <div
+            className="stat-card primary clickable"
+            onClick={() => handleStatCardClick("properties")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('properties');
+                handleStatCardClick("properties");
               }
             }}
           >
@@ -831,15 +750,15 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="stat-card active clickable"
-            onClick={() => handleStatCardClick('jobs')}
+            onClick={() => handleStatCardClick("jobs")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('jobs');
+                handleStatCardClick("jobs");
               }
             }}
           >
@@ -856,15 +775,15 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="stat-card success clickable"
-            onClick={() => handleStatCardClick('completedJobs')}
+            onClick={() => handleStatCardClick("completedJobs")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('completedJobs');
+                handleStatCardClick("completedJobs");
               }
             }}
           >
@@ -881,15 +800,15 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="stat-card warning clickable"
-            onClick={() => handleStatCardClick('overdueJobs')}
+            onClick={() => handleStatCardClick("overdueJobs")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('overdueJobs');
+                handleStatCardClick("overdueJobs");
               }
             }}
           >
@@ -906,15 +825,15 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="stat-card technicians clickable"
-            onClick={() => handleStatCardClick('propertyManagers')}
+            onClick={() => handleStatCardClick("propertyManagers")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('propertyManagers');
+                handleStatCardClick("propertyManagers");
               }
             }}
           >
@@ -931,15 +850,15 @@ const AgencyDashboard = () => {
             </div>
           </div>
 
-          <div 
+          <div
             className="stat-card scheduled clickable"
-            onClick={() => handleStatCardClick('scheduledJobs')}
+            onClick={() => handleStatCardClick("scheduledJobs")}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleStatCardClick('scheduledJobs');
+                handleStatCardClick("scheduledJobs");
               }
             }}
           >

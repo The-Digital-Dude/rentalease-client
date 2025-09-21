@@ -14,6 +14,7 @@ import {
 } from "react-icons/md";
 import { RiFileList3Line } from "react-icons/ri";
 import quotationService from "../../services/quotationService";
+import { agencyService } from "../../services/agencyService";
 import { QuotationDetailsModal } from "../../components/QuotationDetailsModal/QuotationDetailsModal";
 import { QuotationPricingModal } from "../../components/QuotationPricingModal/QuotationPricingModal";
 import { downloadQuotationPDF } from "../../utils/quotationPdfGenerator";
@@ -58,9 +59,17 @@ interface QuotationListItem {
 
 type TabType = "new" | "pending" | "accepted" | "rejected" | "all";
 
+interface Agency {
+  id: string;
+  name?: string;
+  companyName?: string;
+  email?: string;
+}
+
 export const QuotationManagement: React.FC = () => {
   const [quotations, setQuotations] = useState<QuotationListItem[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationListItem[]>([]);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalRequests: 0,
     pendingResponse: 0,
@@ -85,6 +94,7 @@ export const QuotationManagement: React.FC = () => {
 
   useEffect(() => {
     fetchQuotations();
+    fetchAgencies();
   }, []);
 
   useEffect(() => {
@@ -103,6 +113,24 @@ export const QuotationManagement: React.FC = () => {
       console.error("Error fetching quotations:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAgencies = async () => {
+    try {
+      const response = await agencyService.getAllAgencies();
+      if (response.success && response.data) {
+        // Transform server response to our Agency interface
+        const transformedAgencies = response.data.map((agency: any) => ({
+          id: agency.id,
+          name: agency.companyName || agency.name,
+          companyName: agency.companyName,
+          email: agency.email,
+        }));
+        setAgencies(transformedAgencies);
+      }
+    } catch (error) {
+      console.error("Error fetching agencies:", error);
     }
   };
 
@@ -372,7 +400,11 @@ export const QuotationManagement: React.FC = () => {
             className="filter-select"
           >
             <option value="">All Agencies</option>
-            {/* Agency options would be populated from API */}
+            {agencies.map((agency) => (
+              <option key={agency.id} value={agency.id}>
+                {agency.name || agency.companyName || agency.email || 'Unknown Agency'}
+              </option>
+            ))}
           </select>
           <select
             value={filters.serviceType}

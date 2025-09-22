@@ -19,7 +19,7 @@ const getBaseURL = (): string => {
     case "development":
     default:
       return (
-        import.meta.env.VITE_API_BASE_URL_DEV || "http://localhost:4000/api"
+        import.meta.env.VITE_API_BASE_URL_DEV || "https://rental-ease-server-112dd081b2eb.herokuapp.com/api"
       );
   }
 };

@@ -63,7 +63,6 @@ const Calling = () => {
 
   // Dialer state
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [callerPhone, setCallerPhone] = useState("+8801620692839"); // Default caller number
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactSearch, setContactSearch] = useState("");
@@ -182,7 +181,6 @@ const Calling = () => {
         to: formattedNumber,
         contactId: selectedContact?._id,
         notes: callNotes,
-        callerPhone: callerPhone,
       });
 
       if (response.success) {
@@ -354,22 +352,9 @@ const Calling = () => {
 
               {!isCallInProgress ? (
                 <>
-                  <div className="caller-phone-input">
-                    <label style={{ fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
-                      Your Phone Number (will receive the call)
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="Your phone number (e.g., +8801620692839)"
-                      value={callerPhone}
-                      onChange={(e) => setCallerPhone(e.target.value)}
-                      style={{ marginBottom: '1rem' }}
-                    />
-                  </div>
-
                   <div className="phone-input">
                     <label style={{ fontSize: '0.9rem', color: '#374151', marginBottom: '0.5rem', display: 'block' }}>
-                      Number to Call
+                      Phone Number to Call
                     </label>
                     <input
                       type="tel"

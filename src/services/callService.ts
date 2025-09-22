@@ -4,7 +4,6 @@ interface InitiateCallParams {
   to: string;
   contactId?: string;
   notes?: string;
-  callerPhone?: string;
 }
 
 interface CallHistoryParams {

@@ -72,6 +72,7 @@ const labelMap: Record<string, string> = {
   "lead-management": "Lead Management",
   "beyond-compliance": "Beyond Compliance",
   "quotation-management": "Quotation Management",
+  calling: "Calling",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -107,6 +108,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "lead-management": <MdPhone />,
   "beyond-compliance": <MdMiscellaneousServices />,
   "quotation-management": <RiFileList3Line />,
+  calling: <MdPhone />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

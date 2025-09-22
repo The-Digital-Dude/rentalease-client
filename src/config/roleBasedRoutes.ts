@@ -30,6 +30,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",
+    "calling",
     "messages",
   ],
   agency: [
@@ -83,6 +84,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",
+    "calling",
     "messages",
   ],
 };

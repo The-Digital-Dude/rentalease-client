@@ -220,14 +220,28 @@
             white-space: nowrap;
           }
 
-          .technician-title {
-            color: #64748b;
-            font-size: 0.875rem;
-            margin: 0;
+          .technician-meta {
             display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-weight: 500;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+
+            .experience-badge,
+            .time-badge {
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+              font-size: 0.75rem;
+              color: #64748b;
+              background: #f1f5f9;
+              padding: 0.25rem 0.5rem;
+              border-radius: 12px;
+              font-weight: 500;
+
+              svg {
+                font-size: 0.875rem;
+                color: #3b82f6;
+              }
+            }
           }
         }
 
@@ -384,8 +398,8 @@
 
         .contact-item {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          gap: 0.5rem;
           padding: 0.5rem 0;
           border-bottom: 1px solid #f1f5f9;
 
@@ -393,10 +407,17 @@
             border-bottom: none;
           }
 
+          .contact-icon {
+            font-size: 1rem;
+            color: #3b82f6;
+            flex-shrink: 0;
+          }
+
           .contact-label {
             font-size: 0.75rem;
             color: #64748b;
             font-weight: 600;
+            min-width: 40px;
             text-transform: uppercase;
             letter-spacing: 0.025em;
           }

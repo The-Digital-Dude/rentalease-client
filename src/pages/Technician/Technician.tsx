@@ -16,6 +16,8 @@ import {
   RiStarLine,
   RiBriefcaseLine,
   RiTimeLine,
+  RiPhoneLine,
+  RiMailLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import {
@@ -634,7 +636,21 @@ const TechnicianPage = () => {
                       {technician.lastName.charAt(0)}
                     </div>
                   </div>
-                  <div className="technician-info"></div>
+                  <div className="technician-info">
+                  <h3 className="technician-name">
+                    {technician.firstName} {technician.lastName}
+                  </h3>
+                  <div className="technician-meta">
+                    <div className="experience-badge">
+                      <RiBriefcaseLine />
+                      <span>{technician.experience} years exp</span>
+                    </div>
+                    <div className="time-badge">
+                      <RiTimeLine />
+                      <span>Joined {new Date(technician.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
                   <div className="technician-actions">
                     <button
                       className="action-btn view-btn"
@@ -659,12 +675,6 @@ const TechnicianPage = () => {
                     </button>
                   </div>
                 </div>
-                <h3
-                  className="technician-name"
-                  style={{ marginBottom: "20px" }}
-                >
-                  {technician.firstName} {technician.lastName}
-                </h3>
 
                 <div className="technician-status-section">
                   <div className="status-badges">
@@ -706,10 +716,12 @@ const TechnicianPage = () => {
 
                 <div className="technician-contact">
                   <div className="contact-item">
+                    <RiPhoneLine className="contact-icon" />
                     <span className="contact-label">Phone</span>
                     <span className="contact-value">{technician.phone}</span>
                   </div>
                   <div className="contact-item">
+                    <RiMailLine className="contact-icon" />
                     <span className="contact-label">Email</span>
                     <span className="contact-value">{technician.email}</span>
                   </div>

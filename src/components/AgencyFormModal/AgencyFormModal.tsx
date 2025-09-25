@@ -12,7 +12,7 @@ interface Agency {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive" | "pending" | "suspended";
+  status: "Active" | "Inactive" | "Pending" | "Suspended";
   outstandingAmount: number;
 }
 
@@ -24,7 +24,7 @@ interface AgencyFormData {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "active" | "inactive" | "pending" | "suspended";
+  status: "Active" | "Inactive" | "Pending" | "Suspended";
   password?: string;
   subscriptionAmount?: number | string;
 }
@@ -47,7 +47,7 @@ const initialFormData: AgencyFormData = {
   contactPhone: "",
   region: "",
   complianceLevel: "",
-  status: "active",
+  status: "Active",
   password: "",
   subscriptionAmount: 99,
 };
@@ -238,10 +238,10 @@ const AgencyFormModal = ({
               disabled={isSubmitting}
               required
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="pending">Pending</option>
-              <option value="suspended">Suspended</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending</option>
+              <option value="Suspended">Suspended</option>
             </select>
           </div>
           {/* Subscription amount field only for new agencies */}

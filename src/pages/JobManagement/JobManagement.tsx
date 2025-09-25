@@ -82,6 +82,7 @@ const JobManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAssigningJob, setIsAssigningJob] = useState(false);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
+  const [isCreatingJob, setIsCreatingJob] = useState(false);
 
   // Check if user can create jobs (super_user or team_member)
   const canCreateJobs = user.userType === "super_user" || user.userType === "team_member";
@@ -267,6 +268,7 @@ const JobManagement = () => {
 
   const handleCreateJob = async (formData: JobFormData) => {
     try {
+      setIsCreatingJob(true);
       setError(null);
       const jobData: CreateJobData = {
         property: formData.propertyId,
@@ -286,6 +288,8 @@ const JobManagement = () => {
       }
     } catch (err) {
       setError("Failed to create job");
+    } finally {
+      setIsCreatingJob(false);
     }
   };
 
@@ -675,6 +679,7 @@ const JobManagement = () => {
         technicians={technicians}
         properties={properties}
         mode="create"
+        isSubmitting={isCreatingJob}
       />
     </div>
   );

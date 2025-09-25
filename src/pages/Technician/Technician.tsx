@@ -14,8 +14,6 @@ import {
   RiCloseLine,
   RiMapPinLine,
   RiStarLine,
-  RiBriefcaseLine,
-  RiTimeLine,
   RiPhoneLine,
   RiMailLine,
 } from "react-icons/ri";
@@ -640,16 +638,6 @@ const TechnicianPage = () => {
                   <h3 className="technician-name">
                     {technician.firstName} {technician.lastName}
                   </h3>
-                  <div className="technician-meta">
-                    <div className="experience-badge">
-                      <RiBriefcaseLine />
-                      <span>{technician.experience} years exp</span>
-                    </div>
-                    <div className="time-badge">
-                      <RiTimeLine />
-                      <span>Joined {new Date(technician.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
                 </div>
                   <div className="technician-actions">
                     <button

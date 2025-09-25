@@ -224,24 +224,6 @@
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
-
-            .experience-badge,
-            .time-badge {
-              display: flex;
-              align-items: center;
-              gap: 0.25rem;
-              font-size: 0.75rem;
-              color: #64748b;
-              background: #f1f5f9;
-              padding: 0.25rem 0.5rem;
-              border-radius: 12px;
-              font-weight: 500;
-
-              svg {
-                font-size: 0.875rem;
-                color: #3b82f6;
-              }
-            }
           }
         }
 

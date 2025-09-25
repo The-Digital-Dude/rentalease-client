@@ -33,6 +33,7 @@ interface JobFormModalProps {
   technicians: ComponentTechnician[];
   properties: Property[];
   mode: "create" | "edit";
+  isSubmitting?: boolean;
 }
 
 const JobFormModal: React.FC<JobFormModalProps> = ({
@@ -44,18 +45,25 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   technicians,
   properties,
   mode,
+  isSubmitting = false,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double submission
     onSubmit(formData);
   };
 
   const modalTitle = mode === "create" ? "Create New Job" : "Edit Job";
   const submitButtonText = mode === "create" ? "Create Job" : "Save Changes";
 
+  const handleClose = () => {
+    if (isSubmitting) return; // Prevent closing during submission
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="medium">
-      <form onSubmit={handleSubmit} className="job-form">
+    <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle} size="medium">
+      <form onSubmit={handleSubmit} className={`job-form ${isSubmitting ? "form-disabled" : ""}`}>
         <div className="form-group">
           <label htmlFor="propertyId">Property *</label>
           <select
@@ -63,6 +71,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
             name="propertyId"
             value={formData.propertyId}
             onChange={onInputChange}
+            disabled={isSubmitting}
             required
           >
             <option value="">Select Property</option>
@@ -82,6 +91,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="jobType"
               value={formData.jobType}
               onChange={onInputChange}
+              disabled={isSubmitting}
               required
             >
               <optgroup label="Compliance Jobs">
@@ -104,6 +114,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="priority"
               value={formData.priority}
               onChange={onInputChange}
+              disabled={isSubmitting}
               required
             >
               <option value="Low">Low</option>
@@ -122,6 +133,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="status"
               value={formData.status}
               onChange={onInputChange}
+              disabled={isSubmitting}
               required
             >
               <option value="Pending">Pending</option>
@@ -142,6 +154,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="dueDate"
               value={formData.dueDate}
               onChange={onInputChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -153,6 +166,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="assignedTechnician"
               value={formData.assignedTechnician || "null"}
               onChange={onInputChange}
+              disabled={isSubmitting}
             >
               <option value="null">Select Technician</option>
               {technicians
@@ -188,15 +202,25 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
             onChange={onInputChange}
             placeholder="Enter job description or special instructions"
             rows={3}
+            disabled={isSubmitting}
           />
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>
+          <button type="button" className="btn-secondary" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
-            {submitButtonText}
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <div className="submit-loading">
+                <div className="spinner"></div>
+                <span>
+                  {mode === "create" ? "Creating Job..." : "Saving Changes..."}
+                </span>
+              </div>
+            ) : (
+              submitButtonText
+            )}
           </button>
         </div>
       </form>

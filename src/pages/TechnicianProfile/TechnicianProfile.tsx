@@ -18,12 +18,15 @@ import {
   RiTrophyLine,
   RiBriefcaseLine,
   RiHome3Line,
-  RiSettings2Line
+  RiSettings2Line,
+  RiWalletLine
 } from "react-icons/ri";
 import technicianService from "../../services/technicianService";
 import jobService from "../../services/jobService";
+import technicianPaymentService from "../../services/technicianPaymentService";
 import type { Technician } from "../../services/technicianService";
 import type { Job } from "../../services/jobService";
+import type { TechnicianPayment } from "../../services/technicianPaymentService";
 import { formatDateTime } from "../../utils";
 import "./TechnicianProfile.scss";
 
@@ -35,7 +38,9 @@ const TechnicianProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "jobs" | "performance">("overview");
+  const [payments, setPayments] = useState<TechnicianPayment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"overview" | "jobs" | "performance" | "payments">("overview");
 
   useEffect(() => {
     const loadTechnician = async () => {
@@ -83,8 +88,41 @@ const TechnicianProfile: React.FC = () => {
       }
     };
 
+    const loadPayments = async () => {
+      if (!id) return;
+      try {
+        setPaymentsLoading(true);
+        console.log("Loading payments for technician ID:", id);
+
+        // Use the correct technician payment service
+        const response = await technicianPaymentService.getPayments({
+          technicianId: id,
+          limit: 100,
+          page: 1
+        });
+
+        console.log("Technician payments API response:", response);
+
+        if (response.status === "success" && response.data?.payments) {
+          console.log("Found payments for technician:", response.data.payments.length);
+          console.log("Payment details:", response.data.payments);
+          setPayments(response.data.payments);
+        } else {
+          console.log("No payments found or unsuccessful response for technician");
+          setPayments([]);
+        }
+      } catch (error: any) {
+        console.error("Failed to load payments:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        setPayments([]);
+      } finally {
+        setPaymentsLoading(false);
+      }
+    };
+
     loadTechnician();
     loadJobs();
+    loadPayments();
   }, [id]);
 
   const handleBack = () => {
@@ -244,6 +282,13 @@ const TechnicianProfile: React.FC = () => {
         >
           <RiTrophyLine />
           Performance
+        </button>
+        <button
+          className={`tab-button ${activeTab === "payments" ? "active" : ""}`}
+          onClick={() => setActiveTab("payments")}
+        >
+          <RiWalletLine />
+          Payments ({payments.length})
         </button>
       </div>
 
@@ -476,6 +521,92 @@ const TechnicianProfile: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "payments" && (
+          <div className="payments-tab">
+            <div className="payments-header">
+              <h3>Payment History</h3>
+              <div className="payments-summary">
+                <div className="summary-item">
+                  <span className="label">Total Payments:</span>
+                  <span className="value">{payments.length}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="label">Total Earned:</span>
+                  <span className="value">
+                    ${payments.reduce((sum, payment) => sum + payment.amount, 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {paymentsLoading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading payments...</p>
+              </div>
+            ) : payments.length === 0 ? (
+              <div className="no-payments">
+                <div className="empty-state">
+                  <RiWalletLine className="empty-icon" />
+                  <h4>No Payment Records</h4>
+                  <p>No payment history found for this technician.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="payments-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Payment #</th>
+                      <th>Job ID</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Job Type</th>
+                      <th>Completed</th>
+                      <th>Paid Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((payment) => (
+                      <tr key={payment.id}>
+                        <td className="invoice-id">
+                          {payment.paymentNumber}
+                        </td>
+                        <td className="job-id">
+                          {typeof payment.jobId === 'object' && payment.jobId?.job_id
+                            ? payment.jobId.job_id
+                            : payment.jobId}
+                        </td>
+                        <td className="amount">
+                          ${payment.amount.toFixed(2)}
+                        </td>
+                        <td>
+                          <span className={`status-badge ${payment.status.toLowerCase().replace(' ', '-')}`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="job-type">
+                          {payment.jobType}
+                        </td>
+                        <td className="date">
+                          {payment.jobCompletedAt
+                            ? new Date(payment.jobCompletedAt).toLocaleDateString()
+                            : 'N/A'}
+                        </td>
+                        <td className="date">
+                          {payment.paidAt
+                            ? new Date(payment.paidAt).toLocaleDateString()
+                            : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

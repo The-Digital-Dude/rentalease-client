@@ -134,9 +134,20 @@ class InvoiceService {
       const url = `${this.baseUrl}${
         queryParams.toString() ? `?${queryParams.toString()}` : ""
       }`;
+
+      console.log("InvoiceService: Making API call to:", url);
+      console.log("InvoiceService: Filters:", filters);
+      console.log("InvoiceService: Query params:", queryParams.toString());
+
       const response: AxiosResponse<InvoicesListResponse> = await api.get(url);
+
+      console.log("InvoiceService: API response:", response);
+      console.log("InvoiceService: Response data:", response.data);
+
       return response.data;
     } catch (error: any) {
+      console.error("InvoiceService: API error:", error);
+      console.error("InvoiceService: Error response:", error?.response);
       throw (
         error?.response?.data || {
           status: "error",

@@ -26,6 +26,7 @@ import {
   type CreateTechnicianData,
   type Job,
 } from "../../services";
+import TechnicianCard from "../../components/TechnicianCard";
 import "./Technician.scss";
 import toast from "react-hot-toast";
 
@@ -626,102 +627,24 @@ const TechnicianPage = () => {
         <>
           <div className="technician-grid">
             {filteredTechnicians.map((technician) => (
-              <div key={technician.id} className="technician-card">
-                <div className="technician-header">
-                  <div className="technician-avatar">
-                    <div className="avatar-placeholder">
-                      {technician.firstName.charAt(0)}
-                      {technician.lastName.charAt(0)}
-                    </div>
-                  </div>
-                  <div className="technician-info">
-                  <h3 className="technician-name">
-                    {technician.firstName} {technician.lastName}
-                  </h3>
-                </div>
-                  <div className="technician-actions">
-                    <button
-                      className="action-btn view-btn"
-                      title="View Details"
-                      onClick={() => handleViewTechnician(technician)}
-                    >
-                      <RiEyeLine />
-                    </button>
-                    <button
-                      className="action-btn edit-btn"
-                      title="Edit Technician"
-                      onClick={() => handleEditTechnician(technician)}
-                    >
-                      <RiEditLine />
-                    </button>
-                    <button
-                      className="action-btn delete-btn"
-                      title="Delete Technician"
-                      onClick={() => handleDeleteTechnician(technician.id)}
-                    >
-                      <RiDeleteBinLine />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="technician-status-section">
-                  <div className="status-badges">
-                    <span
-                      className={`status-badge availability ${getStatusColor(
-                        technician.availabilityStatus
-                      )}`}
-                    >
-                      {technician.availabilityStatus}
-                    </span>
-                    <span
-                      className={`status-badge account ${getStatusColor(
-                        technician.status
-                      )}`}
-                    >
-                      {technician.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="technician-stats">
-                  <div className="stat-item">
-                    <div className="stat-value">
-                      {technician.currentJobs}/{technician.maxJobs}
-                    </div>
-                    <div className="stat-label">Active Jobs</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-value">{technician.completedJobs}</div>
-                    <div className="stat-label">Completed</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-value">
-                      <RiStarLine /> {technician.averageRating.toFixed(1)}
-                    </div>
-                    <div className="stat-label">Rating</div>
-                  </div>
-                </div>
-
-                <div className="technician-contact">
-                  <div className="contact-item">
-                    <RiPhoneLine className="contact-icon" />
-                    <span className="contact-label">Phone</span>
-                    <span className="contact-value">{technician.phone}</span>
-                  </div>
-                  <div className="contact-item">
-                    <RiMailLine className="contact-icon" />
-                    <span className="contact-label">Email</span>
-                    <span className="contact-value">{technician.email}</span>
-                  </div>
-                </div>
-
-                {technician.address.fullAddress && (
-                  <div className="technician-location">
-                    <RiMapPinLine />
-                    <span>{technician.address.fullAddress}</span>
-                  </div>
-                )}
-              </div>
+              <TechnicianCard
+                key={technician.id}
+                technician={{
+                  _id: technician.id,
+                  name: `${technician.firstName} ${technician.lastName}`,
+                  email: technician.email,
+                  phone: technician.phone,
+                  location: technician.address.fullAddress || 'No address provided',
+                  availability: technician.availabilityStatus,
+                  accountStatus: technician.status,
+                  completedJobs: technician.completedJobs,
+                  avgRating: technician.averageRating,
+                  hourlyRate: technician.hourlyRate || 0,
+                }}
+                onView={() => handleViewTechnician(technician)}
+                onEdit={() => handleEditTechnician(technician)}
+                onDelete={() => handleDeleteTechnician(technician.id)}
+              />
             ))}
           </div>
 
@@ -1196,46 +1119,6 @@ const TechnicianPage = () => {
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="detail-section full-width">
-              <h4>Job History</h4>
-              {loadingJobs ? (
-                <div className="loading-state">
-                  <RiLoaderLine className="loading-icon" />
-                  <p>Loading jobs...</p>
-                </div>
-              ) : technicianJobs.length > 0 ? (
-                <div className="job-history-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Job ID</th>
-                        <th>Property</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {technicianJobs.map((job) => (
-                        <tr key={job.id}>
-                          <td>{job.job_id}</td>
-                          <td>{job.property.fullAddress}</td>
-                          <td>{job.jobType}</td>
-                          <td>
-                            <span className={`status-badge ${getStatusColor(job.status)}`}>
-                              {job.status}
-                            </span>
-                          </td>
-                          <td>{new Date(job.dueDate).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p>No jobs found for this technician.</p>
-              )}
             </div>
           </div>
           <div className="modal-footer">

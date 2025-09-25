@@ -686,6 +686,173 @@
         }
       }
     }
+
+    // Payments Tab
+    .payments-tab {
+      .payments-header {
+        margin-bottom: 2rem;
+
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 0.5rem;
+        }
+
+        p {
+          color: #6b7280;
+          margin: 0;
+        }
+      }
+
+      .payments-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        text-align: center;
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #e5e7eb;
+          border-top: 3px solid #3b82f6;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 1rem;
+        }
+      }
+
+      .payments-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+
+          thead {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+
+            th {
+              padding: 1rem 1.5rem;
+              text-align: left;
+              font-weight: 600;
+              color: #1f2937;
+              border-bottom: 1px solid #e5e7eb;
+            }
+          }
+
+          tbody {
+            tr {
+              transition: background-color 0.2s ease;
+
+              &:hover {
+                background: rgba(59, 130, 246, 0.02);
+              }
+
+              &:not(:last-child) {
+                border-bottom: 1px solid #f3f4f6;
+              }
+
+              td {
+                padding: 1rem 1.5rem;
+                vertical-align: middle;
+
+                .invoice-id {
+                  font-family: 'Monaco', 'Menlo', monospace;
+                  font-weight: 600;
+                  color: #3b82f6;
+                }
+
+                .amount {
+                  font-weight: 600;
+                  color: #1f2937;
+                  font-size: 1.1rem;
+                }
+
+                .date {
+                  color: #6b7280;
+                  font-weight: 500;
+                }
+
+                .status-badge {
+                  padding: 0.25rem 0.75rem;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  font-weight: 500;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+
+                  &.paid { background: rgba(16, 185, 129, 0.1); color: #047857; }
+                  &.pending { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+                  &.sent { background: rgba(59, 130, 246, 0.1); color: #1d4ed8; }
+                  &.draft { background: rgba(156, 163, 175, 0.1); color: #374151; }
+                }
+
+                .job-type {
+                  padding: 0.25rem 0.75rem;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  font-weight: 500;
+                  text-transform: capitalize;
+                  letter-spacing: 0.25px;
+                  background: rgba(139, 92, 246, 0.1);
+                  color: #7c3aed;
+                  border: none;
+                }
+
+                .payment-method {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  color: #6b7280;
+                  font-weight: 500;
+
+                  svg {
+                    color: #3b82f6;
+                    font-size: 1rem;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .no-payments {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+        svg {
+          font-size: 3rem;
+          color: #6b7280;
+          margin-bottom: 1rem;
+        }
+
+        h4 {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 0.5rem;
+        }
+
+        p {
+          color: #6b7280;
+          margin: 0;
+        }
+      }
+    }
   }
 
   // Responsive Design
@@ -740,6 +907,14 @@
 
       .performance-tab .metrics-grid {
         grid-template-columns: 1fr;
+      }
+
+      .payments-tab .payments-table {
+        overflow-x: auto;
+
+        table {
+          min-width: 700px;
+        }
       }
     }
   }

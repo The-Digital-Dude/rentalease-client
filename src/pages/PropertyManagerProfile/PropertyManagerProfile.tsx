@@ -16,6 +16,7 @@ import {
   RiLoaderLine,
   RiBriefcaseLine,
   RiCalendarLine,
+  RiEyeLine,
 } from "react-icons/ri";
 import {
   propertyManagerService,
@@ -189,33 +190,49 @@ const PropertyManagerProfile: React.FC = () => {
             <thead>
               <tr>
                 <th>Property Address</th>
-                <th>Role</th>
+                <th>Property Type</th>
+                <th>Region</th>
                 <th>Status</th>
-                <th>Assigned Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {propertyManager.assignedProperties.map((assignment, index) => (
-                <tr key={index}>
-                  <td>
-                    {assignment.property?.address ?
-                      `${assignment.property.address.street}, ${assignment.property.address.suburb} ${assignment.property.address.state} ${assignment.property.address.postcode}`
-                      : assignment.propertyId
-                    }
-                  </td>
-                  <td>
-                    <span className={`role-badge role-${assignment.role?.toLowerCase()}`}>
-                      {assignment.role}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`status-badge ${getStatusColor(assignment.status)}`}>
-                      {assignment.status}
-                    </span>
-                  </td>
-                  <td>{new Date(assignment.assignedDate).toLocaleDateString()}</td>
-                </tr>
-              ))}
+              {propertyManager.assignedProperties.map((assignment: any, index) => {
+                const property = assignment.propertyId || assignment;
+                return (
+                  <tr key={property._id || assignment._id || index}>
+                    <td>
+                      {property.address?.fullAddress ||
+                       (property.address ?
+                        `${property.address.street || ''} ${property.address.suburb || ''} ${property.address.state || ''} ${property.address.postcode || ''}`.trim() :
+                        'No address available'
+                       )
+                      }
+                    </td>
+                    <td>
+                      <span className="property-type-badge">
+                        {property.propertyType || 'N/A'}
+                      </span>
+                    </td>
+                    <td>{property.region || 'N/A'}</td>
+                    <td>
+                      <span className={`status-badge ${property.isActive ? 'status-active' : 'status-inactive'}`}>
+                        {property.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="view-btn"
+                        onClick={() => navigate(`/properties/${property._id}`)}
+                        title="View Property Details"
+                      >
+                        <RiEyeLine />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

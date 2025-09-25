@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RiBuilding2Line,
   RiCalendarLine,
@@ -109,6 +110,7 @@ const PropertyManagerManagementPage = () => {
 
   // Get current user info for role-based display
   const { userType, name } = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
 
   // Check if user can see all property managers
   const canSeeAllPropertyManagers =
@@ -316,6 +318,11 @@ const PropertyManagerManagementPage = () => {
   const handleViewPropertyManager = (propertyManager: PropertyManager) => {
     setViewingPropertyManager(propertyManager);
     setShowViewModal(true);
+  };
+
+  // Handle navigate to PropertyManager profile page
+  const handleNavigateToProfile = (propertyManagerId: string) => {
+    navigate(`/property-managers/${propertyManagerId}`);
   };
 
   // Close modals
@@ -734,11 +741,21 @@ const PropertyManagerManagementPage = () => {
           {propertyManagers.map((propertyManager) => (
             <div key={propertyManager.id} className="property-manager-card">
               <div className="card-header">
-                <div className="avatar">
+                <div
+                  className="avatar clickable"
+                  onClick={() => handleNavigateToProfile(propertyManager.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <RiUserSettingsLine />
                 </div>
                 <div className="header-info">
-                  <h4>{propertyManager.fullName}</h4>
+                  <h4
+                    className="clickable"
+                    onClick={() => handleNavigateToProfile(propertyManager.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {propertyManager.fullName}
+                  </h4>
                   <p className="email">{propertyManager.email}</p>
                   {canSeeAllPropertyManagers &&
                     propertyManager.owner?.ownerId &&

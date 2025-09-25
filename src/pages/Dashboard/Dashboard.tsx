@@ -9,6 +9,7 @@ import TechnicianDashboard from "../TechnicianDashboard/TechnicianDashboard";
 import StaffDashboard from "../StaffDashboard/StaffDashboard";
 import SuperUserDashboard from "../SuperUserDashboard/SuperUserDashboard";
 import AgencyDashboard from "../AgencyDashboard/AgencyDashboard";
+import PropertyManagerDashboard from "../PropertyManagerDashboard/PropertyManagerDashboard";
 import "./Dashboard.scss";
 
 const Dashboard = () => {
@@ -39,6 +40,8 @@ const Dashboard = () => {
         return <StaffDashboard />;
       case "agency":
         return <AgencyDashboard />;
+      case "property_manager":
+        return <PropertyManagerDashboard />;
       default:
         // Default dashboard for unknown user types
         return (

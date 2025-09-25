@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import {
   RiAddLine,
   RiToolsLine,
-  RiFilterLine,
   RiTimeLine,
   RiFireLine,
   RiCheckboxCircleLine,
@@ -11,7 +10,6 @@ import {
 } from "react-icons/ri";
 import {
   JobFormModal,
-  UrgentJobsSection,
   JobAllocationTool,
   JobsOverview,
 } from "../../components";
@@ -56,6 +54,7 @@ const JobManagement = () => {
 
   // Job data state
   const [jobs, setJobs] = useState<ComponentJob[]>([]);
+  const [allJobs, setAllJobs] = useState<ComponentJob[]>([]); // Keep track of all jobs for stats
   const [technicians, setTechnicians] = useState<ComponentTechnician[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
 
@@ -71,6 +70,8 @@ const JobManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
 
   // UI state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -89,10 +90,10 @@ const JobManagement = () => {
     fetchInitialData();
   }, []);
 
-  // Refetch jobs when pagination or filters change
+  // Refetch jobs when pagination, filters, or sorting changes
   useEffect(() => {
     fetchJobs();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter, typeFilter]);
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter, typeFilter, sortBy, sortOrder]);
 
   const fetchInitialData = async () => {
     try {
@@ -129,6 +130,8 @@ const JobManagement = () => {
         setError(propertiesResponse.message || "Failed to fetch properties");
       }
 
+      // Fetch all jobs for stats (without pagination or filters)
+      await fetchAllJobsForStats();
       // Fetch jobs with pagination
       await fetchJobs();
     } catch (err) {
@@ -136,6 +139,31 @@ const JobManagement = () => {
       setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAllJobsForStats = async () => {
+    try {
+      // Fetch all jobs without pagination or filters for accurate stats
+      const filters: JobFilters = {
+        page: 1,
+        limit: 1000, // Get a large number to get all jobs
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      };
+
+      const response = await jobService.getJobs(filters);
+
+      if (response.success && response.data) {
+        // Adapt all jobs for stats
+        const allComponentJobs = (response.data as ServiceJob[]).map((job) =>
+          adaptServiceJobToComponentJob(job, technicians)
+        );
+        setAllJobs(allComponentJobs);
+      }
+    } catch (err) {
+      console.error("Fetch all jobs error:", err);
+      // Don't set error here as this is just for stats
     }
   };
 
@@ -147,8 +175,8 @@ const JobManagement = () => {
       const filters: JobFilters = {
         page: currentPage,
         limit: itemsPerPage,
-        sortBy: "dueDate",
-        sortOrder: "asc",
+        sortBy: sortBy,
+        sortOrder: sortOrder as "asc" | "desc",
       };
 
       // Add search filter
@@ -454,10 +482,6 @@ const JobManagement = () => {
             </div>
           </div>
           <div className="header-actions">
-            <button className="action-btn secondary">
-              <RiFilterLine />
-              Filter Jobs
-            </button>
             {canCreateJobs && (
               <button
                 className="action-btn primary"
@@ -472,21 +496,21 @@ const JobManagement = () => {
         
         <div className="header-stats">
           <div className="stat-item">
+            <div className="stat-icon total">
+              <RiToolsLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{allJobs.length}</span>
+              <span className="stat-label">Total Jobs</span>
+            </div>
+          </div>
+          <div className="stat-item">
             <div className="stat-icon pending">
               <RiTimeLine />
             </div>
             <div className="stat-content">
-              <span className="stat-number">{jobs.filter(j => j.status === 'Pending').length}</span>
+              <span className="stat-number">{allJobs.filter(j => j.status === 'Pending').length}</span>
               <span className="stat-label">Pending</span>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon urgent">
-              <RiFireLine />
-            </div>
-            <div className="stat-content">
-              <span className="stat-number">{urgentJobs.length}</span>
-              <span className="stat-label">Urgent</span>
             </div>
           </div>
           <div className="stat-item">
@@ -494,8 +518,17 @@ const JobManagement = () => {
               <RiCheckboxCircleLine />
             </div>
             <div className="stat-content">
-              <span className="stat-number">{jobs.filter(j => j.status === 'Completed').length}</span>
+              <span className="stat-number">{allJobs.filter(j => j.status === 'Completed').length}</span>
               <span className="stat-label">Completed</span>
+            </div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-icon urgent">
+              <RiFireLine />
+            </div>
+            <div className="stat-content">
+              <span className="stat-number">{allJobs.filter(j => j.priority === 'Urgent' || j.status === 'Overdue').length}</span>
+              <span className="stat-label">Urgent/Overdue</span>
             </div>
           </div>
           <div className="stat-item">
@@ -510,24 +543,19 @@ const JobManagement = () => {
         </div>
       </div>
 
-      {/* Urgent Jobs Section */}
-      <UrgentJobsSection
-        urgentJobs={urgentJobs}
-        getPriorityColor={getPriorityColor}
-        isOverdue={isOverdue}
-      />
-
-      {/* Job Allocation Tool */}
-      <JobAllocationTool
-        jobs={jobs}
-        technicians={technicians}
-        getPriorityColor={getPriorityColor}
-        handleDragStart={handleDragStart}
-        handleDragOver={handleDragOver}
-        handleDrop={handleDrop}
-        isAssigningJob={isAssigningJob}
-        assigningJobId={assigningJobId}
-      />
+      {/* Job Allocation Tool - Hide for super users */}
+      {user.userType !== "super_user" && (
+        <JobAllocationTool
+          jobs={jobs}
+          technicians={technicians}
+          getPriorityColor={getPriorityColor}
+          handleDragStart={handleDragStart}
+          handleDragOver={handleDragOver}
+          handleDrop={handleDrop}
+          isAssigningJob={isAssigningJob}
+          assigningJobId={assigningJobId}
+        />
+      )}
 
       {/* Jobs Overview */}
       <JobsOverview
@@ -538,6 +566,10 @@ const JobManagement = () => {
         setStatusFilter={setStatusFilter}
         typeFilter={typeFilter}
         setTypeFilter={setTypeFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
         getStatusColor={getStatusColor}
         getPriorityColor={getPriorityColor}
         isOverdue={isOverdue}

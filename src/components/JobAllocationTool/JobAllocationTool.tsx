@@ -1,7 +1,7 @@
-import React from "react";
-import { 
-  RiDragDropLine, 
-  RiUserLine, 
+import React, { useState, useMemo } from "react";
+import {
+  RiDragDropLine,
+  RiUserLine,
   RiLoader4Line,
   RiCalendarLine,
   RiMapPinLine,
@@ -10,7 +10,10 @@ import {
   RiTimeLine,
   RiCheckboxCircleLine,
   RiGroupLine,
-  RiFireLine
+  RiFireLine,
+  RiArrowUpLine,
+  RiArrowDownLine,
+  RiFilterLine
 } from "react-icons/ri";
 import { formatDateTime } from "../../utils";
 import "./JobAllocationTool.scss";
@@ -38,7 +41,51 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
   isAssigningJob = false,
   assigningJobId = null,
 }) => {
+  const [sortBy, setSortBy] = useState<'priority' | 'dueDate' | 'none'>('none');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [skillFilter, setSkillFilter] = useState<string>('all');
+  const [showSkillFilter, setShowSkillFilter] = useState(false);
+
   const pendingJobs = jobs.filter((job) => job.status === "Pending");
+
+  // Sort jobs based on selected criteria
+  const sortedJobs = useMemo(() => {
+    const jobsToSort = [...pendingJobs];
+
+    if (sortBy === 'priority') {
+      const priorityOrder = { 'Urgent': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+      jobsToSort.sort((a, b) => {
+        const aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+        const bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+        return sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+      });
+    } else if (sortBy === 'dueDate') {
+      jobsToSort.sort((a, b) => {
+        const aDate = new Date(a.dueDate).getTime();
+        const bDate = new Date(b.dueDate).getTime();
+        return sortOrder === 'desc' ? bDate - aDate : aDate - bDate;
+      });
+    }
+
+    return jobsToSort;
+  }, [pendingJobs, sortBy, sortOrder]);
+
+  // Get unique skills from technicians
+  const availableSkills = useMemo(() => {
+    const skills = new Set<string>();
+    technicians.forEach(tech => {
+      tech.specialties.forEach(specialty => skills.add(specialty));
+    });
+    return Array.from(skills).sort();
+  }, [technicians]);
+
+  // Filter technicians based on selected skill
+  const filteredTechnicians = useMemo(() => {
+    if (skillFilter === 'all') return technicians;
+    return technicians.filter(tech =>
+      tech.specialties.includes(skillFilter)
+    );
+  }, [technicians, skillFilter]);
 
   const getWorkloadColor = (current: number, max: number) => {
     const percentage = (current / max) * 100;
@@ -97,7 +144,42 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
               <span className="count-badge">{pendingJobs.length}</span>
             </h3>
             <div className="panel-actions">
-              <button className="sort-btn">Sort by Priority</button>
+              <div className="sort-controls">
+                <button
+                  className={`sort-btn ${sortBy === 'priority' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (sortBy === 'priority') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('priority');
+                      setSortOrder('desc');
+                    }
+                  }}
+                  title="Sort by priority"
+                >
+                  Sort by Priority
+                  {sortBy === 'priority' && (
+                    sortOrder === 'desc' ? <RiArrowDownLine /> : <RiArrowUpLine />
+                  )}
+                </button>
+                <button
+                  className={`sort-btn ${sortBy === 'dueDate' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (sortBy === 'dueDate') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('dueDate');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  title="Sort by due date"
+                >
+                  Due Date
+                  {sortBy === 'dueDate' && (
+                    sortOrder === 'desc' ? <RiArrowDownLine /> : <RiArrowUpLine />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -109,7 +191,7 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                 <span>Great work managing your workflow</span>
               </div>
             ) : (
-              pendingJobs.map((job) => (
+              sortedJobs.map((job) => (
                 <div
                   key={job.id}
                   className={`modern-job-card ${
@@ -177,12 +259,44 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
               <span className="count-badge">{technicians.length}</span>
             </h3>
             <div className="panel-actions">
-              <button className="filter-btn">Filter by Skills</button>
+              <div className="filter-controls">
+                <button
+                  className={`filter-btn ${showSkillFilter ? 'active' : ''}`}
+                  onClick={() => setShowSkillFilter(!showSkillFilter)}
+                >
+                  <RiFilterLine />
+                  Filter by Skills
+                </button>
+                {showSkillFilter && (
+                  <select
+                    className="skill-filter-select"
+                    value={skillFilter}
+                    onChange={(e) => setSkillFilter(e.target.value)}
+                  >
+                    <option value="all">All Skills</option>
+                    {availableSkills.map(skill => (
+                      <option key={skill} value={skill}>{skill}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="technicians-container">
-            {technicians.map((technician) => {
+            {filteredTechnicians.length === 0 ? (
+              <div className="empty-state">
+                <RiUserLine />
+                <p>No technicians found with the selected skill</p>
+                <button
+                  className="reset-filter-btn"
+                  onClick={() => setSkillFilter('all')}
+                >
+                  Reset Filter
+                </button>
+              </div>
+            ) : (
+              filteredTechnicians.map((technician) => {
               const workloadLevel = getWorkloadColor(technician.currentJobs, technician.maxJobs);
               
               return (
@@ -280,7 +394,8 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                   )}
                 </div>
               );
-            })}
+            })
+            )}
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   RiEdit2Line,
   RiEyeLine,
   RiLoader4Line,
+  RiArrowUpDownLine,
 } from "react-icons/ri";
 import "./JobsOverview.scss";
 import JobFormModal, { type JobFormData } from "../JobFormModal";
@@ -22,6 +23,10 @@ interface JobsOverviewProps {
   setStatusFilter: (status: string) => void;
   typeFilter: string;
   setTypeFilter: (type: string) => void;
+  sortBy: string;
+  setSortBy: (sortBy: string) => void;
+  sortOrder: string;
+  setSortOrder: (sortOrder: string) => void;
   getStatusColor: (status: string) => string;
   getPriorityColor: (priority: string) => string;
   isOverdue: (dueDate: string) => boolean;
@@ -47,6 +52,10 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   setStatusFilter,
   typeFilter,
   setTypeFilter,
+  sortBy,
+  setSortBy,
+  sortOrder,
+  setSortOrder,
   getStatusColor,
   getPriorityColor,
   isOverdue,
@@ -183,6 +192,29 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
             <option value="Smoke">Smoke</option>
             <option value="Repairs">Repairs</option>
           </select>
+          <div className="sort-dropdown">
+            <RiArrowUpDownLine className="sort-icon" />
+            <select
+              className="sort-select"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [newSortBy, newSortOrder] = e.target.value.split('-');
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+            >
+              <option value="createdAt-desc">Latest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="dueDate-asc">Due Date (Earliest)</option>
+              <option value="dueDate-desc">Due Date (Latest)</option>
+              <option value="priority-desc">Priority (High to Low)</option>
+              <option value="priority-asc">Priority (Low to High)</option>
+              <option value="status-asc">Status (A-Z)</option>
+              <option value="status-desc">Status (Z-A)</option>
+              <option value="jobType-asc">Type (A-Z)</option>
+              <option value="jobType-desc">Type (Z-A)</option>
+            </select>
+          </div>
         </div>
       </div>
 

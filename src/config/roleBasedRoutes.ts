@@ -68,7 +68,6 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "properties",
     "contacts",
     "reports",
-    "messages",
   ],
   team_member: [
     "dashboard",

@@ -1,0 +1,162 @@
+.property-manager-reports {
+
+  .reports-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    background: var(--card-background);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+
+    .tab-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+
+      &:hover {
+        background: var(--background-secondary);
+        color: var(--text-primary);
+      }
+
+      &.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
+      }
+
+      .tab-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .tab-content {
+    min-height: 400px;
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border-color);
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      p {
+        color: var(--text-secondary);
+        margin: 0;
+      }
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+
+    .reports-tabs {
+      padding: 0.25rem;
+
+      .tab-button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+
+        .tab-icon {
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+}
+
+// Common chart styles for components
+.chart-container {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+
+  .chart-header {
+    margin-bottom: 1rem;
+
+    h4 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .metric-card {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .metric-change {
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+
+      &.positive {
+        color: #059669;
+      }
+
+      &.negative {
+        color: #dc2626;
+      }
+    }
+  }
+}

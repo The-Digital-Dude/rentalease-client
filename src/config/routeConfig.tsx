@@ -25,6 +25,9 @@ const Contacts = lazy(
 const Reports = lazy(
   () => import("../pages/ReportsAnalytics/ReportsAnalytics")
 );
+const PropertyManagerReports = lazy(
+  () => import("../pages/PropertyManagerReports/PropertyManagerReports")
+);
 const LeadManagement = lazy(() => import("../pages/LeadManagement"));
 const RegionManagement = lazy(
   () => import("../pages/RegionManagement/RegionManagement")
@@ -91,7 +94,7 @@ export const routeConfig = (userType: UserType) => {
     agencyJobs: AgencyJobs,
     contacts: Contacts,
     "lead-management": LeadManagement,
-    reports: Reports,
+    reports: userType === "property_manager" ? PropertyManagerReports : Reports,
     region: RegionManagement,
     compliance: PropertyCompliance,
     payment: PaymentProperty,

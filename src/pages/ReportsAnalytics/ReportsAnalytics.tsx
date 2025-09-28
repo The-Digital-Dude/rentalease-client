@@ -466,6 +466,24 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="health-card">
+                <div className="health-icon">
+                  <RiMoneyDollarCircleLine />
+                </div>
+                <div className="health-content">
+                  <div className="health-value">
+                    $
+                    {executiveDashboard.quotations.acceptedValue.toLocaleString()}
+                  </div>
+                  <div className="health-label">Accepted Quotations Value</div>
+                  <div className="health-breakdown">
+                    {executiveDashboard.quotations.acceptedQuotations} of{" "}
+                    {executiveDashboard.quotations.totalQuotations} quotations
+                    ({executiveDashboard.quotations.acceptanceRate}% acceptance rate)
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 import {
   RiAddLine,
   RiToolsLine,
@@ -122,13 +123,16 @@ const JobManagement = () => {
         const errorMessage =
           techResponse.message || "Failed to fetch technicians";
         console.error("Technicians fetch error:", errorMessage);
+        toast.error(`❌ ${errorMessage}`);
         setError(errorMessage);
       }
 
       if (propertiesResponse.status === "success" && propertiesResponse.data) {
         setProperties(propertiesResponse.data.properties);
       } else {
-        setError(propertiesResponse.message || "Failed to fetch properties");
+        const errorMessage = propertiesResponse.message || "Failed to fetch properties";
+        toast.error(`❌ ${errorMessage}`);
+        setError(errorMessage);
       }
 
       // Fetch all jobs for stats (without pagination or filters)
@@ -137,7 +141,9 @@ const JobManagement = () => {
       await fetchJobs();
     } catch (err) {
       console.error("Fetch error:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch data");
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
+      toast.error(`❌ ${errorMessage}`);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -218,11 +224,14 @@ const JobManagement = () => {
       } else {
         const errorMessage = jobsResponse.message || "Failed to fetch jobs";
         console.error("Jobs fetch error:", errorMessage);
+        toast.error(`❌ ${errorMessage}`);
         setError(errorMessage);
       }
     } catch (err) {
       console.error("Fetch jobs error:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch jobs");
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch jobs";
+      toast.error(`❌ ${errorMessage}`);
+      setError(errorMessage);
     }
   };
 
@@ -280,14 +289,21 @@ const JobManagement = () => {
       };
       const response = await jobService.createJob(jobData);
       if (response.success && response.data) {
+        // Show success toast notification
+        toast.success("✅ Job created successfully!");
+
         await fetchInitialData(); // Refresh all data
         setFormData(initialFormData);
         setShowCreateForm(false);
       } else {
+        // Show error toast notification
+        toast.error(`❌ ${response.message}`);
         setError(response.message);
       }
     } catch (err) {
-      setError("Failed to create job");
+      const errorMessage = "Failed to create job";
+      toast.error(`❌ ${errorMessage}`);
+      setError(errorMessage);
     } finally {
       setIsCreatingJob(false);
     }
@@ -343,6 +359,9 @@ const JobManagement = () => {
         );
 
         if (response.success) {
+          // Show success toast notification
+          toast.success(`✅ Job assigned to ${technician.name} successfully!`);
+
           // Update local technicians state with new job count
           if (response.data && "technician" in response.data) {
             const updatedTechnicians = technicians.map((tech) => {
@@ -360,10 +379,13 @@ const JobManagement = () => {
           }
           await fetchInitialData(); // Refresh all data
         } else {
+          toast.error(`❌ ${response.message}`);
           setError(response.message);
         }
       } catch (err) {
-        setError("Failed to assign job");
+        const errorMessage = "Failed to assign job";
+        toast.error(`❌ ${errorMessage}`);
+        setError(errorMessage);
       } finally {
         setIsAssigningJob(false);
         setAssigningJobId(null);
@@ -406,15 +428,20 @@ const JobManagement = () => {
         });
 
         if (response.success) {
+          // Show success toast notification
+          toast.success(`✅ Job status updated to ${newStatus}!`);
           // Refresh all data to get updated job counts from backend
           await fetchInitialData();
         } else {
+          toast.error(`❌ ${response.message}`);
           setError(response.message);
         }
       } else {
         // For other status changes, just update the status
         const response = await jobService.updateJobStatus(jobId, newStatus);
         if (response.success) {
+          // Show success toast notification
+          toast.success(`✅ Job status updated to ${newStatus}!`);
           // Update jobs state locally
           setJobs((prevJobs) =>
             prevJobs.map((job) => {
@@ -428,11 +455,14 @@ const JobManagement = () => {
             })
           );
         } else {
+          toast.error(`❌ ${response.message}`);
           setError(response.message);
         }
       }
     } catch (err) {
-      setError("Failed to update job status");
+      const errorMessage = "Failed to update job status";
+      toast.error(`❌ ${errorMessage}`);
+      setError(errorMessage);
     }
     setShowActionMenu(null);
   };
@@ -456,12 +486,16 @@ const JobManagement = () => {
       }
       const response = await jobService.updateJob(updatedJob.id, updatePayload);
       if (response.success) {
+        toast.success("✅ Job updated successfully!");
         await fetchInitialData(); // Refresh all data
       } else {
+        toast.error(`❌ ${response.message}`);
         setError(response.message);
       }
     } catch (err) {
-      setError("Failed to update job");
+      const errorMessage = "Failed to update job";
+      toast.error(`❌ ${errorMessage}`);
+      setError(errorMessage);
     } finally {
       setIsAssigningJob(false);
       setAssigningJobId(null);
@@ -547,8 +581,8 @@ const JobManagement = () => {
         </div>
       </div>
 
-      {/* Job Allocation Tool - Hide for super users */}
-      {user.userType !== "super_user" && (
+      {/* Job Allocation Tool - Hide for super users and property managers */}
+      {user.userType !== "super_user" && user.userType !== "property_manager" && (
         <JobAllocationTool
           jobs={jobs}
           technicians={technicians}

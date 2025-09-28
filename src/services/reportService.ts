@@ -114,6 +114,12 @@ export interface ExecutiveDashboard {
     customerSatisfaction: number;
     technicianUtilization: number;
   };
+  quotations: {
+    totalQuotations: number;
+    acceptedQuotations: number;
+    acceptedValue: number;
+    acceptanceRate: number;
+  };
   alerts: {
     critical: number;
     warnings: number;

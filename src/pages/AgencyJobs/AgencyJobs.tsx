@@ -357,8 +357,8 @@ const AgencyJobs = () => {
       <div className="page-header">
         <div className="header-content">
           <div className="header-info">
-            <h1>Agency Jobs</h1>
-            <p>Manage and track all your property maintenance jobs</p>
+            <h1>{user?.userType === 'property_manager' ? 'Property Jobs' : 'Agency Jobs'}</h1>
+            <p>{user?.userType === 'property_manager' ? 'Manage and track jobs for your assigned properties' : 'Manage and track all your property maintenance jobs'}</p>
           </div>
           <div className="header-actions">
             <button

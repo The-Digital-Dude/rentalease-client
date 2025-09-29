@@ -61,9 +61,16 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
       dispatch(decrementUnreadCount());
     }
 
-    // Navigate to job details if jobId is available
-    if (notification.data?.jobId) {
+    // Navigate based on notification type
+    if (notification.type === "PROPERTY_ASSIGNED" && notification.data?.propertyId) {
+      // Navigate to property details page
+      navigate(`/properties/${notification.data.propertyId}`);
+    } else if (notification.data?.jobId) {
+      // Navigate to job details for job-related notifications
       navigate(`/jobs/${notification.data.jobId}`);
+    } else if (notification.data?.actionUrl) {
+      // Navigate to specific action URL if provided
+      navigate(notification.data.actionUrl);
     }
 
     onNotificationClick?.(notification);
@@ -88,6 +95,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
         return "⚠️";
       case "SYSTEM_ALERT":
         return "🚨";
+      case "PROPERTY_ASSIGNED":
+        return "🏠";
       case "GENERAL":
         return "ℹ️";
       default:

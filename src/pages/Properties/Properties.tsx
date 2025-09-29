@@ -114,8 +114,23 @@ const Properties = () => {
       }
     } catch (error: any) {
       console.error("Error submitting property:", error);
-      setError(error.message || "Failed to save property");
-      toast.error("Failed to save property.");
+
+      // Handle validation errors with specific messages
+      if (error.errors && Array.isArray(error.errors)) {
+        // Display each validation error
+        error.errors.forEach((errorMsg: string) => {
+          toast.error(errorMsg);
+        });
+        setError(error.errors.join(', '));
+      } else if (error.message) {
+        // Display the specific error message
+        toast.error(error.message);
+        setError(error.message);
+      } else {
+        // Fallback to generic error
+        toast.error("Failed to save property.");
+        setError("Failed to save property");
+      }
     } finally {
       setIsSubmitting(false);
     }

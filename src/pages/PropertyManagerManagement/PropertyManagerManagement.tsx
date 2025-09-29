@@ -481,14 +481,25 @@ const PropertyManagerManagementPage = () => {
       }
     } catch (err: any) {
       console.error("Error saving PropertyManager:", err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${
+
+      // Handle validation errors with specific messages
+      const errorData = err.response?.data || err;
+
+      if (errorData.errors && Array.isArray(errorData.errors)) {
+        // Display each validation error
+        errorData.errors.forEach((errorMsg: string) => {
+          toast.error(`❌ ${errorMsg}`);
+        });
+      } else if (errorData.message) {
+        // Display the specific error message
+        toast.error(`❌ ${errorData.message}`);
+      } else {
+        // Fallback to generic error
+        const errorMessage = `Failed to ${
           editingPropertyManager ? "update" : "create"
         } PropertyManager. Please try again.`;
-
-      toast.error(`❌ ${errorMessage}`);
+        toast.error(`❌ ${errorMessage}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

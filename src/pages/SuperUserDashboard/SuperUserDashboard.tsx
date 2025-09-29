@@ -26,6 +26,7 @@ import {
   RiToolsLine,
   RiHomeSmileLine,
   RiHandHeartLine,
+  RiDownloadLine,
 } from "react-icons/ri";
 import {
   BarChart,
@@ -615,9 +616,8 @@ const SuperUserDashboard = () => {
                   title="Export Data"
                   type="button"
                 >
-                  <RiBarChartLine />
+                  <RiDownloadLine />
                 </button>
-                <RiLineChartLine />
               </div>
             </div>
 

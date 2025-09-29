@@ -71,7 +71,7 @@ const labelMap: Record<string, string> = {
   regionalDashboard: "Regional Dashboard",
   "lead-management": "Lead Management",
   "beyond-compliance": "Beyond Compliance",
-  "quotation-management": "Quotation Management",
+  "quotation-management": "QMS Portal",
   calling: "Calling",
 };
 

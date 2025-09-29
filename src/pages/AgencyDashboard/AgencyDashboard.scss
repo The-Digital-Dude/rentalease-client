@@ -202,6 +202,13 @@
           }
         }
 
+        &.scheduled {
+          border-left-color: #06b6d4;
+          .stat-icon {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+          }
+        }
+
         &.efficiency {
           border-left-color: #06b6d4;
           .stat-icon {

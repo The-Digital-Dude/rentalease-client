@@ -82,6 +82,7 @@ const PropertyManagerManagementPage = () => {
     phone: "",
     password: "",
     confirmPassword: "",
+    agencyId: "",
     address: {
       street: "",
       suburb: "",
@@ -128,7 +129,10 @@ const PropertyManagerManagementPage = () => {
         try {
           const response = await agencyService.getAllAgencies();
           if (response.success && response.data) {
+            console.log('Loaded agencies:', response.data);
             setAgencies(response.data);
+          } else {
+            console.log('Failed to load agencies:', response);
           }
         } catch (error) {
           console.error("Failed to fetch agencies:", error);
@@ -221,6 +225,11 @@ const PropertyManagerManagementPage = () => {
 
     if (!formData.phone.trim()) {
       errors.phone = "Phone number is required";
+    }
+
+    // Agency selection is required for SuperUsers and TeamMembers
+    if (canSeeAllPropertyManagers && !formData.agencyId) {
+      errors.agencyId = "Please select an agency";
     }
 
     // Password is only required when creating new property manager
@@ -434,7 +443,7 @@ const PropertyManagerManagementPage = () => {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
-          agencyId: "placeholder-agency-id", // TODO: Add agency selection to this form
+          agencyId: formData.agencyId,
           address: {
             street: formData.address.street || undefined,
             suburb: formData.address.suburb || undefined,
@@ -937,6 +946,33 @@ const PropertyManagerManagementPage = () => {
 
   const renderPropertyManagerForm = (isModal = false) => (
     <form onSubmit={handleSubmit} className="property-manager-form">
+      {canSeeAllPropertyManagers && (
+        <div className="form-section">
+          <h4>Agency Assignment</h4>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="agencyId">Agency *</label>
+              <select
+                id="agencyId"
+                name="agencyId"
+                value={formData.agencyId}
+                onChange={handleInputChange}
+                className={formErrors.agencyId ? "error" : ""}
+              >
+                <option value="">Search and select an agency...</option>
+                {agencies.map((agency) => (
+                  <option key={agency.id || agency._id} value={agency.id || agency._id}>
+                    {agency.companyName}
+                  </option>
+                ))}
+              </select>
+              {formErrors.agencyId && (
+                <span className="error-message">{formErrors.agencyId}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="form-section">
         <h4>Basic Information</h4>
         <div className="form-row">

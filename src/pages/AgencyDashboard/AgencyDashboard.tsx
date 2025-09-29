@@ -838,13 +838,13 @@ const AgencyDashboard = () => {
             }}
           >
             <div className="stat-icon">
-              <RiTimerLine />
+              <RiCalendarLine />
             </div>
             <div className="stat-content">
               <h3>{stats.scheduledJobs}</h3>
               <p>Scheduled Jobs</p>
               <div className="stat-trend info">
-                <RiTimerLine />
+                <RiTimeLine />
                 <span>Ready to start</span>
               </div>
             </div>

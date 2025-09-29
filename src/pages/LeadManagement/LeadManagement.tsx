@@ -306,6 +306,7 @@ const LeadManagement = () => {
         "Phone",
         "Status",
         "Profession",
+        "Source",
         "Message",
         "Notes",
       ];
@@ -318,6 +319,10 @@ const LeadManagement = () => {
         lead.phone ?? "",
         statusLabels[lead.status] || lead.status,
         lead.profession ?? "",
+        lead.source === "website_contact_form" ? "Contact Form" :
+        lead.source === "website_bookNow_form" ? "Book Now Form" :
+        lead.source === "other" ? "Other" :
+        lead.source || "",
         lead.message,
         lead.notes ?? "",
       ]);
@@ -523,7 +528,7 @@ const LeadManagement = () => {
               <th>Phone</th>
               <th>Status</th>
               <th>Profession</th>
-              <th>Created</th>
+              <th>Source</th>
               <th>Message</th>
               <th>Actions</th>
             </tr>
@@ -574,7 +579,12 @@ const LeadManagement = () => {
                       <span className="lead-management__muted">—</span>
                     )}
                   </td>
-                  <td>{formatDate(lead.createdAt)}</td>
+                  <td>
+                    {lead.source === "website_contact_form" ? "Contact Form" :
+                     lead.source === "website_bookNow_form" ? "Book Now Form" :
+                     lead.source === "other" ? "Other" :
+                     lead.source || "—"}
+                  </td>
                   <td>
                     <span className="lead-management__message" title={lead.message}>
                       {lead.message}

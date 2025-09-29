@@ -16,6 +16,7 @@ export interface Lead {
   profession?: string;
   message: string;
   status: LeadStatus;
+  source?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -63,6 +64,7 @@ interface ServerLead {
   profession?: string;
   message: string;
   status: LeadStatus;
+  source?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -102,6 +104,7 @@ const normalizeLead = (lead: ServerLead): Lead => ({
   profession: lead.profession || undefined,
   message: lead.message,
   status: lead.status,
+  source: lead.source || undefined,
   notes: lead.notes,
   createdAt: lead.createdAt,
   updatedAt: lead.updatedAt,

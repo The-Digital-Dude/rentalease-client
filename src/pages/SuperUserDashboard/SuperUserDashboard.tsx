@@ -137,6 +137,7 @@ const SuperUserDashboard = () => {
     startDate: "",
     endDate: "",
   });
+  const [selectedTimeRange, setSelectedTimeRange] = useState("6");
   const [chartStatusFilter, setChartStatusFilter] = useState("all");
   const [chartViewType, setChartViewType] = useState<
     "monthly" | "weekly" | "daily"
@@ -626,9 +627,10 @@ const SuperUserDashboard = () => {
               <div className="filter-group">
                 <label>Time Range:</label>
                 <select
-                  value={chartDateRange.startDate || "6"}
+                  value={selectedTimeRange}
                   onChange={(e) => {
                     const value = e.target.value;
+                    setSelectedTimeRange(value);
                     if (value !== "custom") {
                       const months = parseInt(value);
                       const endDate = new Date();
@@ -649,6 +651,35 @@ const SuperUserDashboard = () => {
                   ))}
                 </select>
               </div>
+
+              {selectedTimeRange === "custom" && (
+                <div className="filter-group custom-date-range">
+                  <label>Start Date:</label>
+                  <input
+                    type="date"
+                    value={chartDateRange.startDate}
+                    onChange={(e) => {
+                      setChartDateRange(prev => ({
+                        ...prev,
+                        startDate: e.target.value
+                      }));
+                    }}
+                    className="filter-select"
+                  />
+                  <label>End Date:</label>
+                  <input
+                    type="date"
+                    value={chartDateRange.endDate}
+                    onChange={(e) => {
+                      setChartDateRange(prev => ({
+                        ...prev,
+                        endDate: e.target.value
+                      }));
+                    }}
+                    className="filter-select"
+                  />
+                </div>
+              )}
 
               <div className="filter-group">
                 <label>View:</label>
@@ -687,6 +718,7 @@ const SuperUserDashboard = () => {
                   className="reset-filters-btn"
                   onClick={() => {
                     setChartDateRange({ startDate: "", endDate: "" });
+                    setSelectedTimeRange("6");
                     setChartStatusFilter("all");
                     setChartViewType("monthly");
                   }}

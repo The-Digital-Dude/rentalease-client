@@ -801,31 +801,6 @@ const AgencyDashboard = () => {
           </div>
 
           <div
-            className="stat-card warning clickable"
-            onClick={() => handleStatCardClick("overdueJobs")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatCardClick("overdueJobs");
-              }
-            }}
-          >
-            <div className="stat-icon">
-              <RiAlertLine />
-            </div>
-            <div className="stat-content">
-              <h3>{stats.overdueJobs}</h3>
-              <p>Overdue Jobs</p>
-              <div className="stat-trend negative">
-                <RiTrendingDownLine />
-                <span>Needs attention</span>
-              </div>
-            </div>
-          </div>
-
-          <div
             className="stat-card technicians clickable"
             onClick={() => handleStatCardClick("propertyManagers")}
             role="button"
@@ -863,14 +838,39 @@ const AgencyDashboard = () => {
             }}
           >
             <div className="stat-icon">
-              <RiCalendarLine />
+              <RiTimerLine />
             </div>
             <div className="stat-content">
               <h3>{stats.scheduledJobs}</h3>
               <p>Scheduled Jobs</p>
               <div className="stat-trend info">
-                <RiCalendarLine />
+                <RiTimerLine />
                 <span>Ready to start</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="stat-card warning clickable"
+            onClick={() => handleStatCardClick("overdueJobs")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleStatCardClick("overdueJobs");
+              }
+            }}
+          >
+            <div className="stat-icon">
+              <RiAlertLine />
+            </div>
+            <div className="stat-content">
+              <h3>{stats.overdueJobs}</h3>
+              <p>Overdue Jobs</p>
+              <div className="stat-trend negative">
+                <RiTrendingDownLine />
+                <span>Needs attention</span>
               </div>
             </div>
           </div>

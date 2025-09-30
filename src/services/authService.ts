@@ -15,6 +15,8 @@ export interface LoginResponse {
       email: string;
       name: string;
       userType: string;
+      agencyId?: string | null;
+      agencyName?: string | null;
     };
     token: string;
   };
@@ -92,6 +94,12 @@ export interface BackendLoginResponse {
       id: string;
       name: string;
       email: string;
+      agency?: string | {
+        id?: string;
+        _id?: string;
+        companyName?: string;
+        name?: string;
+      };
     };
     token: string;
   };
@@ -163,6 +171,9 @@ class AuthService {
         const responseData = response.data.data;
 
         // Handle agency login response structure
+        let agencyId: string | null = null;
+        let agencyName: string | null = null;
+
         if (responseData.agency) {
           user = {
             id: responseData.agency.id,
@@ -173,6 +184,8 @@ class AuthService {
               "Agency User",
           };
           mappedUserType = this.mapUserType("agent");
+          agencyId = responseData.agency.id;
+          agencyName = responseData.agency.companyName || null;
         } else if (responseData.superUser) {
           user = responseData.superUser;
           mappedUserType = this.mapUserType("superUser");
@@ -203,6 +216,14 @@ class AuthService {
         } else if (responseData.teamMember) {
           user = responseData.teamMember;
           mappedUserType = this.mapUserType("teamMember");
+
+          const rawAgency = responseData.teamMember.agency;
+          if (typeof rawAgency === "string") {
+            agencyId = rawAgency;
+          } else if (rawAgency && typeof rawAgency === "object") {
+            agencyId = rawAgency.id || rawAgency._id || null;
+            agencyName = rawAgency.companyName || rawAgency.name || null;
+          }
         }
 
         if (!user) {
@@ -219,6 +240,8 @@ class AuthService {
               email: user.email,
               name: user.name,
               userType: mappedUserType,
+              agencyId,
+              agencyName,
             },
             token: response.data.data.token,
           },

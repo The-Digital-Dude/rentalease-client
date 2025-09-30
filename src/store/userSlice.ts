@@ -25,6 +25,8 @@ export interface UserState {
   id: string | null;
   avatar: string | null;
   phone: string | null;
+  agencyId: string | null;
+  agencyName: string | null;
 }
 
 // Define the initial state
@@ -36,6 +38,8 @@ const initialState: UserState = {
   id: null,
   avatar: null,
   phone: null,
+  agencyId: null,
+  agencyName: null,
 };
 
 // Define the payload for login action
@@ -46,6 +50,8 @@ interface LoginPayload {
   id: string;
   avatar?: string;
   phone?: string;
+  agencyId?: string | null;
+  agencyName?: string | null;
 }
 
 // Define the payload for profile update
@@ -53,6 +59,7 @@ interface ProfileUpdatePayload {
   name?: string;
   avatar?: string;
   phone?: string;
+  agencyName?: string | null;
 }
 
 // Create the user slice
@@ -69,6 +76,8 @@ const userSlice = createSlice({
       state.id = action.payload.id;
       state.avatar = action.payload.avatar || null;
       state.phone = action.payload.phone || null;
+      state.agencyId = action.payload.agencyId ?? null;
+      state.agencyName = action.payload.agencyName ?? null;
 
       // Also update localStorage to ensure consistency
       if (typeof window !== "undefined") {
@@ -79,6 +88,8 @@ const userSlice = createSlice({
           id: action.payload.id,
           avatar: action.payload.avatar || null,
           phone: action.payload.phone || null,
+          agencyId: action.payload.agencyId ?? null,
+          agencyName: action.payload.agencyName ?? null,
         };
         localStorage.setItem("userData", JSON.stringify(userData));
       }
@@ -92,6 +103,8 @@ const userSlice = createSlice({
       state.id = null;
       state.avatar = null;
       state.phone = null;
+      state.agencyId = null;
+      state.agencyName = null;
       // Clear localStorage when logging out using helper
       clearUserDataFromStorage();
     },
@@ -115,6 +128,8 @@ const userSlice = createSlice({
           state.id = parsedUserData.id;
           state.avatar = parsedUserData.avatar || null;
           state.phone = parsedUserData.phone || null;
+          state.agencyId = parsedUserData.agencyId || null;
+          state.agencyName = parsedUserData.agencyName || null;
 
           console.log("Auth state restored successfully");
         } catch (error) {
@@ -137,6 +152,10 @@ const userSlice = createSlice({
         state.avatar = action.payload.avatar;
       if (action.payload.phone !== undefined)
         state.phone = action.payload.phone;
+      if (action.payload.agencyId !== undefined)
+        state.agencyId = action.payload.agencyId ?? null;
+      if (action.payload.agencyName !== undefined)
+        state.agencyName = action.payload.agencyName ?? null;
     },
     // Action to update user profile
     updateUserProfile: (state, action: PayloadAction<ProfileUpdatePayload>) => {
@@ -145,6 +164,8 @@ const userSlice = createSlice({
         state.avatar = action.payload.avatar;
       if (action.payload.phone !== undefined)
         state.phone = action.payload.phone;
+      if (action.payload.agencyName !== undefined)
+        state.agencyName = action.payload.agencyName;
 
       // Update localStorage with complete user data using helper
       if (
@@ -160,6 +181,8 @@ const userSlice = createSlice({
           userType: state.userType,
           avatar: state.avatar,
           phone: state.phone,
+          agencyId: state.agencyId,
+          agencyName: state.agencyName,
         };
         syncUserDataToLocalStorage(updatedUserData);
       }

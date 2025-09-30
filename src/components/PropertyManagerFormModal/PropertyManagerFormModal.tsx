@@ -11,6 +11,7 @@ import {
 } from "../../services";
 import "./PropertyManagerFormModal.scss";
 import { MdViewCompact } from "react-icons/md";
+import { useAppSelector } from "../../store";
 
 interface PropertyManagerFormData {
   firstName: string;
@@ -65,17 +66,42 @@ const PropertyManagerFormModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [showExpandedAssignment, setShowExpandedAssignment] = useState(false);
+  const { userType, id: userId, agencyId: userAgencyId, agencyName } =
+    useAppSelector((state) => state.user);
+  const isAgencyUser = userType === "agency";
+  const isTeamMemberUser = userType === "team_member";
+  const isAgencyRestrictedUser = isAgencyUser || isTeamMemberUser;
+  const resolvedAgencyId = isAgencyUser
+    ? userId
+    : isTeamMemberUser
+    ? userAgencyId
+    : null;
 
   // Reset form when modal opens/closes
   useEffect(() => {
-    if (isOpen) {
-      setFormData(initialFormData);
-      setFormErrors({});
-      setSelectedAgency(null);
-      setIsSubmitting(false);
-      setShowExpandedAssignment(false);
+    if (!isOpen) {
+      return;
     }
-  }, [isOpen]);
+
+    setFormData((prev) => ({
+      ...initialFormData,
+      agencyId:
+        isAgencyRestrictedUser && resolvedAgencyId
+          ? resolvedAgencyId
+          : initialFormData.agencyId,
+    }));
+    if (isAgencyRestrictedUser && !resolvedAgencyId) {
+      setFormErrors({
+        agencyId:
+          "No agency is linked to your account. Please contact support before adding a property manager.",
+      });
+    } else {
+      setFormErrors({});
+    }
+    setSelectedAgency(null);
+    setIsSubmitting(false);
+    setShowExpandedAssignment(false);
+  }, [isOpen, isAgencyRestrictedUser, resolvedAgencyId]);
 
   // Validate form data
   const validateForm = (): boolean => {
@@ -112,7 +138,7 @@ const PropertyManagerFormModal = ({
     }
 
     // Agency validation
-    if (!selectedAgency) {
+    if (!formData.agencyId) {
       errors.agencyId = "Please select an agency";
     }
 
@@ -153,6 +179,9 @@ const PropertyManagerFormModal = ({
 
   // Handle agency selection
   const handleAgencySelect = (agency: Agency) => {
+    if (isAgencyRestrictedUser) {
+      return;
+    }
     setSelectedAgency(agency);
     setFormData((prev) => ({
       ...prev,
@@ -180,13 +209,27 @@ const PropertyManagerFormModal = ({
     setIsSubmitting(true);
 
     try {
+      const effectiveAgencyId = isAgencyRestrictedUser
+        ? resolvedAgencyId
+        : formData.agencyId;
+
+      if (!effectiveAgencyId) {
+        setFormErrors((prev) => ({
+          ...prev,
+          agencyId: "Please select an agency",
+        }));
+        toast.error("Please select an agency before submitting.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const propertyManagerData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-        agencyId: formData.agencyId,
+        agencyId: effectiveAgencyId,
         address: {
           street: formData.address.street || undefined,
           suburb: formData.address.suburb || undefined,
@@ -242,27 +285,44 @@ const PropertyManagerFormModal = ({
         <div className="form-section">
           <div className="section-header">
             <h4>Agency Assignment</h4>
-            <button
-              type="button"
-              className="expand-btn"
-              onClick={() => setShowExpandedAssignment(!showExpandedAssignment)}
-              disabled={isSubmitting}
-            >
-              {showExpandedAssignment ? (
-                <>
-                  <MdViewCompact />
-                  Compact View
-                </>
-              ) : (
-                <>
-                  <MdViewCompact />
-                  Browse All Agencies
-                </>
-              )}
-            </button>
+            {!isAgencyRestrictedUser && (
+              <button
+                type="button"
+                className="expand-btn"
+                onClick={() => setShowExpandedAssignment(!showExpandedAssignment)}
+                disabled={isSubmitting}
+              >
+                {showExpandedAssignment ? (
+                  <>
+                    <MdViewCompact />
+                    Compact View
+                  </>
+                ) : (
+                  <>
+                    <MdViewCompact />
+                    Browse All Agencies
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
-          {showExpandedAssignment ? (
+          {isAgencyRestrictedUser ? (
+            <div className="form-group">
+              <label htmlFor="assigned-agency">
+                Assigned Agency <span className="required">*</span>
+              </label>
+              <div className="assigned-agency-info">
+                <strong>
+                  {agencyName || selectedAgency?.name || "Your agency"}
+                </strong>
+                <span>ID: {resolvedAgencyId ?? "Not linked"}</span>
+              </div>
+              {formErrors.agencyId && (
+                <span className="error-message">{formErrors.agencyId}</span>
+              )}
+            </div>
+          ) : showExpandedAssignment ? (
             <div className="expanded-assignment">
               <AgencyAssignment
                 selectedAgency={selectedAgency}

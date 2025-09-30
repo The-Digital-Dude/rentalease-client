@@ -170,7 +170,7 @@ const AgencyAssignment = ({
           </div>
           <button
             className="change-btn"
-            onClick={() => onAgencySelect({} as Agency)}
+            onClick={() => onAgencySelect(null)}
           >
             Change
           </button>

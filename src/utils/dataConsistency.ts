@@ -5,6 +5,8 @@ export interface UserDataStructure {
   userType: string;
   avatar?: string | null;
   phone?: string | null;
+  agencyId?: string | null;
+  agencyName?: string | null;
 }
 
 export const validateUserData = (
@@ -37,6 +39,14 @@ export const normalizeUserData = (userData: any): UserDataStructure | null => {
     userType: userData.userType,
     avatar: userData.avatar || null,
     phone: userData.phone || null,
+    agencyId:
+      typeof userData.agencyId === "string" && userData.agencyId.length > 0
+        ? userData.agencyId
+        : null,
+    agencyName:
+      typeof userData.agencyName === "string" && userData.agencyName.length > 0
+        ? userData.agencyName
+        : null,
   };
 };
 

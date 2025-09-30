@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   RiSaveLine,
   RiCloseLine,
@@ -20,6 +20,7 @@ import type {
 import { VALID_STATES } from "../../services/propertyService";
 import { agencyService, type Agency } from "../../services/agencyService";
 import "./PropertyFormModal.scss";
+import { loadGooglePlacesLibrary } from "../../utils";
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -100,7 +101,11 @@ const PropertyFormModal = ({
   const [activeTab, setActiveTab] = useState<"basic" | "inspections">("basic");
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loadingAgencies, setLoadingAgencies] = useState(false);
-  const { userType } = useAppSelector((state) => state.user);
+  const { userType, id: userId, agencyId: userAgencyId, agencyName } =
+    useAppSelector((state) => state.user);
+  const streetInputRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteRef = useRef<any>(null);
+  const autocompleteListenerRef = useRef<any>(null);
 
   const handleClose = useCallback(() => {
     setFormData(initialFormData);
@@ -172,6 +177,18 @@ const PropertyFormModal = ({
     }
   }, [editingProperty]);
 
+  useEffect(() => {
+    if (!isOpen || editingProperty) {
+      return;
+    }
+
+    if (userType === "agency" && userId) {
+      setFormData((prev) => ({ ...prev, agencyId: userId }));
+    } else if (userType === "team_member" && userAgencyId) {
+      setFormData((prev) => ({ ...prev, agencyId: userAgencyId }));
+    }
+  }, [isOpen, editingProperty, userType, userId, userAgencyId]);
+
   // Handle ESC key press
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -191,15 +208,122 @@ const PropertyFormModal = ({
     };
   }, [isOpen, handleClose]);
 
-  const handleInputChange = (
-    field: keyof PropertyFormData,
-    value: string | number | boolean
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const handleInputChange = useCallback(
+    (field: keyof PropertyFormData, value: string | number | boolean) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    []
+  );
+
+  const initializeAutocomplete = useCallback(() => {
+    if (!streetInputRef.current || !window.google?.maps?.places?.Autocomplete) {
+      return;
+    }
+
+    if (!autocompleteRef.current) {
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(
+        streetInputRef.current,
+        {
+          fields: ["address_components", "formatted_address", "name"],
+          types: ["address"],
+        }
+      );
+    }
+
+    if (autocompleteListenerRef.current && window.google?.maps?.event) {
+      window.google.maps.event.removeListener(autocompleteListenerRef.current);
+      autocompleteListenerRef.current = null;
+    }
+
+    autocompleteListenerRef.current = autocompleteRef.current.addListener(
+      "place_changed",
+      () => {
+        const place = autocompleteRef.current?.getPlace?.();
+        const inputValue = streetInputRef.current?.value ?? "";
+
+        if (inputValue) {
+          handleInputChange("street", inputValue);
+        }
+
+        const addressComponents = place?.address_components;
+        if (!addressComponents || !Array.isArray(addressComponents)) {
+          return;
+        }
+
+        const getComponent = (type: string) =>
+          addressComponents.find((component: any) =>
+            component.types.includes(type)
+          );
+
+        const streetNumber = getComponent("street_number")?.long_name ?? "";
+        const route = getComponent("route")?.long_name ?? "";
+        const suburbComponent =
+          getComponent("locality") ?? getComponent("sublocality_level_1");
+        const stateComponent = getComponent("administrative_area_level_1");
+        const postcodeComponent = getComponent("postal_code");
+
+        const formattedAddress =
+          place?.formatted_address ||
+          [streetNumber, route].filter(Boolean).join(" ") ||
+          inputValue;
+
+        if (formattedAddress) {
+          handleInputChange("street", formattedAddress);
+          if (streetInputRef.current) {
+            streetInputRef.current.value = formattedAddress;
+          }
+        }
+
+        if (suburbComponent?.long_name) {
+          handleInputChange("suburb", suburbComponent.long_name);
+        }
+        if (stateComponent?.short_name) {
+          handleInputChange("state", stateComponent.short_name);
+        }
+        if (postcodeComponent?.long_name) {
+          handleInputChange("postcode", postcodeComponent.long_name);
+        }
+      }
+    );
+  }, [handleInputChange]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    initializeAutocomplete();
+
+    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as
+      | string
+      | undefined;
+
+    if (!googleMapsApiKey) {
+      console.warn(
+        "Google Maps API key not configured; address autocomplete disabled."
+      );
+      return;
+    }
+
+    loadGooglePlacesLibrary(googleMapsApiKey)
+      .then(() => {
+        initializeAutocomplete();
+      })
+      .catch((error) => {
+        console.warn("Google Places autocomplete unavailable", error);
+      });
+
+    return () => {
+      if (autocompleteListenerRef.current && window.google?.maps?.event) {
+        window.google.maps.event.removeListener(autocompleteListenerRef.current);
+        autocompleteListenerRef.current = null;
+      }
+      autocompleteRef.current = null;
+    };
+  }, [isOpen, initializeAutocomplete]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,6 +347,13 @@ const PropertyFormModal = ({
     // Validate agency selection for super users
     if (userType === "super_user" && !formData.agencyId) {
       alert("Please select an agency for the property");
+      return;
+    }
+
+    if (userType === "team_member" && !userAgencyId) {
+      alert(
+        "Your profile is missing an agency assignment. Please contact support."
+      );
       return;
     }
 
@@ -282,6 +413,10 @@ const PropertyFormModal = ({
     // Add agencyId for super users
     if (userType === "super_user" && formData.agencyId) {
       propertyData.agencyId = formData.agencyId;
+    } else if (userType === "agency" && userId) {
+      propertyData.agencyId = userId;
+    } else if (userType === "team_member" && userAgencyId) {
+      propertyData.agencyId = userAgencyId;
     }
 
     onSubmit(propertyData);
@@ -374,6 +509,7 @@ const PropertyFormModal = ({
                         <span className="required">*</span>
                       </label>
                       <input
+                        ref={streetInputRef}
                         type="text"
                         value={formData.street}
                         onChange={(e) =>
@@ -440,8 +576,8 @@ const PropertyFormModal = ({
                   </div>
                 </div>
 
-                {/* Agency Selection Section (for super users only) */}
-                {userType === "super_user" && (
+                {/* Agency Selection Section */}
+                {userType === "super_user" ? (
                   <div className="form-section">
                     <div className="section-header">
                       <div className="section-icon">
@@ -479,6 +615,35 @@ const PropertyFormModal = ({
                             </option>
                           ))}
                         </select>
+                      </div>
+                    </div>
+                  </div>
+                ) : (userType === "agency" || userType === "team_member") && (
+                  <div className="form-section">
+                    <div className="section-header">
+                      <div className="section-icon">
+                        <RiBuildingLine />
+                      </div>
+                      <div className="section-title">
+                        <h3>Agency Assignment</h3>
+                        <p>
+                          This property will be created under your associated agency.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="form-grid">
+                      <div className="form-field full-width">
+                        <label>Assigned Agency</label>
+                        <div className="assigned-agency-info">
+                          <strong>
+                            {agencyName || editingProperty?.agency?.companyName ||
+                              "Your agency"}
+                          </strong>
+                          <span>
+                            ID: {userType === "agency" ? userId : userAgencyId || "N/A"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

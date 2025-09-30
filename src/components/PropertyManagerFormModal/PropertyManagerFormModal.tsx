@@ -3,12 +3,14 @@ import { RiCloseLine, RiLoader4Line, RiSaveLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import Modal from "../Modal";
 import AgencySearchDropdown from "../AgencySearchDropdown";
+import AgencyAssignment from "../AgencyAssignment";
 import {
   propertyManagerService,
   type Agency,
   VALID_STATES,
 } from "../../services";
 import "./PropertyManagerFormModal.scss";
+import { MdViewCompact } from "react-icons/md";
 
 interface PropertyManagerFormData {
   firstName: string;
@@ -62,6 +64,7 @@ const PropertyManagerFormModal = ({
   const [formErrors, setFormErrors] = useState<PropertyManagerFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+  const [showExpandedAssignment, setShowExpandedAssignment] = useState(false);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -70,6 +73,7 @@ const PropertyManagerFormModal = ({
       setFormErrors({});
       setSelectedAgency(null);
       setIsSubmitting(false);
+      setShowExpandedAssignment(false);
     }
   }, [isOpen]);
 
@@ -236,20 +240,58 @@ const PropertyManagerFormModal = ({
       <form onSubmit={handleSubmit} className="property-manager-form">
         {/* Agency Selection - First and Required */}
         <div className="form-section">
-          <h4>Agency Assignment</h4>
-          <div className="form-group">
-            <label htmlFor="agency">
-              Agency <span className="required">*</span>
-            </label>
-            <AgencySearchDropdown
-              selectedAgency={selectedAgency}
-              onAgencySelect={handleAgencySelect}
-              placeholder="Search and select an agency..."
-              error={formErrors.agencyId}
+          <div className="section-header">
+            <h4>Agency Assignment</h4>
+            <button
+              type="button"
+              className="expand-btn"
+              onClick={() => setShowExpandedAssignment(!showExpandedAssignment)}
               disabled={isSubmitting}
-              required
-            />
+            >
+              {showExpandedAssignment ? (
+                <>
+                  <MdViewCompact />
+                  Compact View
+                </>
+              ) : (
+                <>
+                  <MdViewCompact />
+                  Browse All Agencies
+                </>
+              )}
+            </button>
           </div>
+
+          {showExpandedAssignment ? (
+            <div className="expanded-assignment">
+              <AgencyAssignment
+                selectedAgency={selectedAgency}
+                onAgencySelect={handleAgencySelect}
+                showHeader={false}
+                className="modal-assignment"
+              />
+              {formErrors.agencyId && (
+                <span className="error-message">{formErrors.agencyId}</span>
+              )}
+            </div>
+          ) : (
+            <div className="form-group">
+              <label htmlFor="agency">
+                Agency <span className="required">*</span>
+              </label>
+              <AgencySearchDropdown
+                selectedAgency={selectedAgency}
+                onAgencySelect={handleAgencySelect}
+                placeholder="Search and select an agency..."
+                error={formErrors.agencyId}
+                disabled={isSubmitting}
+                required
+              />
+              {formErrors.agencyId && (
+                <span className="error-message">{formErrors.agencyId}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Basic Information */}

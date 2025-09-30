@@ -29,8 +29,10 @@ import {
   type PropertyManager,
   type PropertyManagerFilters,
   type CreatePropertyManagerData,
+  type Agency,
 } from "../../services";
 import PropertyManagerFormModal from "../../components/PropertyManagerFormModal";
+import AgencyAssignment from "../../components/AgencyAssignment";
 import "./PropertyManagerManagement.scss";
 import toast from "react-hot-toast";
 
@@ -105,6 +107,9 @@ const PropertyManagerManagementPage = () => {
 
   // Add Property Manager Modal state
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Agency assignment state
+  const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
 
   // Dropdown state
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -282,6 +287,23 @@ const PropertyManagerManagementPage = () => {
     }
   };
 
+  // Handle agency selection
+  const handleAgencySelect = (agency: Agency | null) => {
+    setSelectedAgency(agency);
+    setFormData((prev) => ({
+      ...prev,
+      agencyId: agency?.id || "",
+    }));
+
+    // Clear agency error
+    if (formErrors.agencyId) {
+      setFormErrors((prev) => ({
+        ...prev,
+        agencyId: "",
+      }));
+    }
+  };
+
   // Reset form
   const resetForm = () => {
     setFormData({
@@ -291,6 +313,7 @@ const PropertyManagerManagementPage = () => {
       phone: "",
       password: "",
       confirmPassword: "",
+      agencyId: "",
       address: {
         street: "",
         suburb: "",
@@ -301,6 +324,7 @@ const PropertyManagerManagementPage = () => {
     setFormErrors({});
     setIsSubmitting(false);
     setEditingPropertyManager(null);
+    setSelectedAgency(null);
   };
 
   // Handle edit PropertyManager
@@ -558,6 +582,33 @@ const PropertyManagerManagementPage = () => {
       }
     } catch (err: any) {
       toast.error(`❌ Failed to update availability: ${err.message}`);
+    }
+  };
+
+  // Handle PropertyManager deletion
+  const handleDeletePropertyManager = async (propertyManager: PropertyManager) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${propertyManager.fullName}?\n\n` +
+      `This action cannot be undone. The property manager will be permanently removed from the system.` +
+      (propertyManager.assignedPropertiesCount > 0
+        ? `\n\nNote: This property manager has ${propertyManager.assignedPropertiesCount} assigned properties and cannot be deleted until all assignments are removed.`
+        : "")
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await propertyManagerService.deletePropertyManager(propertyManager.id);
+
+      if (response.success) {
+        toast.success(`✅ ${propertyManager.fullName} has been deleted successfully`);
+        fetchPropertyManagers(); // Refresh the list
+      } else {
+        throw new Error(response.message || "Failed to delete property manager");
+      }
+    } catch (err: any) {
+      toast.error(`❌ Failed to delete property manager: ${err.message}`);
     }
   };
 
@@ -903,6 +954,24 @@ const PropertyManagerManagementPage = () => {
                           </button>
                         ))}
                       </div>
+                      <div className="dropdown-section danger-section">
+                        <h5>Actions</h5>
+                        <button
+                          className="delete-btn"
+                          onClick={() => {
+                            handleDeletePropertyManager(propertyManager);
+                            setOpenDropdown(null);
+                          }}
+                          title={
+                            propertyManager.assignedPropertiesCount > 0
+                              ? "Cannot delete property manager with active assignments"
+                              : "Delete property manager"
+                          }
+                        >
+                          <RiDeleteBinLine />
+                          Delete Property Manager
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -949,27 +1018,18 @@ const PropertyManagerManagementPage = () => {
       {canSeeAllPropertyManagers && (
         <div className="form-section">
           <h4>Agency Assignment</h4>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="agencyId">Agency *</label>
-              <select
-                id="agencyId"
-                name="agencyId"
-                value={formData.agencyId}
-                onChange={handleInputChange}
-                className={formErrors.agencyId ? "error" : ""}
-              >
-                <option value="">Search and select an agency...</option>
-                {agencies.map((agency) => (
-                  <option key={agency.id || agency._id} value={agency.id || agency._id}>
-                    {agency.companyName}
-                  </option>
-                ))}
-              </select>
-              {formErrors.agencyId && (
-                <span className="error-message">{formErrors.agencyId}</span>
-              )}
-            </div>
+          <div className="agency-assignment-container">
+            <AgencyAssignment
+              selectedAgency={selectedAgency}
+              onAgencySelect={handleAgencySelect}
+              showHeader={false}
+              title="Select Agency"
+              subtitle="Choose an agency to assign to this property manager"
+              className="property-manager-agency-assignment"
+            />
+            {formErrors.agencyId && (
+              <span className="error-message">{formErrors.agencyId}</span>
+            )}
           </div>
         </div>
       )}

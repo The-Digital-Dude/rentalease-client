@@ -40,8 +40,8 @@ const AgencySearchDropdown = ({
         // Filter agencies based on search query
         const filteredAgencies = query
           ? response.data.filter((agency) =>
-              agency.name.toLowerCase().includes(query.toLowerCase()) ||
-              agency.contactEmail.toLowerCase().includes(query.toLowerCase()) ||
+              (agency.companyName || agency.name || '').toLowerCase().includes(query.toLowerCase()) ||
+              (agency.email || agency.contactEmail || '').toLowerCase().includes(query.toLowerCase()) ||
               agency.abn.includes(query)
             )
           : response.data;
@@ -125,8 +125,8 @@ const AgencySearchDropdown = ({
         <div className="selected-value">
           {selectedAgency ? (
             <div className="selected-agency">
-              <span className="agency-name">{selectedAgency.name}</span>
-              <span className="agency-email">{selectedAgency.contactEmail}</span>
+              <span className="agency-name">{selectedAgency.companyName || selectedAgency.name}</span>
+              <span className="agency-email">{selectedAgency.email || selectedAgency.contactEmail}</span>
             </div>
           ) : (
             <span className="placeholder">{placeholder}</span>
@@ -170,9 +170,9 @@ const AgencySearchDropdown = ({
                     onClick={() => handleAgencySelect(agency)}
                   >
                     <div className="agency-info">
-                      <div className="agency-name">{agency.name}</div>
+                      <div className="agency-name">{agency.companyName || agency.name}</div>
                       <div className="agency-details">
-                        <span className="agency-email">{agency.contactEmail}</span>
+                        <span className="agency-email">{agency.email || agency.contactEmail}</span>
                         <span className="agency-abn">ABN: {agency.abn}</span>
                       </div>
                       <div className="agency-meta">

@@ -389,6 +389,20 @@ class PropertyManagerService {
     }
   }
 
+  // Delete PropertyManager
+  async deletePropertyManager(id: string): Promise<PropertyManagerApiResponse> {
+    try {
+      const response: AxiosResponse<PropertyManagerApiResponse> =
+        await api.delete(`/v1/property-managers/${id}`);
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to delete PropertyManager"
+      );
+    }
+  }
+
   // Assign PropertyManager to property
   async assignPropertyManager(
     propertyId: string,

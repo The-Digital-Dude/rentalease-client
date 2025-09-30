@@ -310,21 +310,21 @@ const ContactsCommunication = () => {
                   </div>
                   <div className="col-actions">
                     <button
-                      className="action-btn edit-btn"
+                      className="action-button edit-btn"
                       onClick={() => handleEditContact(contact)}
                       title="Edit Contact"
                     >
                       <RiEditLine />
                     </button>
                     <button
-                      className="action-btn delete-btn"
+                      className="action-button delete-btn"
                       onClick={() => handleDeleteContact(contact.id)}
                       title="Delete Contact"
                     >
                       <RiDeleteBinLine />
                     </button>
                     <button
-                      className="action-btn email-btn"
+                      className="action-button email-btn"
                       onClick={() => handleOpenEmailModal(contact)}
                       title="Send Email"
                     >

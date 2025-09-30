@@ -15,6 +15,7 @@ import {
 import { RiFileList3Line } from "react-icons/ri";
 import quotationService from "../../services/quotationService";
 import { agencyService } from "../../services/agencyService";
+import propertyManagerService from "../../services/propertyManagerService";
 import { QuotationDetailsModal } from "../../components/QuotationDetailsModal/QuotationDetailsModal";
 import { QuotationPricingModal } from "../../components/QuotationPricingModal/QuotationPricingModal";
 import { downloadQuotationPDF } from "../../utils/quotationPdfGenerator";
@@ -35,7 +36,9 @@ interface QuotationListItem {
   quotationNumber: string;
   agency: {
     _id: string;
-    name: string;
+    companyName: string;
+    email: string;
+    contactPerson?: string;
   } | string;
   jobType: string;
   property: {
@@ -49,6 +52,14 @@ interface QuotationListItem {
       fullAddress: string;
     };
     fullAddress?: string;
+    assignedPropertyManager?: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      status: string;
+    };
   } | string;
   dueDate: string;
   amount?: number;
@@ -66,10 +77,19 @@ interface Agency {
   email?: string;
 }
 
+interface PropertyManagerOption {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+}
+
 export const QuotationManagement: React.FC = () => {
   const [quotations, setQuotations] = useState<QuotationListItem[]>([]);
   const [filteredQuotations, setFilteredQuotations] = useState<QuotationListItem[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [propertyManagers, setPropertyManagers] = useState<PropertyManagerOption[]>([]);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalRequests: 0,
     pendingResponse: 0,
@@ -83,6 +103,7 @@ export const QuotationManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     agency: "",
+    propertyManager: "",
     serviceType: "",
     status: "",
     dateRange: "",
@@ -95,6 +116,7 @@ export const QuotationManagement: React.FC = () => {
   useEffect(() => {
     fetchQuotations();
     fetchAgencies();
+    fetchPropertyManagers();
   }, []);
 
   useEffect(() => {
@@ -131,6 +153,28 @@ export const QuotationManagement: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching agencies:", error);
+    }
+  };
+
+  const fetchPropertyManagers = async () => {
+    try {
+      const response = await propertyManagerService.getPropertyManagers({
+        status: "Active",
+        limit: 1000, // Get all active property managers
+      });
+      if (response.success && response.data.propertyManagers) {
+        // Transform to PropertyManagerOption interface
+        const transformedPropertyManagers = response.data.propertyManagers.map((pm: any) => ({
+          id: pm.id,
+          firstName: pm.firstName,
+          lastName: pm.lastName,
+          fullName: pm.fullName,
+          email: pm.email,
+        }));
+        setPropertyManagers(transformedPropertyManagers);
+      }
+    } catch (error) {
+      console.error("Error fetching property managers:", error);
     }
   };
 
@@ -172,10 +216,12 @@ export const QuotationManagement: React.FC = () => {
       filtered = filtered.filter(q => {
         const agencyName = getAgencyName(q.agency);
         const propertyAddress = getPropertyAddress(q.property);
+        const propertyManagerName = getPropertyManagerName(q.property);
 
         return agencyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                q.jobType.toLowerCase().includes(searchTerm.toLowerCase()) ||
                propertyAddress.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               propertyManagerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                q.quotationNumber.toLowerCase().includes(searchTerm.toLowerCase());
       });
     }
@@ -185,6 +231,16 @@ export const QuotationManagement: React.FC = () => {
       filtered = filtered.filter(q => {
         const agencyId = typeof q.agency === 'object' ? q.agency._id : q.agency;
         return agencyId === filters.agency;
+      });
+    }
+    if (filters.propertyManager) {
+      filtered = filtered.filter(q => {
+        if (typeof q.property === 'string') return false;
+        if (!q.property || !q.property.assignedPropertyManager) return false;
+        const pmId = typeof q.property.assignedPropertyManager === 'object'
+          ? q.property.assignedPropertyManager._id
+          : q.property.assignedPropertyManager;
+        return pmId === filters.propertyManager;
       });
     }
     if (filters.serviceType) {
@@ -285,8 +341,18 @@ export const QuotationManagement: React.FC = () => {
     if (typeof agency === 'string') return 'Unknown Agency';
     if (!agency) return 'Unknown Agency';
 
-    // Try name first, then email as fallback
-    return agency.name || agency.email || 'Unknown Agency';
+    // Use companyName first, then email as fallback
+    return agency.companyName || agency.email || 'Unknown Agency';
+  };
+
+  const getPropertyManagerName = (property: any): string => {
+    if (typeof property === 'string') return '—';
+    if (!property || !property.assignedPropertyManager) return '—';
+
+    const pm = property.assignedPropertyManager;
+    if (typeof pm === 'string') return '—';
+
+    return `${pm.firstName} ${pm.lastName}`.trim() || pm.email || '—';
   };
 
   const tabs = [
@@ -381,60 +447,132 @@ export const QuotationManagement: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="filters-section">
-        <div className="search-container">
-          <MdSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by agency, service type, property, or quotation number..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+      <div className="quotation-filters-panel">
+        <div className="search-filter-toolbar">
+          <div className="search-section">
+            <div className="search-input-container">
+              <MdSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search quotations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          </div>
+
+          <div className="filters-section">
+            <div className="filter-controls">
+              <select
+                value={filters.agency}
+                onChange={(e) => setFilters({ ...filters, agency: e.target.value })}
+                className="compact-filter-select"
+              >
+                <option value="">Agency</option>
+                {agencies.map((agency) => (
+                  <option key={agency.id} value={agency.id}>
+                    {agency.name || agency.companyName || agency.email || 'Unknown Agency'}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filters.propertyManager}
+                onChange={(e) => setFilters({ ...filters, propertyManager: e.target.value })}
+                className="compact-filter-select"
+              >
+                <option value="">Property Manager</option>
+                {propertyManagers.map((pm) => (
+                  <option key={pm.id} value={pm.id}>
+                    {pm.fullName || `${pm.firstName} ${pm.lastName}` || pm.email || 'Unknown PM'}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filters.serviceType}
+                onChange={(e) => setFilters({ ...filters, serviceType: e.target.value })}
+                className="compact-filter-select"
+              >
+                <option value="">Service Type</option>
+                <option value="Vacant Property Cleaning">Vacant Property Cleaning</option>
+                <option value="Water Connection">Water Connection</option>
+                <option value="Gas Connection">Gas Connection</option>
+                <option value="Electricity Connection">Electricity Connection</option>
+                <option value="Landscaping & Outdoor Maintenance">Landscaping & Outdoor Maintenance</option>
+                <option value="Pest Control">Pest Control</option>
+                <option value="Grout Cleaning">Grout Cleaning</option>
+                <option value="Removalists">Removalists</option>
+                <option value="Handyman Services">Handyman Services</option>
+                <option value="Painters">Painters</option>
+              </select>
+
+            </div>
+
+            {(searchTerm || filters.agency || filters.propertyManager || filters.serviceType) && (
+              <button
+                className="clear-all-btn"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilters({
+                    agency: "",
+                    propertyManager: "",
+                    serviceType: "",
+                    status: "",
+                    dateRange: "",
+                  });
+                }}
+                title="Clear all filters"
+              >
+                <MdCancel />
+                Clear
+              </button>
+            )}
+          </div>
         </div>
-        <div className="filters-container">
-          <MdFilterList className="filter-icon" />
-          <select
-            value={filters.agency}
-            onChange={(e) => setFilters({ ...filters, agency: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Agencies</option>
-            {agencies.map((agency) => (
-              <option key={agency.id} value={agency.id}>
-                {agency.name || agency.companyName || agency.email || 'Unknown Agency'}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filters.serviceType}
-            onChange={(e) => setFilters({ ...filters, serviceType: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Services</option>
-            <option value="Vacant Property Cleaning">Vacant Property Cleaning</option>
-            <option value="Water Connection">Water Connection</option>
-            <option value="Gas Connection">Gas Connection</option>
-            <option value="Electricity Connection">Electricity Connection</option>
-            <option value="Landscaping & Outdoor Maintenance">Landscaping & Outdoor Maintenance</option>
-            <option value="Pest Control">Pest Control</option>
-            <option value="Grout Cleaning">Grout Cleaning</option>
-            <option value="Removalists">Removalists</option>
-            <option value="Handyman Services">Handyman Services</option>
-            <option value="Painters">Painters</option>
-          </select>
-          <select
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Status</option>
-            <option value="Sent">Sent</option>
-            <option value="Accepted">Accepted</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Expired">Expired</option>
-          </select>
-        </div>
+
+        {/* Active Filters Row */}
+        {(searchTerm || filters.agency || filters.propertyManager || filters.serviceType) && (
+          <div className="active-filters-row">
+            {searchTerm && (
+              <span className="filter-chip">
+                <MdSearch className="chip-icon" />
+                Search: "{searchTerm}"
+                <button onClick={() => setSearchTerm("")} className="chip-remove">
+                  <MdCancel />
+                </button>
+              </span>
+            )}
+            {filters.agency && (
+              <span className="filter-chip">
+                <MdFilterList className="chip-icon" />
+                {agencies.find(a => a.id === filters.agency)?.companyName || 'Unknown Agency'}
+                <button onClick={() => setFilters({ ...filters, agency: "" })} className="chip-remove">
+                  <MdCancel />
+                </button>
+              </span>
+            )}
+            {filters.propertyManager && (
+              <span className="filter-chip">
+                <MdFilterList className="chip-icon" />
+                {propertyManagers.find(pm => pm.id === filters.propertyManager)?.fullName || 'Unknown PM'}
+                <button onClick={() => setFilters({ ...filters, propertyManager: "" })} className="chip-remove">
+                  <MdCancel />
+                </button>
+              </span>
+            )}
+            {filters.serviceType && (
+              <span className="filter-chip">
+                <MdFilterList className="chip-icon" />
+                {filters.serviceType}
+                <button onClick={() => setFilters({ ...filters, serviceType: "" })} className="chip-remove">
+                  <MdCancel />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -478,8 +616,8 @@ export const QuotationManagement: React.FC = () => {
                 <tr>
                   <th>Quotation #</th>
                   <th>Agency</th>
+                  <th>Property Manager</th>
                   <th>Service Type</th>
-                  <th>Property</th>
                   <th>Due Date</th>
                   <th>Amount</th>
                   <th>Status</th>
@@ -504,11 +642,15 @@ export const QuotationManagement: React.FC = () => {
                           </span>
                         </div>
                       </td>
+                      <td className="property-manager-cell">
+                        <div className="property-manager-info">
+                          <span className="property-manager-name">
+                            {getPropertyManagerName(quotation.property)}
+                          </span>
+                        </div>
+                      </td>
                       <td className="service-type">
                         {quotation.jobType}
-                      </td>
-                      <td className="property-address">
-                        {getPropertyAddress(quotation.property)}
                       </td>
                       <td className={`due-date ${isUrgent ? "urgent" : ""}`}>
                         <div className="date-info">

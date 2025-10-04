@@ -319,7 +319,7 @@ const MyPayments: React.FC = () => {
         <div className="payments-grid">
           {filteredPayments.map((payment) => {
             const statusClass = getStatusBadgeClass(payment.status);
-+            const propertySnippet = payment.jobId?.property || "Property details";
+            const propertySnippet = payment.jobId?.property || "Property details";
 
             return (
               <div key={payment.id} className="payment-card">
@@ -361,8 +361,7 @@ const MyPayments: React.FC = () => {
                   </div>
                   <div className="detail-row">
                     <RiMapPinLine />
--                    <span>{payment.jobId?.property || "Property details"}</span>
-+                    <span>{propertySnippet}</span>
+                    <span>{propertySnippet}</span>
                   </div>
                 </div>
 

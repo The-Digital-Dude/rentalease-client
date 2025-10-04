@@ -55,7 +55,6 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "availableJobs",
     "myJobs",
     "myPayments",
-    "technician-calendar",
     "technician-support",
   ],
   property_manager: [

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   RiDashboardLine,
   RiBuildingLine,
@@ -10,23 +10,39 @@ import propertyManagerReportService, {
   type PropertyManagerOverview,
   type PropertyManagerJobAnalytics,
 } from "../../services/propertyManagerReportService";
+import { useAppSelector } from "../../store";
 import PropertyOverview from "./components/PropertyOverview/PropertyOverview";
 import JobAnalytics from "./components/JobAnalytics/JobAnalytics";
 import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
 import "./PropertyManagerReports.scss";
 
 const PropertyManagerReports = () => {
+  const { userType } = useAppSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("overview");
   const [dashboardData, setDashboardData] = useState<PropertyManagerDashboard | null>(null);
   const [overviewData, setOverviewData] = useState<PropertyManagerOverview | null>(null);
   const [jobAnalyticsData, setJobAnalyticsData] = useState<PropertyManagerJobAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const tabs = [
-    { id: "overview", label: "Property Overview", icon: RiDashboardLine },
-    { id: "jobs", label: "Job Analytics", icon: RiBuildingLine },
-    { id: "payments", label: "Technician Payments", icon: RiUserStarLine },
-  ];
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { id: "overview", label: "Property Overview", icon: RiDashboardLine },
+      { id: "jobs", label: "Job Analytics", icon: RiBuildingLine },
+      { id: "payments", label: "Technician Payments", icon: RiUserStarLine },
+    ];
+
+    if (userType === "property_manager") {
+      return baseTabs.filter((tab) => tab.id !== "payments");
+    }
+
+    return baseTabs;
+  }, [userType]);
+
+  useEffect(() => {
+    if (!tabs.some((tab) => tab.id === activeTab) && tabs.length > 0) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [tabs, activeTab]);
 
   useEffect(() => {
     fetchDashboardData();

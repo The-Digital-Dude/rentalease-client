@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   RiMoneyDollarCircleLine,
   RiCheckboxCircleLine,
@@ -15,9 +15,11 @@ import reportService, {
 } from "../../services/reportService";
 import toast from "react-hot-toast";
 import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
+import { useAppSelector } from "../../store";
 import "./ReportsAnalytics.scss";
 
 const ReportsAnalytics = () => {
+  const { userType } = useAppSelector(state => state.user);
   const [activeTab, setActiveTab] = useState("executive");
   const [executiveDashboard, setExecutiveDashboard] =
     useState<ExecutiveDashboard | null>(null);
@@ -66,15 +68,29 @@ const ReportsAnalytics = () => {
 
 
 
-  const tabs = [
-    { id: "executive", label: "Executive Dashboard", icon: RiDashboardLine },
-    { id: "operational", label: "Operational Analytics", icon: RiBuildingLine },
-    {
-      id: "payments",
-      label: "Technician Payments",
-      icon: RiMoneyDollarCircleLine,
-    },
-  ];
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { id: "executive", label: "Executive Dashboard", icon: RiDashboardLine },
+      { id: "operational", label: "Operational Analytics", icon: RiBuildingLine },
+      {
+        id: "payments",
+        label: "Technician Payments",
+        icon: RiMoneyDollarCircleLine,
+      },
+    ];
+
+    if (userType === "property_manager") {
+      return baseTabs.filter(tab => tab.id !== "payments");
+    }
+
+    return baseTabs;
+  }, [userType]);
+
+  useEffect(() => {
+    if (userType === "property_manager" && activeTab === "payments") {
+      setActiveTab("executive");
+    }
+  }, [userType, activeTab]);
 
 
   const renderExecutiveDashboard = () => (

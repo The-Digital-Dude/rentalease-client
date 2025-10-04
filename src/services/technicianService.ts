@@ -104,6 +104,44 @@ export interface TechnicianApiResponse {
   };
 }
 
+export interface TechnicianProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  experience?: number;
+  hourlyRate?: number;
+  availabilityStatus?: string;
+  currentJobs?: number;
+  maxJobs?: number;
+  completedJobs?: number;
+  averageRating?: number;
+  totalRatings?: number;
+  status?: string;
+  address?: {
+    street?: string;
+    suburb?: string;
+    state?: string;
+    postcode?: string;
+    fullAddress?: string;
+  };
+  profileImage?: {
+    url?: string;
+    cloudinaryId?: string;
+  } | null;
+  owner?: {
+    ownerType: string;
+    ownerId: string;
+  };
+  createdAt?: string;
+  lastLogin?: string;
+  lastActive?: string;
+}
+
 class TechnicianService {
   /**
    * Get all technicians with optional filters
@@ -440,6 +478,50 @@ class TechnicianService {
         data: {},
       };
     }
+  }
+
+  /**
+   * Get current technician profile
+   */
+  async getProfile(): Promise<TechnicianProfile> {
+    const response = await api.get("/v1/technician/auth/profile");
+
+    if (response.data?.status === "success" && response.data?.data?.technician) {
+      return response.data.data.technician as TechnicianProfile;
+    }
+
+    throw new Error(
+      response.data?.message || "Failed to load technician profile"
+    );
+  }
+
+  /**
+   * Update technician profile
+   */
+  async updateProfile(payload: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    licenseNumber?: string;
+    licenseExpiry?: string;
+    experience?: number;
+    hourlyRate?: number;
+    address?: {
+      street?: string;
+      suburb?: string;
+      state?: string;
+      postcode?: string;
+    };
+  }): Promise<TechnicianProfile> {
+    const response = await api.put("/v1/technician/auth/profile", payload);
+
+    if (response.data?.status === "success" && response.data?.data?.technician) {
+      return response.data.data.technician as TechnicianProfile;
+    }
+
+    throw new Error(
+      response.data?.message || "Failed to update technician profile"
+    );
   }
 
   /**

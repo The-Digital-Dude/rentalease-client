@@ -12,6 +12,7 @@ export { default as propertyService, VALID_STATES } from "./propertyService";
 export { default as leadService } from "./leadService";
 export { default as invoiceService } from "./invoiceService";
 export { default as quotationService } from "./quotationService";
+export { default as calendarService } from "./calendarService";
 
 // Re-export types from jobService
 export type {

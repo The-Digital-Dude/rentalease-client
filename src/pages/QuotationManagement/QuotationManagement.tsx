@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   MdFilterList,
   MdSearch,
@@ -112,6 +113,9 @@ export const QuotationManagement: React.FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pendingNotificationQuotationId = useRef<string | null>(null);
 
   useEffect(() => {
     fetchQuotations();
@@ -122,6 +126,29 @@ export const QuotationManagement: React.FC = () => {
   useEffect(() => {
     filterQuotations();
   }, [quotations, activeTab, searchTerm, filters]);
+
+  useEffect(() => {
+    const targetQuotationId = (location.state as { quotationId?: string } | null)?.quotationId;
+
+    if (!targetQuotationId || quotations.length === 0) {
+      return;
+    }
+
+    if (pendingNotificationQuotationId.current === targetQuotationId) {
+      return;
+    }
+
+    const matchingQuotation = quotations.find(
+      (quotation) => quotation._id === targetQuotationId
+    );
+
+    if (matchingQuotation) {
+      pendingNotificationQuotationId.current = targetQuotationId;
+      setSelectedQuotation(matchingQuotation);
+      setShowDetailsModal(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, quotations, location.pathname, navigate]);
 
   const fetchQuotations = async () => {
     try {

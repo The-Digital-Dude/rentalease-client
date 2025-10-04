@@ -1,6 +1,148 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { notificationService } from "../services/notificationService";
 import type { Notification } from "../services/notificationService";
+import { propertyService, agencyService } from "../services";
+
+const formatPropertyAddress = (property: any): string | undefined => {
+  if (!property) {
+    return undefined;
+  }
+
+  if (typeof property === "string") {
+    return property;
+  }
+
+  if (property.fullAddress) {
+    return property.fullAddress;
+  }
+
+  if (typeof property.address === "string") {
+    return property.address;
+  }
+
+  if (property.address && typeof property.address === "object") {
+    if (property.address.fullAddress) {
+      return property.address.fullAddress;
+    }
+
+    const { street, suburb, state, postcode } = property.address;
+    if (street && suburb && state && postcode) {
+      return `${street}, ${suburb}, ${state} ${postcode}`;
+    }
+  }
+
+  return undefined;
+};
+
+const enrichQuotationNotifications = async (
+  notifications: Notification[]
+): Promise<Notification[]> => {
+  if (!Array.isArray(notifications) || notifications.length === 0) {
+    return notifications;
+  }
+
+  const propertyCache = new Map<string, string | undefined>();
+  const agencyCache = new Map<
+    string,
+    { companyName?: string; contactPerson?: string } | undefined
+  >();
+
+  const getPropertyAddress = async (
+    propertyId?: string
+  ): Promise<string | undefined> => {
+    if (!propertyId) {
+      return undefined;
+    }
+
+    if (propertyCache.has(propertyId)) {
+      return propertyCache.get(propertyId);
+    }
+
+    try {
+      const response = await propertyService.getProperty(propertyId);
+      const property = response.data?.property;
+      const address = formatPropertyAddress(property);
+      propertyCache.set(propertyId, address);
+      return address;
+    } catch (error) {
+      propertyCache.set(propertyId, undefined);
+      return undefined;
+    }
+  };
+
+  const getAgencyDetails = async (
+    agencyId?: string
+  ): Promise<{ companyName?: string; contactPerson?: string } | undefined> => {
+    if (!agencyId) {
+      return undefined;
+    }
+
+    if (agencyCache.has(agencyId)) {
+      return agencyCache.get(agencyId);
+    }
+
+    try {
+      const response = await agencyService.getSingleAgency(agencyId);
+      if (response.success && response.data?.agency) {
+        const details = {
+          companyName: response.data.agency.companyName,
+          contactPerson: response.data.agency.contactPerson,
+        };
+        agencyCache.set(agencyId, details);
+        return details;
+      }
+    } catch (error) {
+      // Ignore error and continue with fallback data
+    }
+
+    agencyCache.set(agencyId, undefined);
+    return undefined;
+  };
+
+  return Promise.all(
+    notifications.map(async (notification) => {
+      if (
+        (notification.type === "QUOTATION_REQUESTED" ||
+          notification.type === "QUOTATION_ACCEPTED") &&
+        notification.data
+      ) {
+        const [propertyAddress, agencyDetails] = await Promise.all([
+          getPropertyAddress(notification.data.propertyId),
+          getAgencyDetails(notification.data.agencyId),
+        ]);
+
+        const jobType = notification.data.jobType || "the requested service";
+        const contactName = agencyDetails?.contactPerson?.trim();
+        const companyName = agencyDetails?.companyName?.trim();
+        const actorName =
+          notification.type === "QUOTATION_REQUESTED"
+            ? contactName || companyName
+            : companyName || contactName;
+        const locationText = propertyAddress ? ` at ${propertyAddress}` : "";
+        const actionText =
+          notification.type === "QUOTATION_ACCEPTED"
+            ? "has accepted the quotation for"
+            : "has requested a quotation for";
+
+        const updatedMessage = `${actorName || "An agency"} ${actionText} ${jobType}${locationText}`;
+
+        return {
+          ...notification,
+          message: updatedMessage,
+          data: {
+            ...notification.data,
+            propertyAddress: propertyAddress || notification.data.propertyAddress,
+            agencyName: companyName || notification.data.agencyName,
+            agencyContactName:
+              contactName || notification.data.agencyContactName,
+          },
+        };
+      }
+
+      return notification;
+    })
+  );
+};
 
 // Async thunks
 export const fetchUnreadCount = createAsyncThunk(
@@ -21,7 +163,14 @@ export const fetchNotifications = createAsyncThunk(
     sortOrder?: -1 | 1;
   }) => {
     const response = await notificationService.getNotifications(params);
-    return response;
+    const enrichedNotifications = await enrichQuotationNotifications(
+      response.data
+    );
+
+    return {
+      ...response,
+      data: enrichedNotifications,
+    };
   }
 );
 

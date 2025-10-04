@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   RiServiceLine,
   RiAddLine,
@@ -17,6 +17,7 @@ import { formatDateTime } from "../../utils";
 import Toast from "../../components/Toast";
 import QuotationRequestModal from "../../components/QuotationRequestModal";
 import QuotationViewModal from "../../components/QuotationViewModal";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./BeyondCompliance.scss";
 
 interface ToastType {
@@ -34,10 +35,36 @@ const BeyondCompliance: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pendingNotificationQuotationId = useRef<string | null>(null);
 
   useEffect(() => {
     fetchQuotations();
   }, []);
+
+  useEffect(() => {
+    const targetQuotationId = (location.state as { quotationId?: string } | null)?.quotationId;
+
+    if (!targetQuotationId || quotations.length === 0) {
+      return;
+    }
+
+    if (pendingNotificationQuotationId.current === targetQuotationId) {
+      return;
+    }
+
+    const matchingQuotation = quotations.find(
+      (quotation) => quotation._id === targetQuotationId
+    );
+
+    if (matchingQuotation) {
+      pendingNotificationQuotationId.current = targetQuotationId;
+      setSelectedQuotation(matchingQuotation);
+      setIsViewModalOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, quotations, location.pathname, navigate]);
 
   const fetchQuotations = async () => {
     try {

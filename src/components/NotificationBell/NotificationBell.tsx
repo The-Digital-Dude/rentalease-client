@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { RiNotification3Line, RiCloseLine } from "react-icons/ri";
+import { RiNotification3Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
@@ -24,6 +24,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
   const navigate = useNavigate();
   const { notifications, unreadCount, loading, loadingUnreadCount } =
     useAppSelector((state) => state.notifications);
+  const { userType } = useAppSelector((state) => state.user);
 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -68,6 +69,19 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
     } else if (notification.data?.jobId) {
       // Navigate to job details for job-related notifications
       navigate(`/jobs/${notification.data.jobId}`);
+    } else if (
+      (notification.type === "QUOTATION_REQUESTED" ||
+        notification.type === "QUOTATION_ACCEPTED") &&
+      notification.data?.quotationId
+    ) {
+      const destination =
+        userType === "agency" ? "/beyond-compliance" : "/quotation-management";
+
+      navigate(destination, {
+        state: {
+          quotationId: notification.data.quotationId,
+        },
+      });
     } else if (notification.data?.actionUrl) {
       // Navigate to specific action URL if provided
       navigate(notification.data.actionUrl);
@@ -97,6 +111,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
         return "🚨";
       case "PROPERTY_ASSIGNED":
         return "🏠";
+      case "QUOTATION_REQUESTED":
+        return "📄";
+      case "QUOTATION_ACCEPTED":
+        return "✅";
       case "GENERAL":
         return "ℹ️";
       default:

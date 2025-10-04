@@ -10,7 +10,10 @@ export interface Notification {
     | "JOB_COMPLETED"
     | "COMPLIANCE_DUE"
     | "SYSTEM_ALERT"
-    | "GENERAL";
+    | "GENERAL"
+    | "PROPERTY_ASSIGNED"
+    | "QUOTATION_REQUESTED"
+    | "QUOTATION_ACCEPTED";
   status: "Unread" | "Read" | "Archived";
   priority?: "High" | "Medium" | "Low";
   createdAt: string;
@@ -23,6 +26,13 @@ export interface Notification {
     jobType?: string;
     dueDate?: string;
     complianceType?: string;
+    agencyId?: string;
+    agencyName?: string;
+    agencyContactName?: string;
+    quotationId?: string;
+    action?: string;
+    generatedJobId?: string;
+    generatedInvoiceId?: string;
   };
 }
 

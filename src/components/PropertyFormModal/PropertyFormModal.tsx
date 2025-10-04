@@ -218,7 +218,7 @@ const PropertyFormModal = ({
     []
   );
 
-  const initializeAutocomplete = useCallback(() => {
+  const setupAutocomplete = useCallback(() => {
     if (!streetInputRef.current || !window.google?.maps?.places?.Autocomplete) {
       return;
     }
@@ -295,35 +295,47 @@ const PropertyFormModal = ({
       return;
     }
 
-    initializeAutocomplete();
-
     const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as
       | string
       | undefined;
 
-    if (!googleMapsApiKey) {
-      console.warn(
-        "Google Maps API key not configured; address autocomplete disabled."
-      );
-      return;
-    }
-
-    loadGooglePlacesLibrary(googleMapsApiKey)
-      .then(() => {
-        initializeAutocomplete();
-      })
-      .catch((error) => {
-        console.warn("Google Places autocomplete unavailable", error);
-      });
-
-    return () => {
+    const cleanup = () => {
       if (autocompleteListenerRef.current && window.google?.maps?.event) {
         window.google.maps.event.removeListener(autocompleteListenerRef.current);
         autocompleteListenerRef.current = null;
       }
       autocompleteRef.current = null;
     };
-  }, [isOpen, initializeAutocomplete]);
+
+    if (window.google?.maps?.places?.Autocomplete) {
+      setupAutocomplete();
+      return cleanup;
+    }
+
+    if (!googleMapsApiKey) {
+      console.warn(
+        "Google Maps API key not configured; address autocomplete disabled."
+      );
+      return cleanup;
+    }
+
+    let isCancelled = false;
+
+    loadGooglePlacesLibrary(googleMapsApiKey)
+      .then(() => {
+        if (!isCancelled) {
+          setupAutocomplete();
+        }
+      })
+      .catch((error) => {
+        console.warn("Google Places autocomplete unavailable", error);
+      });
+
+    return () => {
+      isCancelled = true;
+      cleanup();
+    };
+  }, [isOpen, setupAutocomplete]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

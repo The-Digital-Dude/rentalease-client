@@ -113,6 +113,7 @@ export const generateQuotationPDF = async (quotation: QuotationPdfData): Promise
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageMargin = 20;
+    const isInvoice = quotation.status === "Accepted";
 
     // Define colors
     const primaryBlue = hexToRgb("#0f4c75");
@@ -143,12 +144,17 @@ export const generateQuotationPDF = async (quotation: QuotationPdfData): Promise
 
     // Document title
     doc.setFontSize(18);
-    doc.text("Beyond Compliance Quotation", pageMargin, 50, { baseline: "alphabetic" });
+    doc.text(
+      isInvoice ? "Beyond Compliance Invoice" : "Beyond Compliance Quotation",
+      pageMargin,
+      50,
+      { baseline: "alphabetic" }
+    );
 
     // Quotation number and status
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text(`Quotation #: ${quotation.quotationNumber}`, pageWidth - pageMargin, 30, {
+    doc.text(`${isInvoice ? "Invoice" : "Quotation"} #: ${quotation.quotationNumber}`, pageWidth - pageMargin, 30, {
       align: "right",
     });
 
@@ -164,7 +170,7 @@ export const generateQuotationPDF = async (quotation: QuotationPdfData): Promise
     doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text("Quotation Details", pageMargin, currentY);
+    doc.text(isInvoice ? "Invoice Details" : "Quotation Details", pageMargin, currentY);
 
     currentY += 5;
     doc.setLineWidth(0.5);
@@ -255,7 +261,7 @@ export const generateQuotationPDF = async (quotation: QuotationPdfData): Promise
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(softTeal.r, softTeal.g, softTeal.b);
-      doc.text("Quoted Amount:", pageMargin + 10, currentY + 15);
+      doc.text(isInvoice ? "Invoice Amount:" : "Quoted Amount:", pageMargin + 10, currentY + 15);
       doc.text(formatCurrency(quotation.amount), pageWidth - pageMargin - 10, currentY + 15, {
         align: "right",
       });
@@ -327,7 +333,8 @@ export const generateQuotationPDF = async (quotation: QuotationPdfData): Promise
     );
 
     // Save the PDF
-    const fileName = `Quotation_${quotation.quotationNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
+    const documentLabel = isInvoice ? "Invoice" : "Quotation";
+    const fileName = `${documentLabel}_${quotation.quotationNumber}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
   } catch (error) {
     console.error("Error generating PDF:", error);

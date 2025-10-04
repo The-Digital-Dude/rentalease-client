@@ -74,7 +74,6 @@ const RegionalDashboard = lazy(
 );
 const BeyondCompliance = lazy(() => import("../pages/BeyondCompliance"));
 const QuotationManagement = lazy(() => import("../pages/QuotationManagement/QuotationManagement"));
-const Calling = lazy(() => import("../pages/Calling/Calling"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -115,7 +114,6 @@ export const routeConfig = (userType: UserType) => {
     regionalDashboard: RegionalDashboard,
     "beyond-compliance": BeyondCompliance,
     "quotation-management": QuotationManagement,
-    calling: Calling,
   };
 
   // Generate routes based on user permissions

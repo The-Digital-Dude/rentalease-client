@@ -14,6 +14,7 @@ import {
   MdWarning,
   MdDownload,
   MdNoteAlt,
+  MdInfo,
 } from "react-icons/md";
 import { toast } from "react-toastify";
 import quotationService from "../../services/quotationService";
@@ -165,12 +166,14 @@ export const QuotationViewModal: React.FC<QuotationViewModalProps> = ({
     return 'Unknown Property';
   };
 
+  const hasQuotedAmount = typeof quotation.amount === "number" && quotation.amount > 0;
   const isExpired = quotation.validUntil && new Date(quotation.validUntil) < new Date();
   const daysUntilDue = getDaysUntilDue(quotation.dueDate);
   const daysUntilExpiry = quotation.validUntil ? getDaysUntilExpiry(quotation.validUntil) : null;
   const isUrgent = daysUntilDue <= 3;
   const isNearExpiry = daysUntilExpiry !== null && daysUntilExpiry <= 2;
-  const canRespond = quotation.status === "Sent" && !isExpired;
+  const canRespond = quotation.status === "Sent" && !isExpired && hasQuotedAmount;
+  const isAwaitingPricing = quotation.status === "Sent" && !isExpired && !hasQuotedAmount;
 
   const handleAccept = async () => {
     if (isExpired) {
@@ -290,6 +293,17 @@ export const QuotationViewModal: React.FC<QuotationViewModalProps> = ({
               <div>
                 <strong>Urgent Service:</strong> This service is due{" "}
                 {daysUntilDue > 0 ? `in ${daysUntilDue} days` : "overdue"}.
+              </div>
+            </div>
+          )}
+
+          {isAwaitingPricing && (
+            <div className="warning-banner info">
+              <MdInfo />
+              <div>
+                <strong>Awaiting Pricing:</strong> This quotation does not yet have a
+                confirmed amount. Please contact the admin team to finalise pricing
+                before accepting or rejecting.
               </div>
             </div>
           )}

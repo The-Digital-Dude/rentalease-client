@@ -2,8 +2,9 @@
   padding: 20px;
   max-width: 1600px;
   margin: 0 auto;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-secondary);
   min-height: 100vh;
+  transition: background-color 0.2s ease;
 
   .loading-container, .error-container {
     display: flex;
@@ -27,12 +28,12 @@
 
     p {
       font-size: 1.1rem;
-      color: #6b7280;
+      color: var(--color-text-secondary);
       margin: 0 0 1rem 0;
     }
 
     h3 {
-      color: #374151;
+      color: var(--color-heading);
       margin-bottom: 0.5rem;
     }
 
@@ -48,11 +49,11 @@
       transition: all 0.2s;
 
       &.btn-primary {
-        background-color: #667eea;
-        color: white;
+        background-color: var(--color-primary);
+        color: var(--color-text-inverse);
 
         &:hover {
-          background-color: #5a67d8;
+          background-color: var(--color-primary-hover);
         }
       }
     }
@@ -140,19 +141,19 @@
       gap: 1.5rem;
 
       .stat-card {
-        background: white;
+        background: var(--color-bg-card);
         padding: 1.5rem;
         border-radius: 1rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-md);
         display: flex;
         align-items: center;
         gap: 1rem;
         transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--color-border-primary);
 
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+          box-shadow: var(--shadow-lg);
         }
 
         &.clickable {
@@ -192,12 +193,12 @@
             margin: 0 0 0.25rem 0;
             font-size: 1.8rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--color-heading);
           }
 
           p {
             margin: 0 0 0.5rem 0;
-            color: #6b7280;
+            color: var(--color-text-secondary);
             font-size: 0.9rem;
             font-weight: 500;
           }
@@ -214,15 +215,15 @@
             }
 
             &.positive {
-              color: #10b981;
+              color: var(--color-success);
             }
 
             &.negative {
-              color: #ef4444;
+              color: var(--color-error);
             }
 
             &.neutral {
-              color: #6b7280;
+              color: var(--color-text-secondary);
             }
           }
         }
@@ -248,11 +249,11 @@
       margin-bottom: 1.5rem;
 
       .chart-card.full-width {
-        background: white;
+        background: var(--color-bg-card);
         padding: 1.5rem;
         border-radius: 1rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f1f5f9;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--color-border-primary);
 
         .chart-header {
           display: flex;
@@ -260,13 +261,13 @@
           align-items: center;
           margin-bottom: 1.5rem;
           padding-bottom: 1rem;
-          border-bottom: 1px solid #f3f4f6;
+          border-bottom: 1px solid var(--color-border-primary);
 
           h3 {
             margin: 0;
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--color-heading);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -280,9 +281,9 @@
             .chart-export-btn {
               padding: 0.5rem;
               border-radius: 0.5rem;
-              border: 1px solid #e5e7eb;
-              background: #f8fafc;
-              color: #667eea;
+              border: 1px solid var(--color-border-primary);
+              background: var(--color-bg-hover);
+              color: var(--color-primary);
               cursor: pointer;
               display: flex;
               align-items: center;
@@ -291,14 +292,14 @@
               font-size: 1.1rem;
 
               &:hover {
-                background: #667eea;
-                color: white;
-                border-color: #667eea;
+                background: var(--color-primary);
+                color: var(--color-text-inverse);
+                border-color: var(--color-primary);
               }
             }
 
             > svg {
-              color: #6b7280;
+              color: var(--color-text-secondary);
               font-size: 1.2rem;
             }
           }
@@ -311,9 +312,9 @@
           align-items: end;
           margin-bottom: 2rem;
           padding: 1.5rem;
-          background: #f8fafc;
+          background: var(--color-bg-tertiary);
           border-radius: 1rem;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--color-border-primary);
 
           .filter-group {
             display: flex;
@@ -324,16 +325,16 @@
             label {
               font-size: 0.875rem;
               font-weight: 600;
-              color: #374151;
+              color: var(--color-text-primary);
               margin-bottom: 0.25rem;
             }
 
             .filter-select {
               padding: 0.75rem 1rem;
-              border: 1px solid #d1d5db;
+              border: 1px solid var(--color-border-input);
               border-radius: 0.5rem;
-              background: white;
-              color: #374151;
+              background: var(--color-bg-input);
+              color: var(--color-text-primary);
               font-size: 0.875rem;
               font-weight: 500;
               cursor: pointer;

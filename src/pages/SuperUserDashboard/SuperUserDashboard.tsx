@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from "./SuperUserDashboard.module.scss";
 import {
   RiUserLine,
   RiBuildingLine,
@@ -49,7 +50,6 @@ import {
 import { useAppSelector } from "../../store";
 import { useNavigate } from "react-router-dom";
 import dashboardService from "../../services/dashboardService";
-import "./SuperUserDashboard.scss";
 
 interface DashboardData {
   overview: {
@@ -318,9 +318,9 @@ const SuperUserDashboard = () => {
 
   if (loading) {
     return (
-      <div className="super-user-dashboard">
-        <div className="loading-container">
-          <RiLoaderLine className="loading-spinner" />
+      <div className={styles.superUserDashboard}>
+        <div className={styles.loadingContainer}>
+          <RiLoaderLine className={styles.loadingSpinner} />
           <p>Loading comprehensive dashboard...</p>
         </div>
       </div>
@@ -329,12 +329,12 @@ const SuperUserDashboard = () => {
 
   if (error) {
     return (
-      <div className="super-user-dashboard">
-        <div className="error-container">
-          <RiErrorWarningLine className="error-icon" />
+      <div className={styles.superUserDashboard}>
+        <div className={styles.errorContainer}>
+          <RiErrorWarningLine className={styles.errorIcon} />
           <h3>Error Loading Dashboard</h3>
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleRefresh}>
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleRefresh}>
             <RiRefreshLine />
             Try Again
           </button>
@@ -403,13 +403,13 @@ const SuperUserDashboard = () => {
   };
 
   return (
-    <div className="super-user-dashboard">
-      <div className="dashboard-header">
-        <div className="welcome-section">
-          <div className="welcome-content">
+    <div className={styles.superUserDashboard}>
+      <div className={styles.dashboardHeader}>
+        <div className={styles.welcomeSection}>
+          <div className={styles.welcomeContent}>
             <h1>Welcome back, {userState?.name?.trim() || "Super User"}!</h1>
             <p>Comprehensive system overview and administration dashboard</p>
-            <div className="last-updated">
+            <div className={styles.lastUpdated}>
               <RiInformationLine />
               <span>
                 Last updated:{" "}
@@ -417,31 +417,31 @@ const SuperUserDashboard = () => {
               </span>
             </div>
           </div>
-          <div className="header-actions">
+          <div className={styles.headerActions}>
             <button
-              className="btn btn-secondary"
+              className={`${styles.btn} ${styles.btnSecondary}`}
               onClick={handleRefresh}
               disabled={refreshing}
             >
-              <RiRefreshLine className={refreshing ? "spinning" : ""} />
+              <RiRefreshLine className={refreshing ? styles.spinning : ""} />
               {refreshing ? "Refreshing..." : "Refresh"}
             </button>
           </div>
         </div>
 
         {/* Enhanced Statistics Cards */}
-        <div className="stats-overview">
+        <div className={styles.statsOverview}>
           <div
-            className="stat-card primary clickable"
+            className={`${styles.statCard} ${styles.primary} ${styles.clickable}`}
             onClick={() => handleStatCardClick("agencies")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiBuildingLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalAgencies}</h3>
               <p>Total Agencies</p>
-              <div className="stat-trend positive">
+              <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.newAgencies} this week</span>
               </div>
@@ -449,16 +449,16 @@ const SuperUserDashboard = () => {
           </div>
 
           <div
-            className="stat-card properties clickable"
+            className={`${styles.statCard} ${styles.properties} ${styles.clickable}`}
             onClick={() => handleStatCardClick("properties")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiHomeSmileLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalProperties}</h3>
               <p>Total Properties</p>
-              <div className="stat-trend positive">
+              <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.newProperties} this week</span>
               </div>
@@ -466,16 +466,16 @@ const SuperUserDashboard = () => {
           </div>
 
           <div
-            className="stat-card technicians clickable"
+            className={`${styles.statCard} ${styles.technicians} ${styles.clickable}`}
             onClick={() => handleStatCardClick("technicians")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiToolsLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalTechnicians}</h3>
               <p>Total Technicians</p>
-              <div className="stat-trend positive">
+              <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.newTechnicians} this week</span>
               </div>
@@ -483,67 +483,67 @@ const SuperUserDashboard = () => {
           </div>
 
           <div
-            className="stat-card jobs clickable"
+            className={`${styles.statCard} ${styles.jobs} ${styles.clickable}`}
             onClick={() => handleStatCardClick("jobs")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiBriefcaseLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalJobs}</h3>
               <p>Total Jobs</p>
-              <div className="stat-trend positive">
+              <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.newJobs} this week</span>
               </div>
             </div>
           </div>
 
-          <div 
-            className="stat-card active clickable"
+          <div
+            className={`${styles.statCard} ${styles.active} ${styles.clickable}`}
             onClick={() => handleStatCardClick("jobs")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiCalendarLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.activeJobs}</h3>
               <p>Active Jobs</p>
-              <div className="stat-trend neutral">
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiLoaderLine />
                 <span>In progress</span>
               </div>
             </div>
           </div>
 
-          <div 
-            className="stat-card success clickable"
+          <div
+            className={`${styles.statCard} ${styles.success} ${styles.clickable}`}
             onClick={() => handleStatCardClick("jobs")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiCheckLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.completedJobs}</h3>
               <p>Completed Jobs</p>
-              <div className="stat-trend positive">
+              <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.completedJobsWeek} this week</span>
               </div>
             </div>
           </div>
 
-          <div 
-            className="stat-card warning clickable"
+          <div
+            className={`${styles.statCard} ${styles.warning} ${styles.clickable}`}
             onClick={() => handleStatCardClick("jobs")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiAlertLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.overdueJobs}</h3>
               <p>Overdue Jobs</p>
-              <div className="stat-trend negative">
+              <div className={`${styles.statTrend} ${styles.negative}`}>
                 <RiTrendingDownLine />
                 <span>Needs attention</span>
               </div>
@@ -551,16 +551,16 @@ const SuperUserDashboard = () => {
           </div>
 
           <div
-            className="stat-card earnings clickable"
+            className={`${styles.statCard} ${styles.earnings} ${styles.clickable}`}
             onClick={() => handleStatCardClick("payments")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiMoneyDollarCircleLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{formatCurrency(paymentStats.totalAmount)}</h3>
               <p>Total Payments</p>
-              <div className="stat-trend neutral">
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiMoneyDollarCircleLine />
                 <span>{paymentStats.totalPayments} payments</span>
               </div>
@@ -568,33 +568,33 @@ const SuperUserDashboard = () => {
           </div>
 
           <div
-            className="stat-card team-members clickable"
+            className={`${styles.statCard} ${styles.teamMembers} ${styles.clickable}`}
             onClick={() => handleStatCardClick("teamMembers")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiTeamLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalTeamMembers}</h3>
               <p>Team Members</p>
-              <div className="stat-trend neutral">
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiUserLine />
                 <span>Admin level access</span>
               </div>
             </div>
           </div>
 
-          <div 
-            className="stat-card staff clickable"
+          <div
+            className={`${styles.statCard} ${styles.staff} ${styles.clickable}`}
             onClick={() => handleStatCardClick("properties")}
           >
-            <div className="stat-icon">
+            <div className={styles.statIcon}>
               <RiHandHeartLine />
             </div>
-            <div className="stat-content">
+            <div className={styles.statContent}>
               <h3>{overview.totalPropertyManagers}</h3>
               <p>Property Managers</p>
-              <div className="stat-trend neutral">
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiUserLine />
                 <span>Active users</span>
               </div>
@@ -604,15 +604,15 @@ const SuperUserDashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="charts-section">
+      <div className={styles.chartsSection}>
         {/* Monthly Trends - Full Width on Top */}
-        <div className="chart-row-full">
-          <div className="chart-card full-width">
-            <div className="chart-header">
+        <div className={styles.chartRowFull}>
+          <div className={`${styles.chartCard} ${styles.fullWidth}`}>
+            <div className={styles.chartHeader}>
               <h3>Monthly Job Trends</h3>
-              <div className="chart-actions">
+              <div className={styles.chartActions}>
                 <button
-                  className="chart-export-btn"
+                  className={styles.chartExportBtn}
                   onClick={handleChartExport}
                   title="Export Data"
                   type="button"
@@ -623,8 +623,8 @@ const SuperUserDashboard = () => {
             </div>
 
             {/* Chart Filters */}
-            <div className="chart-filters">
-              <div className="filter-group">
+            <div className={styles.chartFilters}>
+              <div className={styles.filterGroup}>
                 <label>Time Range:</label>
                 <select
                   value={selectedTimeRange}
@@ -642,7 +642,7 @@ const SuperUserDashboard = () => {
                       });
                     }
                   }}
-                  className="filter-select"
+                  className={styles.filterSelect}
                 >
                   {getDateRangeOptions().map((option) => (
                     <option key={option.value} value={option.value}>
@@ -653,7 +653,7 @@ const SuperUserDashboard = () => {
               </div>
 
               {selectedTimeRange === "custom" && (
-                <div className="filter-group custom-date-range">
+                <div className={`${styles.filterGroup} ${styles.customDateRange}`}>
                   <label>Start Date:</label>
                   <input
                     type="date"
@@ -664,7 +664,7 @@ const SuperUserDashboard = () => {
                         startDate: e.target.value
                       }));
                     }}
-                    className="filter-select"
+                    className={styles.filterSelect}
                   />
                   <label>End Date:</label>
                   <input
@@ -676,12 +676,12 @@ const SuperUserDashboard = () => {
                         endDate: e.target.value
                       }));
                     }}
-                    className="filter-select"
+                    className={styles.filterSelect}
                   />
                 </div>
               )}
 
-              <div className="filter-group">
+              <div className={styles.filterGroup}>
                 <label>View:</label>
                 <select
                   value={chartViewType}
@@ -690,7 +690,7 @@ const SuperUserDashboard = () => {
                       e.target.value as "monthly" | "weekly" | "daily"
                     )
                   }
-                  className="filter-select"
+                  className={styles.filterSelect}
                 >
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
@@ -698,12 +698,12 @@ const SuperUserDashboard = () => {
                 </select>
               </div>
 
-              <div className="filter-group">
+              <div className={styles.filterGroup}>
                 <label>Status:</label>
                 <select
                   value={chartStatusFilter}
                   onChange={(e) => setChartStatusFilter(e.target.value)}
-                  className="filter-select"
+                  className={styles.filterSelect}
                 >
                   <option value="all">All Statuses</option>
                   <option value="completed">Completed Only</option>
@@ -713,9 +713,9 @@ const SuperUserDashboard = () => {
                 </select>
               </div>
 
-              <div className="filter-actions">
+              <div className={styles.filterActions}>
                 <button
-                  className="reset-filters-btn"
+                  className={styles.resetFiltersBtn}
                   onClick={() => {
                     setChartDateRange({ startDate: "", endDate: "" });
                     setSelectedTimeRange("6");
@@ -729,8 +729,8 @@ const SuperUserDashboard = () => {
               </div>
             </div>
             {loadingFilteredData ? (
-              <div className="chart-loading">
-                <RiLoaderLine className="loading-spinner" />
+              <div className={styles.chartLoading}>
+                <RiLoaderLine className={styles.loadingSpinner} />
                 <p>Loading filtered data...</p>
               </div>
             ) : (
@@ -783,34 +783,34 @@ const SuperUserDashboard = () => {
               </ResponsiveContainer>
             )}
             {selectedChartData && showChartDetails && (
-              <div className="chart-details-modal">
-                <div className="chart-details-content">
-                  <div className="chart-details-header">
+              <div className={styles.chartDetailsModal}>
+                <div className={styles.chartDetailsContent}>
+                  <div className={styles.chartDetailsHeader}>
                     <h4>Details for {selectedChartData.month}</h4>
                     <button
-                      className="close-modal-btn"
+                      className={styles.closeModalBtn}
                       onClick={() => setShowChartDetails(false)}
                       type="button"
                     >
                       ×
                     </button>
                   </div>
-                  <div className="chart-details-body">
-                    <div className="detail-item">
-                      <span className="detail-label">Total Jobs:</span>
-                      <span className="detail-value">
+                  <div className={styles.chartDetailsBody}>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Total Jobs:</span>
+                      <span className={styles.detailValue}>
                         {selectedChartData.totalJobs}
                       </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Completed Jobs:</span>
-                      <span className="detail-value">
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Completed Jobs:</span>
+                      <span className={styles.detailValue}>
                         {selectedChartData.completedJobs}
                       </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Completion Rate:</span>
-                      <span className="detail-value">
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Completion Rate:</span>
+                      <span className={styles.detailValue}>
                         {selectedChartData.totalJobs > 0
                           ? `${(
                               (selectedChartData.completedJobs /
@@ -820,17 +820,17 @@ const SuperUserDashboard = () => {
                           : "0%"}
                       </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Pending Jobs:</span>
-                      <span className="detail-value">
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Pending Jobs:</span>
+                      <span className={styles.detailValue}>
                         {selectedChartData.totalJobs -
                           selectedChartData.completedJobs}
                       </span>
                     </div>
                   </div>
-                  <div className="chart-details-footer">
+                  <div className={styles.chartDetailsFooter}>
                     <button
-                      className="view-month-jobs-btn"
+                      className={styles.viewMonthJobsBtn}
                       onClick={() => {
                         navigate("/jobs");
                         setShowChartDetails(false);
@@ -847,9 +847,9 @@ const SuperUserDashboard = () => {
         </div>
 
         {/* Bottom Row - Status Distribution and Payment Overview */}
-        <div className="chart-row-split">
-          <div className="chart-card medium">
-            <div className="chart-header">
+        <div className={styles.chartRowSplit}>
+          <div className={`${styles.chartCard} ${styles.medium}`}>
+            <div className={styles.chartHeader}>
               <h3>Job Status Distribution</h3>
               <RiPieChartLine />
             </div>
@@ -880,33 +880,33 @@ const SuperUserDashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="chart-card medium">
-            <div className="chart-header">
+          <div className={`${styles.chartCard} ${styles.medium}`}>
+            <div className={styles.chartHeader}>
               <h3>Payment Overview</h3>
               <RiMoneyDollarCircleLine />
             </div>
-            <div className="payment-summary">
-              <div className="payment-item">
-                <div className="payment-icon paid">
+            <div className={styles.paymentSummary}>
+              <div className={styles.paymentItem}>
+                <div className={`${styles.paymentIcon} ${styles.paid}`}>
                   <RiCheckboxCircleLine />
                 </div>
-                <div className="payment-details">
+                <div className={styles.paymentDetails}>
                   <h4>{formatCurrency(paymentStats.paidAmount)}</h4>
                   <p>{paymentStats.paidCount} Paid</p>
                 </div>
               </div>
-              <div className="payment-item">
-                <div className="payment-icon pending">
+              <div className={styles.paymentItem}>
+                <div className={`${styles.paymentIcon} ${styles.pending}`}>
                   <RiTimeLine />
                 </div>
-                <div className="payment-details">
+                <div className={styles.paymentDetails}>
                   <h4>{formatCurrency(paymentStats.pendingAmount)}</h4>
                   <p>{paymentStats.pendingCount} Pending</p>
                 </div>
               </div>
-              <div className="payment-actions">
+              <div className={styles.paymentActions}>
                 <button
-                  className="view-all-payments-btn"
+                  className={styles.viewAllPaymentsBtn}
                   onClick={() => navigate("/technicianPayments")}
                   type="button"
                 >
@@ -919,27 +919,27 @@ const SuperUserDashboard = () => {
       </div>
 
       {/* Top Technicians and Recent Jobs */}
-      <div className="dashboard-content">
-        <div className="content-grid">
-          <div className="content-card">
-            <div className="card-header">
+      <div className={styles.dashboardContent}>
+        <div className={styles.contentGrid}>
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
               <h3>Top Performing Technicians</h3>
               <RiUserStarLine />
             </div>
-            <div className="technician-list">
+            <div className={styles.technicianList}>
               {topTechnicians.length === 0 ? (
                 <p>No data available</p>
               ) : (
                 topTechnicians.map((tech, index) => (
-                  <div key={index} className="technician-item">
-                    <div className="rank">#{index + 1}</div>
-                    <div className="tech-info">
-                      <span className="name">{tech.name}</span>
-                      <span className="jobs">
+                  <div key={index} className={styles.technicianItem}>
+                    <div className={styles.rank}>#{index + 1}</div>
+                    <div className={styles.techInfo}>
+                      <span className={styles.name}>{tech.name}</span>
+                      <span className={styles.jobs}>
                         {tech.completedJobs} jobs completed
                       </span>
                     </div>
-                    <div className="completion-badge">
+                    <div className={styles.completionBadge}>
                       <RiCheckLine />
                     </div>
                   </div>
@@ -948,26 +948,26 @@ const SuperUserDashboard = () => {
             </div>
           </div>
 
-          <div className="content-card">
-            <div className="card-header">
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
               <h3>Recent Jobs</h3>
               <RiBriefcaseLine />
             </div>
-            <div className="jobs-filter-section">
-              <div className="job-search">
+            <div className={styles.jobsFilterSection}>
+              <div className={styles.jobSearch}>
                 <input
                   type="text"
                   placeholder="Search jobs..."
                   value={jobSearchTerm}
                   onChange={(e) => setJobSearchTerm(e.target.value)}
-                  className="job-search-input"
+                  className={styles.jobSearchInput}
                 />
               </div>
-              <div className="job-status-filter">
+              <div className={styles.jobStatusFilter}>
                 <select
                   value={jobStatusFilter}
                   onChange={(e) => setJobStatusFilter(e.target.value)}
-                  className="status-filter-select"
+                  className={styles.statusFilterSelect}
                 >
                   <option value="all">All Status</option>
                   {uniqueStatuses.map((status) => (
@@ -978,9 +978,9 @@ const SuperUserDashboard = () => {
                 </select>
               </div>
             </div>
-            <div className="recent-jobs">
+            <div className={styles.recentJobs}>
               {filteredRecentJobs.length === 0 ? (
-                <div className="no-jobs-found">
+                <div className={styles.noJobsFound}>
                   <p>No jobs found matching your criteria.</p>
                 </div>
               ) : (
@@ -989,7 +989,7 @@ const SuperUserDashboard = () => {
                   return (
                     <div
                       key={job.id}
-                      className="job-item clickable"
+                      className={`${styles.jobItem} ${styles.clickable}`}
                       onClick={() => handleJobClick(job.id)}
                       role="button"
                       tabIndex={0}
@@ -999,30 +999,30 @@ const SuperUserDashboard = () => {
                         }
                       }}
                     >
-                      <div className="job-info">
-                        <div className="job-header">
-                          <span className="job-id">#{job.job_id}</span>
+                      <div className={styles.jobInfo}>
+                        <div className={styles.jobHeader}>
+                          <span className={styles.jobId}>#{job.job_id}</span>
                           <span
-                            className={`status-badge ${job.status
+                            className={`${styles.statusBadge} ${styles[job.status
                               .toLowerCase()
-                              .replace(" ", "-")}`}
+                              .replace(" ", "-")]}`}
                           >
                             {job.status}
                           </span>
                         </div>
-                        <div className="job-details">
-                          <span className="job-type">{job.jobType}</span>
-                          <span className="technician">
+                        <div className={styles.jobDetails}>
+                          <span className={styles.jobType}>{job.jobType}</span>
+                          <span className={styles.technician}>
                             {job.technicianName}
                           </span>
                           {
-                            <span className="address">
+                            <span className={styles.address}>
                               {job.propertyAddress}
                             </span>
                           }
                         </div>
                       </div>
-                      <div className="job-date">
+                      <div className={styles.jobDate}>
                         <RiTimeLine />
                         <span>
                           {new Date(job.createdAt).toLocaleDateString()}
@@ -1034,9 +1034,9 @@ const SuperUserDashboard = () => {
                 })
               )}
               {filteredRecentJobs.length > 8 && (
-                <div className="view-more-jobs">
+                <div className={styles.viewMoreJobs}>
                   <button
-                    className="view-more-btn"
+                    className={styles.viewMoreBtn}
                     onClick={() => navigate("/jobs")}
                     type="button"
                   >
@@ -1049,56 +1049,119 @@ const SuperUserDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="quick-actions">
-          <h3>Quick Actions</h3>
-          <div className="actions-grid">
+        <div className={styles.quickActions}>
+          <div className={styles.quickActionsHeader}>
+            <h3 className={styles.title}>Quick Actions</h3>
+            <p className={styles.subtitle}>Navigate to frequently used sections</p>
+          </div>
+          <div className={styles.actionsGrid}>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.agencies}`}
               onClick={() => handleQuickAction("agencies")}
               type="button"
             >
-              <RiBuildingLine />
-              <span>Manage Agencies</span>
+              <div className={styles.iconWrapper}>
+                <RiBuildingLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Agencies</h4>
+                <p className={styles.cardDescription}>Manage and monitor agencies</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.properties}`}
               onClick={() => handleQuickAction("properties")}
               type="button"
             >
-              <RiHomeSmileLine />
-              <span>View Properties</span>
+              <div className={styles.iconWrapper}>
+                <RiHomeSmileLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Properties</h4>
+                <p className={styles.cardDescription}>View property listings</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.technicians}`}
               onClick={() => handleQuickAction("technician")}
               type="button"
             >
-              <RiToolsLine />
-              <span>Manage Technicians</span>
+              <div className={styles.iconWrapper}>
+                <RiToolsLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Technicians</h4>
+                <p className={styles.cardDescription}>Manage service providers</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.team}`}
               onClick={() => handleQuickAction("teamMembers")}
               type="button"
             >
-              <RiTeamLine />
-              <span>Team Members</span>
+              <div className={styles.iconWrapper}>
+                <RiTeamLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Team</h4>
+                <p className={styles.cardDescription}>Manage team members</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.payments}`}
               onClick={() => handleQuickAction("technicianPayments")}
               type="button"
             >
-              <RiMoneyDollarCircleLine />
-              <span>Technician Payments</span>
+              <div className={styles.iconWrapper}>
+                <RiMoneyDollarCircleLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Payments</h4>
+                <p className={styles.cardDescription}>Technician payment tracking</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
             <button
-              className="action-button"
+              className={`${styles.actionCard} ${styles.reports}`}
               onClick={() => handleQuickAction("reports")}
               type="button"
             >
-              <RiBarChartLine />
-              <span>View Reports</span>
+              <div className={styles.iconWrapper}>
+                <RiBarChartLine className={styles.icon} />
+              </div>
+              <div className={styles.content}>
+                <h4 className={styles.cardTitle}>Reports</h4>
+                <p className={styles.cardDescription}>View analytics & insights</p>
+              </div>
+              <div className={styles.arrow}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </button>
           </div>
         </div>

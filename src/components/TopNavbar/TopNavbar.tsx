@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import NotificationBell from "../NotificationBell";
 import { SidebarToggle } from "../SidebarToggle";
 import { UserProfileDropdown } from "../UserProfileDropdown";
+import ThemeToggle from "../ThemeToggle";
 import "./TopNavbar.scss";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
 
@@ -44,6 +45,7 @@ const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
           </div>
         </div>
         <div className="navbar-actions">
+          <ThemeToggle />
           <NotificationBell onNotificationClick={handleNotificationClick} />
           <UserProfileDropdown />
         </div>

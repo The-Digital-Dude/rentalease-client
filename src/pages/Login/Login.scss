@@ -8,9 +8,9 @@
 }
 
 .login-card {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   padding: 2.5rem;
   width: 100%;
   max-width: 800px;
@@ -46,13 +46,13 @@
   h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--color-heading);
     margin-bottom: 0.5rem;
     letter-spacing: -0.025em;
   }
 
   p {
-    color: #6b7280;
+    color: var(--color-text-secondary);
     font-size: 0.95rem;
     margin: 0;
   }
@@ -144,13 +144,13 @@
     h3 {
       font-size: 1.125rem;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--color-heading);
       margin: 0 0 0.25rem 0;
     }
 
     p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--color-text-secondary);
       margin: 0;
       line-height: 1.4;
     }
@@ -240,18 +240,19 @@
       display: block;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #374151;
+      color: var(--color-text-primary);
       margin-bottom: 0.5rem;
     }
 
     input {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 1.5px solid #e5e7eb;
+      border: 1.5px solid var(--color-border-input);
       border-radius: 8px;
       font-size: 0.95rem;
       transition: all 0.2s ease;
-      background: white;
+      background: var(--color-bg-input);
+      color: var(--color-text-primary);
 
       &:focus {
         outline: none;
@@ -260,7 +261,7 @@
       }
 
       &::placeholder {
-        color: #9ca3af;
+        color: var(--color-text-tertiary);
       }
     }
   }

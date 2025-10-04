@@ -1,7 +1,8 @@
 .team-member-management {
   padding: 2rem;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-bg-secondary);
+  transition: background-color 0.2s ease;
 
   .page-header {
     margin-bottom: 2rem;
@@ -10,10 +11,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: white;
+      background: var(--color-bg-card);
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow-sm);
+      transition: background-color 0.2s ease;
 
       .header-info {
         display: flex;
@@ -36,12 +38,12 @@
           h1 {
             font-size: 1.75rem;
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--color-heading);
             margin: 0 0 0.25rem 0;
           }
 
           p {
-            color: #6b7280;
+            color: var(--color-text-secondary);
             margin: 0;
             font-size: 0.95rem;
           }
@@ -52,8 +54,8 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        background: #024974;
-        color: white;
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
         border: none;
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
@@ -62,9 +64,9 @@
         transition: all 0.2s;
 
         &:hover {
-          background: #013759;
+          background: var(--color-primary-hover);
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(2, 73, 116, 0.2);
+          box-shadow: var(--shadow-md);
         }
 
         svg {
@@ -76,11 +78,12 @@
 
   .page-content {
     .filters-section {
-      background: white;
+      background: var(--color-bg-card);
       padding: 1.5rem;
       border-radius: 12px;
       margin-bottom: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow-sm);
+      transition: background-color 0.2s ease;
       display: flex;
       gap: 1.5rem;
       align-items: center;
@@ -96,22 +99,24 @@
           left: 1rem;
           top: 50%;
           transform: translateY(-50%);
-          color: #6b7280;
+          color: var(--color-text-secondary);
           font-size: 1rem;
         }
 
         input {
           width: 100%;
           padding: 0.75rem 1rem 0.75rem 2.5rem;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--color-border-input);
           border-radius: 8px;
           font-size: 0.95rem;
           transition: all 0.2s;
+          background: var(--color-bg-input);
+          color: var(--color-text-primary);
 
           &:focus {
             outline: none;
-            border-color: #024974;
-            box-shadow: 0 0 0 3px rgba(2, 73, 116, 0.1);
+            border-color: var(--color-border-focus);
+            box-shadow: 0 0 0 3px var(--color-primary-light);
           }
         }
       }
@@ -127,22 +132,22 @@
           gap: 0.5rem;
 
           .filter-icon {
-            color: #6b7280;
+            color: var(--color-text-secondary);
             font-size: 1rem;
           }
 
           select {
             padding: 0.5rem 0.75rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--color-border-input);
             border-radius: 6px;
             font-size: 0.875rem;
-            background: white;
-            color: #374151;
+            background: var(--color-bg-input);
+            color: var(--color-text-primary);
             cursor: pointer;
 
             &:focus {
               outline: none;
-              border-color: #024974;
+              border-color: var(--color-border-focus);
             }
           }
         }
@@ -150,14 +155,15 @@
     }
 
     .team-members-table {
-      background: white;
+      background: var(--color-bg-card);
       border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
+      transition: background-color 0.2s ease;
 
       .table-header {
         padding: 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--color-border-primary);
 
         .table-title {
           display: flex;
@@ -165,10 +171,10 @@
           gap: 0.5rem;
           font-size: 1.125rem;
           font-weight: 600;
-          color: #374151;
+          color: var(--color-text-primary);
 
           svg {
-            color: #024974;
+            color: var(--color-primary);
             font-size: 1.25rem;
           }
         }
@@ -181,13 +187,13 @@
         justify-content: center;
         padding: 4rem 2rem;
         text-align: center;
-        color: #6b7280;
+        color: var(--color-text-secondary);
 
         .spinner {
           width: 40px;
           height: 40px;
-          border: 3px solid #e5e7eb;
-          border-top: 3px solid #024974;
+          border: 3px solid var(--color-border-primary);
+          border-top: 3px solid var(--color-primary);
           border-radius: 50%;
           animation: spin 1s linear infinite;
           margin-bottom: 1rem;
@@ -221,7 +227,7 @@
         }
 
         p {
-          color: #6b7280;
+          color: var(--color-text-secondary);
           margin: 0 0 2rem 0;
         }
 
@@ -343,7 +349,7 @@
                       padding: 0.5rem;
                       border-radius: 4px;
                       cursor: pointer;
-                      color: #6b7280;
+                      color: var(--color-text-secondary);
                       transition: all 0.2s;
 
                       &:hover {
@@ -449,7 +455,7 @@
       }
 
       span {
-        color: #6b7280;
+        color: var(--color-text-secondary);
         font-size: 0.875rem;
       }
     }
@@ -493,7 +499,7 @@
           background: none;
           border: none;
           font-size: 1.5rem;
-          color: #6b7280;
+          color: var(--color-text-secondary);
           cursor: pointer;
           padding: 0.25rem;
           border-radius: 4px;

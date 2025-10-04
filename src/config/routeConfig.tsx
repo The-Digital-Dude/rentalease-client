@@ -17,6 +17,12 @@ const PropertyManagerManagement = lazy(
 const TechnicianDashboard = lazy(
   () => import("../pages/TechnicianDashboard/TechnicianDashboard")
 );
+const TechnicianCalendar = lazy(
+  () => import("../pages/TechnicianCalendar/TechnicianCalendar")
+);
+const TechnicianSupport = lazy(
+  () => import("../pages/TechnicianSupport/TechnicianSupport")
+);
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const AgencyJobs = lazy(() => import("../pages/AgencyJobs/AgencyJobs"));
 const Contacts = lazy(
@@ -114,6 +120,9 @@ export const routeConfig = (userType: UserType) => {
     regionalDashboard: RegionalDashboard,
     "beyond-compliance": BeyondCompliance,
     "quotation-management": QuotationManagement,
+    "technician-dashboard": TechnicianDashboard,
+    "technician-calendar": TechnicianCalendar,
+    "technician-support": TechnicianSupport,
   };
 
   // Generate routes based on user permissions

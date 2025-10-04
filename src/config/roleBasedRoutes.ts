@@ -6,7 +6,7 @@ export const defaultRoutes: Record<UserType, string> = {
   agency: "/dashboard",
   staff: "/dashboard",
   tenant: "/login", // Tenants only use email interactions, no dashboard access
-  technician: "/dashboard",
+  technician: "/technician-dashboard",
   property_manager: "/dashboard",
   team_member: "/dashboard",
 };
@@ -51,15 +51,12 @@ export const allowedRoutes: Record<UserType, string[]> = {
   staff: ["dashboard", "jobs", "contacts"],
   tenant: [], // Tenants interact only via email, no dashboard access needed
   technician: [
-    "devDashboard",
-    // "dashboard",
+    "technician-dashboard",
     "availableJobs",
     "myJobs",
-    "activeJobs",
-    "overdueJobs",
-    "completedJobs",
     "myPayments",
-    // "messages",
+    "technician-calendar",
+    "technician-support",
   ],
   property_manager: [
     "dashboard",

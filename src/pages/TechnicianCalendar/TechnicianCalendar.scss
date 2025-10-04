@@ -1,0 +1,104 @@
+.technician-calendar-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+
+    .header-content {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+
+      .header-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #0f4c75, #1b6aa5);
+        color: #fff;
+        font-size: 1.75rem;
+      }
+
+      .header-text {
+        h1 {
+          margin: 0;
+          font-size: 1.75rem;
+          font-weight: 600;
+          color: #0f172a;
+        }
+
+        p {
+          margin: 0.25rem 0 0;
+          max-width: 50rem;
+          color: #475569;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .calendar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .coming-soon-card {
+      display: flex;
+      gap: 1.5rem;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, rgba(15, 76, 117, 0.08), #ffffff);
+      box-shadow: 0 12px 24px rgba(15, 76, 117, 0.08);
+
+      .card-icon {
+        font-size: 3rem;
+        color: #0f4c75;
+      }
+
+      .card-text {
+        h2 {
+          margin: 0 0 0.5rem;
+          font-size: 1.5rem;
+          color: #0f172a;
+        }
+
+        p {
+          margin: 0 0 1rem;
+          color: #475569;
+          line-height: 1.6;
+        }
+
+        ul {
+          margin: 0 0 1rem 1.25rem;
+          color: #1e293b;
+          line-height: 1.6;
+          list-style: disc;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .technician-calendar-page {
+    padding: 1rem;
+
+    .calendar-content .coming-soon-card {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .card-icon {
+        font-size: 2.5rem;
+      }
+    }
+  }
+}

@@ -30,6 +30,8 @@ import {
   MdPhone,
   MdMiscellaneousServices,
   MdAssessment,
+  MdCalendarToday,
+  MdHelpOutline,
 } from "react-icons/md";
 import { RiFileList3Line } from "react-icons/ri";
 import "./Sidebar.scss";
@@ -63,7 +65,7 @@ const labelMap: Record<string, string> = {
   "scheduled-jobs": "Scheduled Jobs",
   "overdue-jobs": "Overdue Jobs",
   "completed-jobs": "Completed Jobs",
-  myPayments: "My Payments",
+  myPayments: "Payments",
   technicianPayments: "Technician Payments",
   teamMembers: "Team Members",
   subscription: "Subscription",
@@ -72,6 +74,9 @@ const labelMap: Record<string, string> = {
   "lead-management": "Lead Management",
   "beyond-compliance": "Beyond Compliance",
   "quotation-management": "QMS Portal",
+  "technician-dashboard": "Dashboard",
+  "technician-calendar": "Calendar",
+  "technician-support": "Support",
 };
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -107,6 +112,9 @@ const iconMap: Record<string, React.ReactNode> = {
   "lead-management": <MdPhone />,
   "beyond-compliance": <MdMiscellaneousServices />,
   "quotation-management": <RiFileList3Line />,
+  "technician-dashboard": <MdDashboard />,
+  "technician-calendar": <MdCalendarToday />,
+  "technician-support": <MdHelpOutline />,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {

@@ -4,8 +4,17 @@
   margin: 0 auto;
   background-color: #f8fafc;
   min-height: 100vh;
+  color: #1e293b;
+  transition: background-color 0.2s ease, color 0.2s ease;
 
-  .loadingContainer, .errorContainer {
+  // Dark mode styles
+  :global(.dark-mode) & {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .loadingContainer,
+  .errorContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -13,7 +22,8 @@
     height: 50vh;
     text-align: center;
 
-    .loadingSpinner, .errorIcon {
+    .loadingSpinner,
+    .errorIcon {
       font-size: 3rem;
       color: #667eea;
       animation: spin 1s linear infinite;
@@ -34,6 +44,25 @@
     h3 {
       color: #374151;
       margin-bottom: 0.5rem;
+    }
+
+    // Dark mode styles
+    :global(.dark-mode) & {
+      .loadingSpinner {
+        color: var(--color-primary);
+      }
+
+      .errorIcon {
+        color: var(--color-danger);
+      }
+
+      p {
+        color: var(--color-text-secondary);
+      }
+
+      h3 {
+        color: var(--color-text-primary);
+      }
     }
 
     .btn {
@@ -59,8 +88,12 @@
   }
 
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .spinning {
@@ -155,6 +188,17 @@
           box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
+        // Dark mode styles
+        :global(.dark-mode) & {
+          background: var(--color-bg-primary);
+          border: 1px solid var(--color-border-primary);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+          &:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+          }
+        }
+
         &.clickable {
           cursor: pointer;
 
@@ -202,6 +246,17 @@
             font-weight: 500;
           }
 
+          // Dark mode styles
+          :global(.dark-mode) & {
+            h3 {
+              color: var(--color-text-primary);
+            }
+
+            p {
+              color: var(--color-text-secondary);
+            }
+          }
+
           .statTrend {
             display: flex;
             align-items: center;
@@ -227,16 +282,36 @@
           }
         }
 
-        &.primary .statIcon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        &.properties .statIcon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        &.technicians .statIcon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        &.jobs .statIcon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        &.active .statIcon { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        &.success .statIcon { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
-        &.warning .statIcon { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
-        &.earnings .statIcon { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); }
-        &.teamMembers .statIcon { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
-        &.staff .statIcon { background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%); }
+        &.primary .statIcon {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        &.properties .statIcon {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        &.technicians .statIcon {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        &.jobs .statIcon {
+          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        &.active .statIcon {
+          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        &.success .statIcon {
+          background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        &.warning .statIcon {
+          background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+        &.earnings .statIcon {
+          background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+        }
+        &.teamMembers .statIcon {
+          background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        }
+        &.staff .statIcon {
+          background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+        }
       }
     }
   }
@@ -253,6 +328,13 @@
         border-radius: 1rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         border: 1px solid #f1f5f9;
+
+        // Dark mode styles
+        :global(.dark-mode) & {
+          background: var(--color-bg-primary);
+          border: 1px solid var(--color-border-primary);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
 
         &.fullWidth {
           width: 100%;
@@ -273,6 +355,15 @@
             color: #1f2937;
           }
 
+          // Dark mode styles
+          :global(.dark-mode) & {
+            border-bottom: 1px solid var(--color-border-primary);
+
+            h3 {
+              color: var(--color-text-primary);
+            }
+          }
+
           .chartActions {
             .chartExportBtn {
               padding: 0.5rem;
@@ -287,6 +378,18 @@
                 background: #667eea;
                 color: white;
               }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-hover);
+                color: var(--color-primary);
+
+                &:hover {
+                  background: var(--color-primary);
+                  color: white;
+                }
+              }
             }
           }
         }
@@ -299,6 +402,11 @@
           padding: 1rem;
           background: #f8fafc;
           border-radius: 0.75rem;
+
+          // Dark mode styles
+          :global(.dark-mode) & {
+            background: var(--color-bg-hover);
+          }
 
           .filterGroup {
             display: flex;
@@ -326,6 +434,25 @@
               background: white;
               font-size: 0.875rem;
             }
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              label {
+                color: var(--color-text-primary);
+              }
+
+              .filterSelect {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+              }
+
+              input {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+              }
+            }
           }
 
           .filterActions {
@@ -340,6 +467,17 @@
 
               &:hover {
                 background: #f8fafc;
+              }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+
+                &:hover {
+                  background: var(--color-bg-hover);
+                }
               }
             }
           }
@@ -466,6 +604,12 @@
           height: fit-content;
         }
 
+        // Dark mode styles
+        :global(.dark-mode) & {
+          background: var(--color-bg-primary);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
         .chartHeader {
           display: flex;
           justify-content: space-between;
@@ -483,6 +627,17 @@
             font-size: 1.5rem;
             color: #667eea;
           }
+
+          // Dark mode styles
+          :global(.dark-mode) & {
+            h3 {
+              color: var(--color-text-primary);
+            }
+
+            svg {
+              color: var(--color-primary);
+            }
+          }
         }
 
         .paymentSummary {
@@ -494,6 +649,11 @@
             background: #f8fafc;
             border-radius: 0.75rem;
             margin-bottom: 1rem;
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              background: var(--color-bg-hover);
+            }
 
             .paymentIcon {
               width: 48px;
@@ -528,6 +688,17 @@
                 font-size: 0.875rem;
                 color: #6b7280;
               }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                h4 {
+                  color: var(--color-text-primary);
+                }
+
+                p {
+                  color: var(--color-text-secondary);
+                }
+              }
             }
           }
 
@@ -547,6 +718,15 @@
 
               &:hover {
                 background: #5a67d8;
+              }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                background: var(--color-primary);
+
+                &:hover {
+                  background: var(--color-primary-hover);
+                }
               }
             }
           }
@@ -568,6 +748,12 @@
         border-radius: 1rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
+        // Dark mode styles
+        :global(.dark-mode) & {
+          background: var(--color-bg-primary);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
         .cardHeader {
           display: flex;
           justify-content: space-between;
@@ -587,6 +773,19 @@
             font-size: 1.5rem;
             color: #667eea;
           }
+
+          // Dark mode styles
+          :global(.dark-mode) & {
+            border-bottom: 1px solid var(--color-border-primary);
+
+            h3 {
+              color: var(--color-text-primary);
+            }
+
+            svg {
+              color: var(--color-primary);
+            }
+          }
         }
 
         .technicianList {
@@ -600,6 +799,13 @@
 
             &:hover {
               background: #f8fafc;
+            }
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              &:hover {
+                background: var(--color-bg-hover);
+              }
             }
 
             .rank {
@@ -630,11 +836,27 @@
                 font-size: 0.875rem;
                 color: #6b7280;
               }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                .name {
+                  color: var(--color-text-primary);
+                }
+
+                .jobs {
+                  color: var(--color-text-secondary);
+                }
+              }
             }
 
             .completionBadge {
               color: #10b981;
               font-size: 1.25rem;
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                color: #34d399; // Brighter green for better contrast in dark mode
+              }
             }
           }
         }
@@ -658,6 +880,17 @@
                 outline: none;
                 border-color: #667eea;
               }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+
+                &:focus {
+                  border-color: var(--color-primary);
+                }
+              }
             }
           }
 
@@ -669,6 +902,13 @@
               font-size: 0.875rem;
               background: white;
               cursor: pointer;
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                border: 1px solid var(--color-border-primary);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+              }
             }
           }
         }
@@ -693,6 +933,15 @@
               transform: translateX(4px);
             }
 
+            // Dark mode styles
+            :global(.dark-mode) & {
+              background: var(--color-bg-hover);
+
+              &:hover {
+                background: var(--color-bg-tertiary);
+              }
+            }
+
             .jobInfo {
               .jobHeader {
                 display: flex;
@@ -703,6 +952,11 @@
                 .jobId {
                   font-weight: 600;
                   color: #1f2937;
+
+                  // Dark mode styles
+                  :global(.dark-mode) & {
+                    color: var(--color-text-primary);
+                  }
                 }
 
                 .statusBadge {
@@ -712,12 +966,24 @@
                   font-weight: 500;
                   color: white;
 
-                  &.completed { background-color: #10b981; }
-                  &[class*="in-progress"] { background-color: #f59e0b; }
-                  &.pending { background-color: #3b82f6; }
-                  &.overdue { background-color: #ef4444; }
-                  &.scheduled { background-color: #8b5cf6; }
-                  &.cancelled { background-color: #6b7280; }
+                  &.completed {
+                    background-color: #10b981;
+                  }
+                  &[class*="in-progress"] {
+                    background-color: #f59e0b;
+                  }
+                  &.pending {
+                    background-color: #3b82f6;
+                  }
+                  &.overdue {
+                    background-color: #ef4444;
+                  }
+                  &.scheduled {
+                    background-color: #8b5cf6;
+                  }
+                  &.cancelled {
+                    background-color: #6b7280;
+                  }
                 }
               }
 
@@ -734,6 +1000,15 @@
                     font-weight: 500;
                     color: #374151;
                   }
+
+                  // Dark mode styles
+                  :global(.dark-mode) & {
+                    color: var(--color-text-secondary);
+
+                    &.jobType {
+                      color: var(--color-text-primary);
+                    }
+                  }
                 }
               }
             }
@@ -748,6 +1023,11 @@
 
               svg {
                 font-size: 1rem;
+              }
+
+              // Dark mode styles
+              :global(.dark-mode) & {
+                color: var(--color-text-secondary);
               }
             }
           }
@@ -782,25 +1062,38 @@
       background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
       border-radius: 20px;
       border: 1px solid rgba(226, 232, 240, 0.8);
-      box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.04),
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04),
         0 2px 4px -1px rgba(0, 0, 0, 0.02);
       position: relative;
       overflow: hidden;
 
+      // Dark mode styles
+      :global(.dark-mode) & {
+        background: linear-gradient(
+          135deg,
+          var(--color-bg-primary) 0%,
+          var(--color-bg-secondary) 100%
+        );
+        border: 1px solid var(--color-border-primary);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg,
+        background: linear-gradient(
+          90deg,
           #667eea 0%,
           #764ba2 25%,
           #f093fb 50%,
           #667eea 75%,
-          #764ba2 100%);
+          #764ba2 100%
+        );
         background-size: 200% 100%;
         animation: gradient 10s ease infinite;
       }
@@ -822,6 +1115,17 @@
           color: #64748b;
           margin: 0;
           font-weight: 400;
+        }
+
+        // Dark mode styles
+        :global(.dark-mode) & {
+          .title {
+            color: var(--color-text-primary);
+          }
+
+          .subtitle {
+            color: var(--color-text-secondary);
+          }
         }
       }
 
@@ -854,14 +1158,24 @@
           overflow: hidden;
           min-height: 90px;
 
+          // Dark mode styles
+          :global(.dark-mode) & {
+            background: var(--color-bg-primary);
+            border: 1.5px solid var(--color-border-primary);
+          }
+
           &::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, transparent, rgba(99, 102, 241, 0.03));
+            background: linear-gradient(
+              135deg,
+              transparent,
+              rgba(99, 102, 241, 0.03)
+            );
             opacity: 0;
             transition: opacity 0.3s ease;
           }
@@ -881,6 +1195,19 @@
               font-size: 1.5rem;
               color: #475569;
               transition: all 0.3s ease;
+            }
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-hover),
+                var(--color-bg-tertiary)
+              );
+
+              .icon {
+                color: var(--color-primary);
+              }
             }
           }
 
@@ -905,6 +1232,17 @@
               overflow: hidden;
               text-overflow: ellipsis;
             }
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              .cardTitle {
+                color: var(--color-text-primary);
+              }
+
+              .cardDescription {
+                color: var(--color-text-secondary);
+              }
+            }
           }
 
           .arrow {
@@ -919,12 +1257,16 @@
               width: 100%;
               height: 100%;
             }
+
+            // Dark mode styles
+            :global(.dark-mode) & {
+              color: var(--color-text-tertiary);
+            }
           }
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow:
-              0 10px 25px -5px rgba(0, 0, 0, 0.08),
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08),
               0 4px 10px -5px rgba(0, 0, 0, 0.04);
             border-color: transparent;
 
@@ -935,6 +1277,12 @@
             .arrow {
               opacity: 1;
               transform: translateX(3px);
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+                0 4px 10px -5px rgba(0, 0, 0, 0.2);
             }
           }
 
@@ -949,9 +1297,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #818cf8, #6366f1);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #6366f1; }
+            .arrow {
+              color: #6366f1;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #818cf8;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #818cf8, #6366f1);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #818cf8;
+              }
+            }
           }
 
           &.properties:hover {
@@ -960,9 +1332,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #60a5fa, #3b82f6);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #3b82f6; }
+            .arrow {
+              color: #3b82f6;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #60a5fa;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #60a5fa, #3b82f6);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #60a5fa;
+              }
+            }
           }
 
           &.technicians:hover {
@@ -971,9 +1367,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #34d399, #10b981);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #10b981; }
+            .arrow {
+              color: #10b981;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #34d399;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #34d399, #10b981);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #34d399;
+              }
+            }
           }
 
           &.team:hover {
@@ -982,9 +1402,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #8b5cf6; }
+            .arrow {
+              color: #8b5cf6;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #a78bfa;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #a78bfa;
+              }
+            }
           }
 
           &.payments:hover {
@@ -993,9 +1437,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #fbbf24, #f59e0b);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #f59e0b; }
+            .arrow {
+              color: #f59e0b;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #fbbf24;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #fbbf24;
+              }
+            }
           }
 
           &.reports:hover {
@@ -1004,9 +1472,33 @@
 
             .iconWrapper {
               background: linear-gradient(135deg, #f472b6, #ec4899);
-              .icon { color: white; }
+              .icon {
+                color: white;
+              }
             }
-            .arrow { color: #ec4899; }
+            .arrow {
+              color: #ec4899;
+            }
+
+            // Dark mode hover styles
+            :global(.dark-mode) & {
+              background: linear-gradient(
+                135deg,
+                var(--color-bg-primary),
+                var(--color-bg-hover)
+              );
+              border-color: #f472b6;
+
+              .iconWrapper {
+                background: linear-gradient(135deg, #f472b6, #ec4899);
+                .icon {
+                  color: white;
+                }
+              }
+              .arrow {
+                color: #f472b6;
+              }
+            }
           }
         }
       }
@@ -1016,9 +1508,15 @@
 
 // Animation for gradient border
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 // Responsive design
@@ -1114,10 +1612,12 @@
       flex-direction: column;
       gap: 0.75rem;
 
-      .jobSearch, .jobStatusFilter {
+      .jobSearch,
+      .jobStatusFilter {
         width: 100%;
 
-        .jobSearchInput, .statusFilterSelect {
+        .jobSearchInput,
+        .statusFilterSelect {
           width: 100%;
         }
       }

@@ -11,15 +11,17 @@ import {
   RiBuildingLine,
   RiShieldCheckLine,
   RiAlertLine,
-  RiCheckboxCircleLine
+  RiCheckboxCircleLine,
 } from "react-icons/ri";
 import propertyService from "../../services/propertyService";
 import type { Property, PropertyFilters } from "../../services/propertyService";
 import { useAppSelector } from "../../store";
+import { useTheme } from "../../contexts/ThemeContext";
 import "./PropertyManagerDashboard.scss";
 
 const PropertyManagerDashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
+  const { isDarkMode } = useTheme();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +72,11 @@ const PropertyManagerDashboard: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setFilters(prev => ({ ...prev, search: searchInput, page: 1 }));
+    setFilters((prev) => ({ ...prev, search: searchInput, page: 1 }));
   };
 
   const handleFilterChange = (key: keyof PropertyFilters, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
   const getComplianceStatus = (property: Property) => {
@@ -134,7 +136,12 @@ const PropertyManagerDashboard: React.FC = () => {
             <RiCheckboxCircleLine />
           </div>
           <div className="stat-content">
-            <h3>{properties.filter(p => getComplianceStatus(p) === "compliant").length}</h3>
+            <h3>
+              {
+                properties.filter((p) => getComplianceStatus(p) === "compliant")
+                  .length
+              }
+            </h3>
             <p>Compliant</p>
           </div>
         </div>
@@ -143,7 +150,12 @@ const PropertyManagerDashboard: React.FC = () => {
             <RiAlertLine />
           </div>
           <div className="stat-content">
-            <h3>{properties.filter(p => getComplianceStatus(p) === "due-soon").length}</h3>
+            <h3>
+              {
+                properties.filter((p) => getComplianceStatus(p) === "due-soon")
+                  .length
+              }
+            </h3>
             <p>Due Soon</p>
           </div>
         </div>
@@ -152,7 +164,12 @@ const PropertyManagerDashboard: React.FC = () => {
             <RiErrorWarningLine />
           </div>
           <div className="stat-content">
-            <h3>{properties.filter(p => getComplianceStatus(p) === "overdue").length}</h3>
+            <h3>
+              {
+                properties.filter((p) => getComplianceStatus(p) === "overdue")
+                  .length
+              }
+            </h3>
             <p>Overdue</p>
           </div>
         </div>
@@ -180,7 +197,9 @@ const PropertyManagerDashboard: React.FC = () => {
           <RiFilterLine className="filter-icon" />
           <select
             value={filters.propertyType || ""}
-            onChange={(e) => handleFilterChange("propertyType", e.target.value || undefined)}
+            onChange={(e) =>
+              handleFilterChange("propertyType", e.target.value || undefined)
+            }
             className="filter-select"
           >
             <option value="">All Types</option>
@@ -193,7 +212,9 @@ const PropertyManagerDashboard: React.FC = () => {
 
           <select
             value={filters.region || ""}
-            onChange={(e) => handleFilterChange("region", e.target.value || undefined)}
+            onChange={(e) =>
+              handleFilterChange("region", e.target.value || undefined)
+            }
             className="filter-select"
           >
             <option value="">All Regions</option>
@@ -291,7 +312,9 @@ const PropertyManagerDashboard: React.FC = () => {
               <div className="pagination">
                 <button
                   disabled={!pagination.hasPrev}
-                  onClick={() => handleFilterChange("page", pagination.currentPage - 1)}
+                  onClick={() =>
+                    handleFilterChange("page", pagination.currentPage - 1)
+                  }
                   className="pagination-btn"
                 >
                   Previous
@@ -301,7 +324,9 @@ const PropertyManagerDashboard: React.FC = () => {
                 </span>
                 <button
                   disabled={!pagination.hasNext}
-                  onClick={() => handleFilterChange("page", pagination.currentPage + 1)}
+                  onClick={() =>
+                    handleFilterChange("page", pagination.currentPage + 1)
+                  }
                   className="pagination-btn"
                 >
                   Next

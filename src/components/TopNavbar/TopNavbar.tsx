@@ -6,6 +6,7 @@ import NotificationBell from "../NotificationBell";
 import { SidebarToggle } from "../SidebarToggle";
 import { UserProfileDropdown } from "../UserProfileDropdown";
 import ThemeToggle from "../ThemeToggle";
+import { useTheme } from "../../contexts/ThemeContext";
 import "./TopNavbar.scss";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
 
@@ -15,6 +16,7 @@ interface TopNavbarProps {
 
 const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
   const { userType } = useAppSelector((state) => state.user);
+  const { isDarkMode } = useTheme();
   const homePath = userType ? defaultRoutes[userType as UserType] : "/";
 
   const handleNotificationClick = (notification: any) => {
@@ -37,7 +39,11 @@ const TopNavbar = ({ onMobileMenuClick }: TopNavbarProps) => {
           <div className="navbar-logo">
             <Link to={homePath}>
               <img
-                src="/rentalease-logo.png"
+                src={
+                  isDarkMode
+                    ? "/rentalease-logo-light.png"
+                    : "/rentalease-logo.png"
+                }
                 alt="RentalEase Logo"
                 className="logo-image"
               />

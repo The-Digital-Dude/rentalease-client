@@ -9,6 +9,7 @@ import {
   RiTimeLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
+import { useTheme } from "../../contexts/ThemeContext";
 import "./StaffDashboard.scss";
 
 interface StaffJob {
@@ -25,6 +26,7 @@ interface StaffJob {
 
 const StaffDashboard = () => {
   const { user } = useAppSelector((state) => state.user);
+  const { isDarkMode } = useTheme();
   const [jobs, setJobs] = useState<StaffJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");

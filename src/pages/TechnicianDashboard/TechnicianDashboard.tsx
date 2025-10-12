@@ -4,12 +4,10 @@ import {
   RiBriefcaseLine,
   RiCalendarLine,
   RiMapPinLine,
-  RiTimeLine,
   RiCheckLine,
   RiLoaderLine,
   RiAlertLine,
   RiBarChartLine,
-  RiPieChartLine,
   RiMoneyDollarCircleLine,
   RiRefreshLine,
   RiPlayLine,
@@ -29,6 +27,7 @@ import {
   Bar,
 } from "recharts";
 import { useAppSelector } from "../../store";
+import { useTheme } from "../../contexts/ThemeContext";
 import technicianService from "../../services/technicianService";
 import "./TechnicianDashboard.scss";
 
@@ -96,6 +95,7 @@ type TechnicianTab = "overview" | "active" | "completed" | "overdue";
 
 const TechnicianDashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
@@ -118,8 +118,10 @@ const TechnicianDashboard: React.FC = () => {
       } else {
         throw new Error(result.message || "Failed to fetch dashboard data");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to load dashboard data");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load dashboard data"
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -128,12 +130,14 @@ const TechnicianDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const quickStats = dashboardData?.quickStats;
   const paymentStats = dashboardData?.paymentStats;
-  const recentJobs = dashboardData?.recentJobs ?? [];
+  const recentJobs = useMemo(
+    () => dashboardData?.recentJobs ?? [],
+    [dashboardData?.recentJobs]
+  );
 
   const completionRate = useMemo(() => {
     if (!quickStats || quickStats.totalJobs === 0) return 0;
@@ -163,9 +167,9 @@ const TechnicianDashboard: React.FC = () => {
       (dashboardData?.jobStatusDistribution ?? []).map((segment) => ({
         name: segment.status,
         value: segment.count,
-        fill: getStatusColor(segment.status),
+        fill: getStatusColor(segment.status, isDarkMode),
       })),
-    [dashboardData?.jobStatusDistribution]
+    [dashboardData?.jobStatusDistribution, isDarkMode]
   );
 
   const weeklyProgressData = dashboardData?.weeklyProgress ?? [];
@@ -213,7 +217,12 @@ const TechnicianDashboard: React.FC = () => {
 
     return (
       rawAddress.fullAddress ||
-      [rawAddress.street, rawAddress.suburb, rawAddress.state, rawAddress.postcode]
+      [
+        rawAddress.street,
+        rawAddress.suburb,
+        rawAddress.state,
+        rawAddress.postcode,
+      ]
         .filter(Boolean)
         .join(", ") ||
       "Address not available"
@@ -250,7 +259,10 @@ const TechnicianDashboard: React.FC = () => {
       </div>
 
       <div className="job-actions">
-        <button className="btn btn-outline" onClick={() => navigate(`/jobs/${job.id}`)}>
+        <button
+          className="btn btn-outline"
+          onClick={() => navigate(`/jobs/${job.id}`)}
+        >
           <RiEyeLine />
           View Job
         </button>
@@ -295,21 +307,21 @@ const TechnicianDashboard: React.FC = () => {
         <div className="welcome-section">
           <div className="welcome-content">
             <h1>Welcome back, {user?.name || "Technician"}!</h1>
-            <p>Plan your day, monitor performance, and action jobs from here.</p>
+            <p>
+              Plan your day, monitor performance, and action jobs from here.
+            </p>
             <div className="last-updated">
               <RiInformationLine />
               <span>
-                Last updated: {dashboardData?.lastUpdated
+                Last updated:{" "}
+                {dashboardData?.lastUpdated
                   ? new Date(dashboardData.lastUpdated).toLocaleString()
                   : "N/A"}
               </span>
             </div>
           </div>
           <div className="header-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={handlePrimaryCta}
-            >
+            <button className="btn btn-secondary" onClick={handlePrimaryCta}>
               Browse Available Jobs
             </button>
             <button
@@ -397,10 +409,13 @@ const TechnicianDashboard: React.FC = () => {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #e2e8f0",
+                  backgroundColor: isDarkMode ? "#1f2937" : "#fff",
+                  border: `1px solid ${isDarkMode ? "#374151" : "#e2e8f0"}`,
                   borderRadius: 8,
-                  boxShadow: "0 8px 16px rgba(15, 23, 42, 0.08)",
+                  boxShadow: isDarkMode
+                    ? "0 8px 16px rgba(0, 0, 0, 0.4)"
+                    : "0 8px 16px rgba(15, 23, 42, 0.08)",
+                  color: isDarkMode ? "#f9fafb" : "#1f2937",
                 }}
               />
             </PieChart>
@@ -413,19 +428,39 @@ const TechnicianDashboard: React.FC = () => {
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={weeklyProgressData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="day" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" allowDecimals={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={isDarkMode ? "#374151" : "#e2e8f0"}
+              />
+              <XAxis
+                dataKey="day"
+                stroke={isDarkMode ? "#9ca3af" : "#94a3b8"}
+              />
+              <YAxis
+                stroke={isDarkMode ? "#9ca3af" : "#94a3b8"}
+                allowDecimals={false}
+              />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #e2e8f0",
+                  backgroundColor: isDarkMode ? "#1f2937" : "#fff",
+                  border: `1px solid ${isDarkMode ? "#374151" : "#e2e8f0"}`,
                   borderRadius: 8,
-                  boxShadow: "0 8px 16px rgba(15, 23, 42, 0.08)",
+                  boxShadow: isDarkMode
+                    ? "0 8px 16px rgba(0, 0, 0, 0.4)"
+                    : "0 8px 16px rgba(15, 23, 42, 0.08)",
+                  color: isDarkMode ? "#f9fafb" : "#1f2937",
                 }}
               />
-              <Bar dataKey="completed" name="Completed" fill="#10b981" />
-              <Bar dataKey="scheduled" name="Scheduled" fill="#3b82f6" />
+              <Bar
+                dataKey="completed"
+                name="Completed"
+                fill={isDarkMode ? "#34d399" : "#10b981"}
+              />
+              <Bar
+                dataKey="scheduled"
+                name="Scheduled"
+                fill={isDarkMode ? "#60a5fa" : "#3b82f6"}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -513,18 +548,18 @@ const TechnicianDashboard: React.FC = () => {
   );
 };
 
-function getStatusColor(status: string): string {
+function getStatusColor(status: string, isDarkMode: boolean = false): string {
   switch (status.toLowerCase()) {
     case "completed":
-      return "#10b981";
+      return isDarkMode ? "#34d399" : "#10b981";
     case "scheduled":
-      return "#3b82f6";
+      return isDarkMode ? "#60a5fa" : "#3b82f6";
     case "in progress":
-      return "#f59e0b";
+      return isDarkMode ? "#fbbf24" : "#f59e0b";
     case "overdue":
-      return "#ef4444";
+      return isDarkMode ? "#f87171" : "#ef4444";
     default:
-      return "#6b7280";
+      return isDarkMode ? "#94a3b8" : "#6b7280";
   }
 }
 

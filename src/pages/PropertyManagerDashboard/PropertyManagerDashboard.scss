@@ -2,6 +2,18 @@
   padding: 2rem;
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #1e293b;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  // Dark mode styles
+  .dark-mode & {
+    background: linear-gradient(
+      135deg,
+      var(--color-bg-secondary) 0%,
+      var(--color-bg-tertiary) 100%
+    );
+    color: var(--color-text-primary);
+  }
 
   .dashboard-header {
     display: flex;
@@ -13,6 +25,13 @@
     border-radius: 16px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     border: 1px solid #f1f5f9;
+
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--color-bg-primary);
+      border: 1px solid var(--color-border-primary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
 
     .header-content {
       h1 {
@@ -28,12 +47,26 @@
           color: #3b82f6;
           font-size: 2rem;
         }
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+
+          .page-icon {
+            color: var(--color-primary);
+          }
+        }
       }
 
       p {
         color: #64748b;
         font-size: 1.1rem;
         margin: 0;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-secondary);
+        }
       }
     }
 
@@ -57,7 +90,15 @@
 
       &:disabled {
         opacity: 0.6;
-        cursor: not-allowed;
+      }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-primary-hover);
+        }
       }
 
       .spinning {

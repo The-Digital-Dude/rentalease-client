@@ -48,6 +48,7 @@ import {
   Legend,
 } from "recharts";
 import { useAppSelector } from "../../store";
+import { useTheme } from "../../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import dashboardService from "../../services/dashboardService";
 
@@ -108,16 +109,17 @@ interface DashboardData {
 
 const SuperUserDashboard = () => {
   const userState = useAppSelector((state) => state.user);
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
   // Debug logging to check user state
   useEffect(() => {
-    console.log('SuperUserDashboard - User State Debug:', {
+    console.log("SuperUserDashboard - User State Debug:", {
       fullState: userState,
       userName: userState?.name,
       userNameTrimmed: userState?.name?.trim(),
       userNameLength: userState?.name?.length,
-      localStorage: localStorage.getItem('userData')
+      localStorage: localStorage.getItem("userData"),
     });
   }, [userState]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
@@ -295,26 +297,28 @@ const SuperUserDashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
-        return "#10b981";
+        return isDarkMode ? "#34d399" : "#10b981";
       case "in progress":
-        return "#f59e0b";
+        return isDarkMode ? "#fbbf24" : "#f59e0b";
       case "pending":
-        return "#3b82f6";
+        return isDarkMode ? "#60a5fa" : "#3b82f6";
       case "overdue":
-        return "#ef4444";
+        return isDarkMode ? "#f87171" : "#ef4444";
       default:
-        return "#6b7280";
+        return isDarkMode ? "#94a3b8" : "#6b7280";
     }
   };
 
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#82ca9d",
-  ];
+  const COLORS = isDarkMode
+    ? [
+        "#60a5fa", // Blue
+        "#34d399", // Green
+        "#fbbf24", // Yellow
+        "#f87171", // Red
+        "#a78bfa", // Purple
+        "#6ee7b7", // Light Green
+      ]
+    : ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82ca9d"];
 
   if (loading) {
     return (
@@ -334,7 +338,10 @@ const SuperUserDashboard = () => {
           <RiErrorWarningLine className={styles.errorIcon} />
           <h3>Error Loading Dashboard</h3>
           <p>{error}</p>
-          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleRefresh}>
+          <button
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            onClick={handleRefresh}
+          >
             <RiRefreshLine />
             Try Again
           </button>
@@ -653,15 +660,17 @@ const SuperUserDashboard = () => {
               </div>
 
               {selectedTimeRange === "custom" && (
-                <div className={`${styles.filterGroup} ${styles.customDateRange}`}>
+                <div
+                  className={`${styles.filterGroup} ${styles.customDateRange}`}
+                >
                   <label>Start Date:</label>
                   <input
                     type="date"
                     value={chartDateRange.startDate}
                     onChange={(e) => {
-                      setChartDateRange(prev => ({
+                      setChartDateRange((prev) => ({
                         ...prev,
-                        startDate: e.target.value
+                        startDate: e.target.value,
                       }));
                     }}
                     className={styles.filterSelect}
@@ -671,9 +680,9 @@ const SuperUserDashboard = () => {
                     type="date"
                     value={chartDateRange.endDate}
                     onChange={(e) => {
-                      setChartDateRange(prev => ({
+                      setChartDateRange((prev) => ({
                         ...prev,
-                        endDate: e.target.value
+                        endDate: e.target.value,
                       }));
                     }}
                     className={styles.filterSelect}
@@ -740,15 +749,24 @@ const SuperUserDashboard = () => {
                   onClick={handleChartClick}
                   style={{ cursor: "pointer" }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={isDarkMode ? "#374151" : "#f0f0f0"}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    stroke={isDarkMode ? "#9ca3af" : "#6b7280"}
+                  />
+                  <YAxis stroke={isDarkMode ? "#9ca3af" : "#6b7280"} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
+                      backgroundColor: isDarkMode ? "#1f2937" : "white",
+                      border: `1px solid ${isDarkMode ? "#374151" : "#e5e7eb"}`,
                       borderRadius: "8px",
-                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      boxShadow: isDarkMode
+                        ? "0 4px 12px rgba(0, 0, 0, 0.4)"
+                        : "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      color: isDarkMode ? "#f9fafb" : "#1f2937",
                     }}
                     formatter={(value, name) => [
                       value,
@@ -759,14 +777,14 @@ const SuperUserDashboard = () => {
                   <Legend />
                   <Bar
                     dataKey="totalJobs"
-                    fill="#3b82f6"
+                    fill={isDarkMode ? "#60a5fa" : "#3b82f6"}
                     name="Total Jobs"
                     radius={[4, 4, 0, 0]}
                     cursor="pointer"
                   />
                   <Bar
                     dataKey="completedJobs"
-                    fill="#10b981"
+                    fill={isDarkMode ? "#34d399" : "#10b981"}
                     name="Completed Jobs"
                     radius={[4, 4, 0, 0]}
                     cursor="pointer"
@@ -774,10 +792,18 @@ const SuperUserDashboard = () => {
                   <Line
                     type="monotone"
                     dataKey="completedJobs"
-                    stroke="#059669"
+                    stroke={isDarkMode ? "#34d399" : "#059669"}
                     strokeWidth={3}
-                    dot={{ fill: "#059669", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: "#059669", strokeWidth: 2 }}
+                    dot={{
+                      fill: isDarkMode ? "#34d399" : "#059669",
+                      strokeWidth: 2,
+                      r: 4,
+                    }}
+                    activeDot={{
+                      r: 6,
+                      stroke: isDarkMode ? "#34d399" : "#059669",
+                      strokeWidth: 2,
+                    }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
@@ -803,13 +829,17 @@ const SuperUserDashboard = () => {
                       </span>
                     </div>
                     <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Completed Jobs:</span>
+                      <span className={styles.detailLabel}>
+                        Completed Jobs:
+                      </span>
                       <span className={styles.detailValue}>
                         {selectedChartData.completedJobs}
                       </span>
                     </div>
                     <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Completion Rate:</span>
+                      <span className={styles.detailLabel}>
+                        Completion Rate:
+                      </span>
                       <span className={styles.detailValue}>
                         {selectedChartData.totalJobs > 0
                           ? `${(
@@ -874,7 +904,17 @@ const SuperUserDashboard = () => {
                     )
                   )}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: isDarkMode ? "#1f2937" : "white",
+                    border: `1px solid ${isDarkMode ? "#374151" : "#e5e7eb"}`,
+                    borderRadius: "8px",
+                    boxShadow: isDarkMode
+                      ? "0 4px 12px rgba(0, 0, 0, 0.4)"
+                      : "0 4px 12px rgba(0, 0, 0, 0.1)",
+                    color: isDarkMode ? "#f9fafb" : "#1f2937",
+                  }}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -1003,9 +1043,9 @@ const SuperUserDashboard = () => {
                         <div className={styles.jobHeader}>
                           <span className={styles.jobId}>#{job.job_id}</span>
                           <span
-                            className={`${styles.statusBadge} ${styles[job.status
-                              .toLowerCase()
-                              .replace(" ", "-")]}`}
+                            className={`${styles.statusBadge} ${
+                              styles[job.status.toLowerCase().replace(" ", "-")]
+                            }`}
                           >
                             {job.status}
                           </span>
@@ -1028,7 +1068,6 @@ const SuperUserDashboard = () => {
                           {new Date(job.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      
                     </div>
                   );
                 })
@@ -1052,7 +1091,9 @@ const SuperUserDashboard = () => {
         <div className={styles.quickActions}>
           <div className={styles.quickActionsHeader}>
             <h3 className={styles.title}>Quick Actions</h3>
-            <p className={styles.subtitle}>Navigate to frequently used sections</p>
+            <p className={styles.subtitle}>
+              Navigate to frequently used sections
+            </p>
           </div>
           <div className={styles.actionsGrid}>
             <button
@@ -1065,11 +1106,19 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.content}>
                 <h4 className={styles.cardTitle}>Agencies</h4>
-                <p className={styles.cardDescription}>Manage and monitor agencies</p>
+                <p className={styles.cardDescription}>
+                  Manage and monitor agencies
+                </p>
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>
@@ -1087,7 +1136,13 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>
@@ -1101,11 +1156,19 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.content}>
                 <h4 className={styles.cardTitle}>Technicians</h4>
-                <p className={styles.cardDescription}>Manage service providers</p>
+                <p className={styles.cardDescription}>
+                  Manage service providers
+                </p>
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>
@@ -1123,7 +1186,13 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>
@@ -1137,11 +1206,19 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.content}>
                 <h4 className={styles.cardTitle}>Payments</h4>
-                <p className={styles.cardDescription}>Technician payment tracking</p>
+                <p className={styles.cardDescription}>
+                  Technician payment tracking
+                </p>
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>
@@ -1155,11 +1232,19 @@ const SuperUserDashboard = () => {
               </div>
               <div className={styles.content}>
                 <h4 className={styles.cardTitle}>Reports</h4>
-                <p className={styles.cardDescription}>View analytics & insights</p>
+                <p className={styles.cardDescription}>
+                  View analytics & insights
+                </p>
               </div>
               <div className={styles.arrow}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M7.5 15L12.5 10L7.5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </button>

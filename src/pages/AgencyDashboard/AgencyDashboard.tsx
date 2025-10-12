@@ -343,7 +343,6 @@ const AgencyDashboard = () => {
       : 0;
   };
 
-
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -719,7 +718,6 @@ const AgencyDashboard = () => {
             </button>
           </div>
         </div>
-
 
         {/* Enhanced Statistics Cards */}
         <div className="stats-overview">

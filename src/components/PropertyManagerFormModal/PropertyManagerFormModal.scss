@@ -1,6 +1,16 @@
 .property-manager-form {
   .form-section {
     margin-bottom: 32px;
+    padding: 24px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-primary);
+    }
 
     .section-header {
       display: flex;
@@ -10,11 +20,21 @@
       padding-bottom: 8px;
       border-bottom: 2px solid #f3f4f6;
 
+      // Dark mode styles
+      .dark-mode & {
+        border-bottom: 2px solid var(--color-border-primary);
+      }
+
       h4 {
         margin: 0;
         color: #111827;
         font-size: 18px;
         font-weight: 600;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
 
       .expand-btn {
@@ -45,6 +65,18 @@
         svg {
           font-size: 16px;
         }
+
+        // Dark mode styles
+        .dark-mode & {
+          background: var(--color-bg-secondary);
+          border: 2px solid var(--color-border-primary);
+          color: var(--color-text-primary);
+
+          &:hover:not(:disabled) {
+            background: var(--color-bg-hover);
+            border-color: var(--color-border-secondary);
+          }
+        }
       }
     }
 
@@ -55,6 +87,12 @@
       margin-bottom: 16px;
       padding-bottom: 8px;
       border-bottom: 2px solid #f3f4f6;
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-text-primary);
+        border-bottom: 2px solid var(--color-border-primary);
+      }
     }
 
     .expanded-assignment {
@@ -62,6 +100,11 @@
       border: 2px solid #e5e7eb;
       border-radius: 12px;
       overflow: hidden;
+
+      // Dark mode styles
+      .dark-mode & {
+        border: 2px solid var(--color-border-primary);
+      }
 
       .modal-assignment {
         max-height: 500px;
@@ -100,6 +143,15 @@
           color: #dc2626;
           margin-left: 2px;
         }
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+
+          .required {
+            color: var(--color-danger);
+          }
+        }
       }
 
       input,
@@ -135,6 +187,36 @@
             box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
           }
         }
+
+        // Dark mode styles
+        .dark-mode & {
+          background: var(--color-bg-primary);
+          border: 2px solid var(--color-border-primary);
+          color: var(--color-text-primary);
+
+          &:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+          }
+
+          &::placeholder {
+            color: var(--color-text-tertiary);
+          }
+
+          &:disabled {
+            background-color: var(--color-bg-secondary);
+            color: var(--color-text-tertiary);
+          }
+
+          &.error {
+            border-color: var(--color-danger);
+
+            &:focus {
+              border-color: var(--color-danger);
+              box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+            }
+          }
+        }
       }
 
       select {
@@ -156,6 +238,11 @@
         font-size: 12px;
         margin-top: 4px;
         font-weight: 500;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-danger);
+        }
       }
     }
 
@@ -176,6 +263,11 @@
     padding-top: 24px;
     border-top: 2px solid #f3f4f6;
     margin-top: 32px;
+
+    // Dark mode styles
+    .dark-mode & {
+      border-top: 2px solid var(--color-border-primary);
+    }
 
     .btn-secondary,
     .btn-primary {
@@ -211,6 +303,18 @@
         background: #f3f4f6;
         border-color: #d1d5db;
       }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-bg-secondary);
+        color: var(--color-text-primary);
+        border: 2px solid var(--color-border-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-bg-hover);
+          border-color: var(--color-border-secondary);
+        }
+      }
     }
 
     .btn-primary {
@@ -223,6 +327,15 @@
 
       .loading-spinner {
         animation: spin 1s linear infinite;
+      }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-primary-hover);
+        }
       }
     }
 

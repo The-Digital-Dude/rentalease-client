@@ -14,11 +14,21 @@
 
       h1 {
         margin-bottom: 0.5rem;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
 
       p {
         margin: 0;
         color: #64748b;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-secondary);
+        }
       }
     }
 
@@ -79,6 +89,11 @@
   border-bottom: 2px solid #e2e8f0;
   padding-bottom: 1rem;
 
+  // Dark mode styles
+  .dark-mode & {
+    border-bottom: 2px solid var(--color-border-primary);
+  }
+
   .tab-button {
     display: flex;
     align-items: center;
@@ -105,21 +120,57 @@
     .tab-icon {
       font-size: 1.25rem;
     }
+
+    // Dark mode styles
+    .dark-mode & {
+      color: var(--color-text-secondary);
+
+      &:hover {
+        background: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+
+      &.active {
+        background: var(--color-primary);
+        color: white;
+      }
+    }
   }
 }
 
 .tab-content {
+  background: none;
   .content-card {
     background: white;
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
+
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--color-bg-primary);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-border-primary);
+    }
   }
 }
 
 // PropertyManager Directory Styles
 .property-manager-directory {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  // Dark mode styles
+  .dark-mode & {
+    background: var(--color-bg-primary);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border-primary);
+  }
+
   .directory-header {
     display: flex;
     justify-content: space-between;
@@ -150,6 +201,18 @@
           padding: 0.25rem 0.75rem;
           border-radius: 1rem;
           border: 1px solid #e5e7eb;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-primary);
+            background: var(--color-bg-hover);
+            border: 1px solid var(--color-border-primary);
+          }
+        }
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
         }
       }
 
@@ -157,6 +220,11 @@
         color: #64748b;
         margin: 0;
         font-size: 0.875rem;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-secondary);
+        }
       }
     }
 
@@ -181,6 +249,11 @@
           transform: translateY(-50%);
           color: #64748b;
           font-size: 1.25rem;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-secondary);
+          }
         }
 
         input {
@@ -199,6 +272,21 @@
           &::placeholder {
             color: #94a3b8;
           }
+
+          // Dark mode styles
+          .dark-mode & {
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border-primary);
+            color: var(--color-text-primary);
+
+            &:focus {
+              border-color: var(--color-primary);
+            }
+
+            &::placeholder {
+              color: var(--color-text-tertiary);
+            }
+          }
         }
       }
 
@@ -213,6 +301,11 @@
           color: #64748b;
           font-size: 1.25rem;
           pointer-events: none;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-secondary);
+          }
         }
 
         select {
@@ -227,6 +320,17 @@
           &:focus {
             outline: none;
             border-color: #7c3aed;
+          }
+
+          // Dark mode styles
+          .dark-mode & {
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border-primary);
+            color: var(--color-text-primary);
+
+            &:focus {
+              border-color: var(--color-primary);
+            }
           }
         }
       }
@@ -313,6 +417,40 @@
         background: #6d28d9;
       }
     }
+
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--color-bg-primary);
+      border: 1px solid var(--color-border-primary);
+
+      .loading-icon {
+        color: var(--color-primary);
+      }
+
+      .error-icon {
+        color: var(--color-danger);
+      }
+
+      .empty-icon {
+        color: var(--color-primary);
+      }
+
+      h3 {
+        color: var(--color-text-primary);
+      }
+
+      p {
+        color: var(--color-text-secondary);
+      }
+
+      button {
+        background: var(--color-primary);
+
+        &:hover {
+          background: var(--color-primary-hover);
+        }
+      }
+    }
   }
 
   // PropertyManager Grid
@@ -329,7 +467,6 @@
 
   // PropertyManager Card
   .property-manager-card {
-    background: white;
     border-radius: 0.75rem;
     border: 1px solid #e2e8f0;
     overflow: visible;
@@ -345,12 +482,29 @@
       z-index: 10;
     }
 
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--sidebar-active);
+      border: 1px solid var(--color-border-primary);
+      box-shadow: var(--shadow-md);
+
+      &:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--color-primary);
+      }
+    }
+
     .card-header {
       padding: 1.5rem;
       border-bottom: 1px solid #f1f5f9;
       display: flex;
       align-items: center;
       gap: 1rem;
+
+      // Dark mode styles
+      .dark-mode & {
+        border-bottom: 1px solid var(--color-border-primary);
+      }
 
       .avatar {
         width: 48px;
@@ -377,6 +531,11 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-primary);
+          }
         }
 
         .email {
@@ -386,6 +545,11 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-secondary);
+          }
         }
 
         .agency-name {
@@ -399,6 +563,11 @@
           svg {
             width: 0.875rem;
             height: 0.875rem;
+          }
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-tertiary);
           }
         }
       }
@@ -440,11 +609,21 @@
           color: #7c3aed;
           font-size: 1rem;
           flex-shrink: 0;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-primary);
+          }
         }
 
         span {
           color: #374151;
           flex: 1;
+
+          // Dark mode styles
+          .dark-mode & {
+            color: var(--color-text-secondary);
+          }
         }
       }
     }
@@ -455,6 +634,11 @@
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
+
+      // Dark mode styles
+      .dark-mode & {
+        border-top: 1px solid var(--color-border-primary);
+      }
 
       .btn-secondary {
         background: #f8fafc;
@@ -473,6 +657,18 @@
         &:hover {
           background: #f1f5f9;
           border-color: #cbd5e1;
+        }
+
+        // Dark mode styles
+        .dark-mode & {
+          background: var(--color-bg-secondary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border-primary);
+
+          &:hover {
+            background: var(--color-bg-hover);
+            border-color: var(--color-border-secondary);
+          }
         }
       }
 
@@ -495,6 +691,19 @@
           background: #f1f5f9;
           border-color: #cbd5e1;
           color: #7c3aed;
+        }
+
+        // Dark mode styles
+        .dark-mode & {
+          background: var(--color-bg-secondary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border-primary);
+
+          &:hover {
+            background: var(--color-bg-hover);
+            border-color: var(--color-border-secondary);
+            color: var(--color-primary);
+          }
         }
       }
 
@@ -545,11 +754,23 @@
             animation: dropdownFadeIn 0.2s ease-out;
           }
 
+          // Dark mode styles
+          .dark-mode & {
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border-primary);
+            box-shadow: var(--shadow-lg);
+          }
+
           .dropdown-section {
             padding: 1rem;
 
             &:not(:last-child) {
               border-bottom: 1px solid #f1f5f9;
+
+              // Dark mode styles
+              .dark-mode & {
+                border-bottom: 1px solid var(--color-border-primary);
+              }
             }
 
             h5 {
@@ -559,6 +780,11 @@
               text-transform: uppercase;
               letter-spacing: 0.05em;
               margin: 0 0 0.5rem 0;
+
+              // Dark mode styles
+              .dark-mode & {
+                color: var(--color-text-secondary);
+              }
             }
 
             button {
@@ -581,6 +807,20 @@
               &.active {
                 background: #7c3aed;
                 color: white;
+              }
+
+              // Dark mode styles
+              .dark-mode & {
+                color: var(--color-text-primary);
+
+                &:hover {
+                  background: var(--color-bg-hover);
+                }
+
+                &.active {
+                  background: var(--color-primary);
+                  color: white;
+                }
               }
             }
           }
@@ -622,12 +862,29 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-bg-secondary);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-bg-hover);
+          border-color: var(--color-border-secondary);
+        }
+      }
     }
 
     .pagination-info {
       color: #64748b;
       font-size: 0.875rem;
       font-weight: 500;
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-text-secondary);
+      }
     }
   }
 }
@@ -641,12 +898,18 @@
     border-radius: 0.75rem;
     background: #fafbfc;
 
+    // Dark mode styles
+    .dark-mode & {
+      border: 2px solid var(--color-border-primary);
+      background: var(--color-bg-secondary);
+    }
+
     .agency-assignment-container {
       .property-manager-agency-assignment {
-        border: 2px solid #e2e8f0;
+        // border: 2px solid #e2e8f0;
         border-radius: 12px;
         padding: 1rem;
-        background: white;
+        // background: white;
 
         .agencies-grid {
           max-height: 400px;
@@ -689,6 +952,16 @@
         color: #7c3aed;
         font-size: 1.5rem;
       }
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-primary);
+        border-bottom: 2px solid var(--color-border-primary);
+
+        &::before {
+          color: var(--color-primary);
+        }
+      }
     }
   }
 
@@ -711,6 +984,11 @@
       font-weight: 500;
       color: #374151;
       margin-bottom: 0.5rem;
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-text-primary);
+      }
     }
 
     input,
@@ -737,6 +1015,27 @@
       &::placeholder {
         color: #9ca3af;
       }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-bg-primary);
+        border: 1.5px solid var(--color-border-primary);
+        color: var(--color-text-primary);
+
+        &:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+        }
+
+        &.error {
+          border-color: var(--color-danger);
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        &::placeholder {
+          color: var(--color-text-tertiary);
+        }
+      }
     }
 
     .error-message {
@@ -744,6 +1043,11 @@
       font-size: 0.75rem;
       margin-top: 0.25rem;
       display: block;
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-danger);
+      }
     }
   }
 
@@ -756,6 +1060,11 @@
 
     @media (max-width: 768px) {
       flex-direction: column;
+    }
+
+    // Dark mode styles
+    .dark-mode & {
+      border-top: 1px solid var(--color-border-primary);
     }
 
     .btn-secondary {
@@ -775,6 +1084,18 @@
       &:hover {
         background: #f1f5f9;
         border-color: #cbd5e1;
+      }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-bg-secondary);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border-primary);
+
+        &:hover {
+          background: var(--color-bg-hover);
+          border-color: var(--color-border-secondary);
+        }
       }
     }
 
@@ -814,6 +1135,15 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
+
+      // Dark mode styles
+      .dark-mode & {
+        background: var(--color-primary);
+
+        &:hover:not(:disabled) {
+          background: var(--color-primary-hover);
+        }
+      }
     }
   }
 }
@@ -832,6 +1162,11 @@
   z-index: 1000;
   padding: 1rem;
 
+  // Dark mode styles
+  .dark-mode & {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
   .modal-content {
     background: white;
     border-radius: 0.75rem;
@@ -843,6 +1178,12 @@
 
     &.large {
       max-width: 800px;
+    }
+
+    // Dark mode styles
+    .dark-mode & {
+      background: var(--color-bg-primary);
+      box-shadow: var(--shadow-lg);
     }
 
     .modal-header {
@@ -857,6 +1198,11 @@
         font-weight: 600;
         color: #1e293b;
         margin: 0;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
 
       .close-btn {
@@ -873,6 +1219,21 @@
           background: #f1f5f9;
           color: #374151;
         }
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-secondary);
+
+          &:hover {
+            background: var(--color-bg-hover);
+            color: var(--color-text-primary);
+          }
+        }
+      }
+
+      // Dark mode styles
+      .dark-mode & {
+        border-bottom: 1px solid var(--color-border-primary);
       }
     }
 
@@ -886,6 +1247,11 @@
       display: flex;
       justify-content: flex-end;
       gap: 1rem;
+
+      // Dark mode styles
+      .dark-mode & {
+        border-top: 1px solid var(--color-border-primary);
+      }
     }
   }
 }
@@ -906,6 +1272,12 @@
       margin: 0 0 1rem 0;
       padding-bottom: 0.5rem;
       border-bottom: 1px solid #e2e8f0;
+
+      // Dark mode styles
+      .dark-mode & {
+        color: var(--color-primary);
+        border-bottom: 1px solid var(--color-border-primary);
+      }
     }
 
     .detail-row {
@@ -919,9 +1291,19 @@
         border-bottom: none;
       }
 
+      // Dark mode styles
+      .dark-mode & {
+        border-bottom: 1px solid var(--color-border-primary);
+      }
+
       .label {
         font-weight: 500;
         color: #374151;
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
 
       .value {
@@ -935,6 +1317,11 @@
           color: white;
           padding: 0.25rem 0.5rem;
           border-radius: 0.25rem;
+        }
+
+        // Dark mode styles
+        .dark-mode & {
+          color: var(--color-text-secondary);
         }
       }
     }
@@ -952,12 +1339,27 @@
     font-weight: 600;
     color: #1e293b;
     margin: 0 0 0.5rem 0;
+
+    // Dark mode styles
+    .dark-mode & {
+      color: var(--color-text-primary);
+    }
   }
 
   p {
     color: #64748b;
     margin: 0;
     font-size: 0.875rem;
+
+    // Dark mode styles
+    .dark-mode & {
+      color: var(--color-text-secondary);
+    }
+  }
+
+  // Dark mode styles
+  .dark-mode & {
+    border-bottom: 1px solid var(--color-border-primary);
   }
 }
 

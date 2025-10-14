@@ -81,7 +81,7 @@
 /* Dark Theme */
 .dark-mode {
   /* Background Colors */
-  --color-bg-primary: #0f172a;
+  --color-bg-primary: #131d35;
   --color-bg-secondary: #1e293b;
   --color-bg-tertiary: #334155;
   --color-bg-card: #1e293b;
@@ -149,7 +149,7 @@
 
 /* Apply transitions globally */
 * {
-  transition: var(--transition-colors);
+  transition: all .2s ease;
 }
 
 /* Scrollbar Styling */

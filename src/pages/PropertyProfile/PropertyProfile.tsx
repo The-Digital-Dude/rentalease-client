@@ -411,7 +411,9 @@ const PropertyProfile: React.FC = () => {
     }
 
     try {
-      const response = await fetch("/rentalease-logo.png");
+      const isDark = document.documentElement.classList.contains('dark-mode');
+      const logoPath = isDark ? "/rentalease-logo-light.png" : "/rentalease-logo.png";
+      const response = await fetch(logoPath);
       if (!response.ok) {
         throw new Error("Logo not found");
       }

@@ -7,16 +7,39 @@ import {
   RiTeamLine,
 } from "react-icons/ri";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "./Login.scss";
 
 const Login = () => {
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains('dark-mode')
+  );
+
+  useEffect(() => {
+    // Listen for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
           <div className="logo-container">
             <img
-              src="/rentalease-logo.png"
+              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
               alt="RentalEase"
               className="login-logo"
             />

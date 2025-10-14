@@ -86,8 +86,8 @@ const AgencyFormModal = ({
     const { name, value } = e.target;
 
     // Handle number inputs properly
-    if (name === 'subscriptionAmount' || name === 'abn') {
-      const numericValue = value === '' ? '' : Number(value);
+    if (name === "subscriptionAmount" || name === "abn") {
+      const numericValue = value === "" ? "" : Number(value);
       setFormData((prev) => ({
         ...prev,
         [name]: numericValue,
@@ -247,7 +247,9 @@ const AgencyFormModal = ({
           {/* Subscription amount field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">
-              <label htmlFor="subscriptionAmount">Monthly Subscription Amount (AUD)</label>
+              <label htmlFor="subscriptionAmount">
+                Monthly Subscription Amount (AUD)
+              </label>
               <input
                 type="number"
                 id="subscriptionAmount"
@@ -262,7 +264,14 @@ const AgencyFormModal = ({
                 disabled={isSubmitting}
                 required
               />
-              <small style={{ color: "#666", fontSize: "12px", marginTop: "4px", display: "block" }}>
+              <small
+                style={{
+                  color: "#757575",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                  display: "block",
+                }}
+              >
                 Amount between $1 and $100,000 AUD per month
               </small>
             </div>

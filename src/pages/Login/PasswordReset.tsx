@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   RiLockPasswordLine, 
@@ -26,7 +26,7 @@ const PasswordReset = () => {
   const userType = getUserTypeFromUrl(searchParams);
   const userConfig = getUserTypeConfig(userType);
   const navigate = useNavigate();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PasswordResetFormData>({
     email: "",
@@ -34,12 +34,33 @@ const PasswordReset = () => {
     password: "",
     confirmPassword: "",
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains('dark-mode')
+  );
+
+  useEffect(() => {
+    // Listen for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const steps = [
     { number: 1, title: "Send OTP", description: "Enter your email address" },
@@ -404,7 +425,7 @@ const PasswordReset = () => {
         <div className="login-header">
           <div className="logo-container">
             <img
-              src="/rentalease-logo.png"
+              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
               alt="RentalEase"
               className="login-logo"
             />

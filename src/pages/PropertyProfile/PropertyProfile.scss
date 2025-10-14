@@ -13,6 +13,11 @@
     padding: 32px 36px 24px 36px;
     margin-bottom: 32px;
     gap: 24px;
+    .dark-mode & {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-primary);
+      box-shadow: 0 2px 12px rgba(52, 152, 219, 0.07);
+    }
   }
 
   .header-content {
@@ -21,6 +26,9 @@
     flex-direction: column;
     gap: 8px;
     text-align: left;
+    .dark-mode & {
+      color: var(--color-text-primary);
+    }
   }
 
   .redesigned-header .header-title {
@@ -28,6 +36,10 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+
+    .dark-mode & {
+      color: var(--color-text-primary);
+    }
   }
 
   .redesigned-header .back-btn {
@@ -62,6 +74,10 @@
     color: #222f3e;
     margin: 0;
     letter-spacing: 0.2px;
+
+    .dark-mode & {
+      color: var(--color-text-primary);
+    }
   }
 
   .redesigned-header .header-content .property-type {
@@ -114,6 +130,10 @@
 
     .profile-section {
       background: white;
+      .dark-mode & {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border-primary);
+      }
       border-radius: 12px;
       padding: 24px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -129,9 +149,16 @@
         color: #2c3e50;
         border-bottom: 2px solid #ecf0f1;
         padding-bottom: 12px;
+        .dark-mode & {
+          color: var(--color-text-primary);
+          border-bottom: 2px solid var(--color-border-primary);
+        }
 
         svg {
           color: #3498db;
+          .dark-mode & {
+            color: var(--color-primary);
+          }
         }
       }
 
@@ -149,6 +176,9 @@
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
           }
 
           p {
@@ -157,6 +187,9 @@
             font-weight: 500;
             color: #2c3e50;
             line-height: 1.4;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
 
             &.status {
               display: inline-block;
@@ -191,6 +224,9 @@
         border-radius: 8px;
         padding: 20px;
         border-left: 4px solid #3498db;
+        .dark-mode & {
+          background: var(--sidebar-active);
+        }
 
         .contact-info {
           h3 {
@@ -198,12 +234,18 @@
             font-size: 18px;
             font-weight: 600;
             color: #2c3e50;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
           }
 
           .contact-person {
             margin: 0 0 16px 0;
             font-size: 14px;
             color: #7f8c8d;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
           }
 
           .contact-details {
@@ -217,11 +259,17 @@
               gap: 8px;
               font-size: 14px;
               color: #2c3e50;
+              .dark-mode & {
+                color: var(--color-text-primary);
+              }
 
               svg {
                 color: #7f8c8d;
                 width: 16px;
                 height: 16px;
+                .dark-mode & {
+                  color: #9baaab;
+                }
               }
             }
           }
@@ -501,7 +549,8 @@
       }
 
       @keyframes pulse-warning {
-        0%, 100% {
+        0%,
+        100% {
           box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
         }
         50% {
@@ -523,6 +572,9 @@
             margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
           }
 
           p {
@@ -530,6 +582,9 @@
             font-size: 14px;
             font-weight: 500;
             color: #2c3e50;
+            .dark-mode & {
+              color: var(--color-text-primary);
+            }
 
             &.status.overdue {
               color: #e74c3c;
@@ -649,6 +704,9 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   border-radius: 8px;
   overflow: hidden;
+  .dark-mode & {
+    background: var(--sidebar-active);
+  }
 
   th,
   td {
@@ -663,6 +721,11 @@
     font-weight: 600;
     color: #374151;
     border-bottom: 2px solid #e5e7eb;
+    .dark-mode & {
+      background: #273a56;
+      color: var(--color-text-primary);
+      border-bottom: 2px solid var(--color-border-primary);
+    }
   }
 
   tr:last-child td {
@@ -671,6 +734,9 @@
 
   tr:hover {
     background: #f7fafc;
+    .dark-mode & {
+      background: #273a56;
+    }
   }
 }
 

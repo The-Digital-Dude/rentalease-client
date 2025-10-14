@@ -84,6 +84,9 @@ const InspectionBooking: React.FC = () => {
     type: "info",
     isVisible: false,
   });
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains('dark-mode')
+  );
 
   // Debug logging
   useEffect(() => {
@@ -92,6 +95,24 @@ const InspectionBooking: React.FC = () => {
       complienceType,
     });
   }, [propertyId, complienceType]);
+
+  useEffect(() => {
+    // Listen for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const [searchParams] = useSearchParams();
 
@@ -365,7 +386,7 @@ const InspectionBooking: React.FC = () => {
         <div className="booking-header">
           <div className="header-content">
             <div className="logo-section">
-              <img src="/rentalease-logo.png" alt="RentalEase" className="logo" />
+              <img src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"} alt="RentalEase" className="logo" />
               <span className="app-name">RentalEase</span>
             </div>
           </div>
@@ -467,7 +488,7 @@ const InspectionBooking: React.FC = () => {
       <div className="booking-header">
         <div className="header-content">
           <div className="logo-section">
-            <img src="/rentalease-logo.png" alt="RentalEase" className="logo" />
+            <img src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"} alt="RentalEase" className="logo" />
             <span className="app-name">RentalEase</span>
           </div>
           <button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 import { useAppDispatch } from "../../store";
@@ -39,9 +39,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains('dark-mode')
+  );
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Listen for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -125,7 +146,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         <div className="login-header">
           <div className="logo-container">
             <img
-              src="/rentalease-logo.png"
+              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
               alt="RentalEase"
               className="login-logo"
             />

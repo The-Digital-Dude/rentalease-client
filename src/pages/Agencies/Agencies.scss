@@ -18,6 +18,11 @@
     flex: 1;
     min-width: 200px;
 
+    .dark-mode & {
+      background: var(--sidebar-active);
+      border: 1px solid var(--sidebar-active);
+    }
+
     @media (min-width: 768px) {
       flex: 0 1 auto;
       min-width: 250px;
@@ -36,6 +41,10 @@
       color: #1e293b;
       background: transparent;
       width: 100%;
+
+      .dark-mode & {
+        color: var(--color-text-primary);
+      }
 
       &::placeholder {
         color: #94a3b8;
@@ -258,6 +267,9 @@
           color: #1e293b;
           font-size: 0.9375rem;
           font-weight: 500;
+          .dark-mode & {
+            color: var(--color-text-primary);
+          }
         }
 
         input,
@@ -279,6 +291,12 @@
           &::placeholder {
             color: #94a3b8;
           }
+
+          .dark-mode & {
+            color: var(--color-text-primary);
+            background: var(--sidebar-active);
+            border: 1px solid var(--color-border-primary);
+          }
         }
 
         select {
@@ -298,6 +316,10 @@
 
 // Loading spinner animation
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

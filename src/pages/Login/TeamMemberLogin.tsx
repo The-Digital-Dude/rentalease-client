@@ -15,6 +15,9 @@ const TeamMemberLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(
+    document.documentElement.classList.contains('dark-mode')
+  );
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -22,6 +25,22 @@ const TeamMemberLogin = () => {
 
   useEffect(() => {
     emailInputRef.current?.focus();
+
+    // Listen for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +110,7 @@ const TeamMemberLogin = () => {
         <div className="login-header">
           <div className="logo-container">
             <img
-              src="/rentalease-logo.png"
+              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
               alt="RentalEase"
               className="login-logo"
             />

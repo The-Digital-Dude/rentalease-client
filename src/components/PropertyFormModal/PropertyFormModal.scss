@@ -174,7 +174,7 @@
 
         svg {
           font-size: 18px;
-          color: #64748b;
+          // color: #64748b;
           transition: all 0.3s ease;
         }
       }
@@ -212,7 +212,7 @@
       flex: 1;
       padding: 32px;
       overflow-y: auto;
-      
+
       // Custom scrollbar
       &::-webkit-scrollbar {
         width: 6px;
@@ -245,6 +245,10 @@
         align-items: flex-start;
         gap: 16px;
         margin-bottom: 24px;
+        .dark-mode & {
+          color: var(--color-text-primary);
+          background: var(--color-bg-card);
+        }
 
         .section-icon {
           display: flex;
@@ -376,7 +380,7 @@
           select,
           textarea {
             border-color: #ef4444;
-            
+
             &:focus {
               border-color: #ef4444;
               box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
@@ -453,7 +457,7 @@
         color: var(--color-text-primary);
 
         &:hover:not(:disabled) {
-          background: #f9fafb;
+          // background: #f9fafb;
           border-color: #9ca3af;
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);

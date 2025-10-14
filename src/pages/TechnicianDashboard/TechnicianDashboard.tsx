@@ -409,8 +409,8 @@ const TechnicianDashboard: React.FC = () => {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: isDarkMode ? "#1f2937" : "#fff",
-                  border: `1px solid ${isDarkMode ? "#374151" : "#e2e8f0"}`,
+                  backgroundColor: "#fff",
+                  border: `1px solid "#e2e8f0"`,
                   borderRadius: 8,
                   boxShadow: isDarkMode
                     ? "0 8px 16px rgba(0, 0, 0, 0.4)"

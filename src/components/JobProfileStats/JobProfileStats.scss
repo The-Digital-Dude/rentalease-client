@@ -19,6 +19,10 @@
   align-items: center;
   gap: 1rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .dark-mode & {
+    background: var(--sidebar-active) !important;
+    border: 1px solid var(--color-border-primary) !important;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -80,6 +84,9 @@
       font-weight: 700;
       margin: 0 0 0.25rem 0;
       color: #111827;
+      .dark-mode & {
+        color: var(--color-text-primary);
+      }
     }
 
     .stat-title {
@@ -87,6 +94,9 @@
       color: #6b7280;
       margin: 0 0 0.5rem 0;
       font-weight: 500;
+      .dark-mode & {
+        color: var(--color-text-secondary);
+      }
     }
 
     .stat-change {

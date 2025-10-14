@@ -42,7 +42,7 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
     } else if (job.jobType === "Pool Safety") {
       complianceType = "pool-safety";
     }
-    
+
     navigate(`/book-inspection/${job.id}/${complianceType}`);
   };
 
@@ -66,10 +66,7 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
           </div>
         </div>
         <div className="header-actions">
-          <button
-            onClick={handleBookInspection}
-            className="btn-secondary"
-          >
+          <button onClick={handleBookInspection} className="btn-primary">
             <RiCalendarLine />
             Book Inspection
           </button>

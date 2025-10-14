@@ -157,15 +157,24 @@
     z-index: 10;
     padding: 1.25rem;
     text-align: center;
+    .dark-mode & {
+      background: var(--sidebar-active);
+    }
 
     p {
       margin: 0 0 1rem 0;
       font-size: 0.9375rem;
       color: #1e293b;
       line-height: 1.5;
+      .dark-mode & {
+        color: var(--color-text-secondary);
+      }
 
       strong {
         color: #1e293b;
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
     }
 
@@ -224,6 +233,9 @@
     z-index: 10;
     padding: 1.25rem;
     text-align: center;
+    .dark-mode & {
+      background: var(--sidebar-active);
+    }
 
     .confirmation-header {
       display: flex;
@@ -242,6 +254,9 @@
         font-size: 1rem;
         font-weight: 600;
         color: #1e293b;
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
     }
 
@@ -250,9 +265,15 @@
       font-size: 0.9375rem;
       color: #1e293b;
       line-height: 1.5;
+      .dark-mode & {
+        color: var(--color-text-secondary);
+      }
 
       strong {
         color: #1e293b;
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
     }
 

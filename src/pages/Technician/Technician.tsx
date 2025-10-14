@@ -343,7 +343,9 @@ const TechnicianPage = () => {
     setShowViewModal(true);
     setLoadingJobs(true);
     try {
-      const response = await jobService.getJobs({ assignedTechnician: technician.id });
+      const response = await jobService.getJobs({
+        assignedTechnician: technician.id,
+      });
       if (response.success) {
         setTechnicianJobs(response.data as Job[]);
       } else {
@@ -634,7 +636,8 @@ const TechnicianPage = () => {
                   name: `${technician.firstName} ${technician.lastName}`,
                   email: technician.email,
                   phone: technician.phone,
-                  location: technician.address.fullAddress || 'No address provided',
+                  location:
+                    technician.address.fullAddress || "No address provided",
                   availability: technician.availabilityStatus,
                   accountStatus: technician.status,
                   completedJobs: technician.completedJobs,

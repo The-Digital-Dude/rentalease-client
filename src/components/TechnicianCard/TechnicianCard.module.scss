@@ -7,6 +7,10 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  :global(.dark-mode) & {
+    background: var(--sidebar-active);
+    border: 1px solid var(--color-border-secondary);
+  }
 
   &::before {
     content: "";
@@ -74,6 +78,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: all 0.2s ease;
+  :global(.dark-mode) & {
+    color: var(--color-text-primary);
+  }
 }
 
 .statusBadges {
@@ -152,6 +159,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  :global(.dark-mode) & {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border-secondary);
+  }
 
   &:hover {
     transform: translateY(-1px);
@@ -164,6 +175,9 @@
     &:hover {
       background: #eff6ff;
       border-color: #3b82f6;
+      :global(.dark-mode) & {
+        background: var(--color-bg-primary);
+      }
     }
   }
 
@@ -173,6 +187,9 @@
     &:hover {
       background: #ecfdf5;
       border-color: #10b981;
+      :global(.dark-mode) & {
+        background: var(--color-bg-primary);
+      }
     }
   }
 
@@ -182,6 +199,9 @@
     &:hover {
       background: #fef2f2;
       border-color: #ef4444;
+      :global(.dark-mode) & {
+        background: var(--color-bg-primary);
+      }
     }
   }
 }
@@ -195,6 +215,10 @@
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  :global(.dark-mode) & {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border-secondary);
+  }
 }
 
 .statItem {
@@ -210,7 +234,9 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-
+  :global(.dark-mode) & {
+    color: var(--color-text-primary);
+  }
   svg {
     color: #f59e0b;
     font-size: 16px;
@@ -223,6 +249,9 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  :global(.dark-mode) & {
+    color: var(--color-text-secondary);
+  }
 }
 
 .contactSection {
@@ -248,6 +277,9 @@
   width: 20px !important;
   height: 20px !important;
   flex-shrink: 0;
+  :global(.dark-mode) & {
+    color: #428aff;
+  }
 }
 
 .contactLabel {
@@ -257,6 +289,9 @@
   min-width: 40px;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  :global(.dark-mode) & {
+    color: var(--color-text-secondary);
+  }
 }
 
 .contactValue {
@@ -268,6 +303,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  :global(.dark-mode) & {
+    color: var(--color-text-primary);
+  }
 }
 
 .locationSection {

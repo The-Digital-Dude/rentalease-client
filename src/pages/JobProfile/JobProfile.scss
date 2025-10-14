@@ -1,7 +1,10 @@
 .job-profile-page {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
   min-height: 100vh;
-  padding: 0;
+  padding: 20px;
+  .dark-mode & {
+    background: var(--color-bg-primary);
+  }
 }
 
 .loading-state,

@@ -2,6 +2,9 @@
   padding: 2rem;
   background-color: #f8fafc;
   min-height: 100vh;
+  .dark-mode & {
+    background-color: var(--color-bg-primary);
+  }
 
   .loading-container {
     display: flex;
@@ -39,6 +42,10 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      .dark-mode & {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border-primary);
+      }
 
       .header-title {
         display: flex;
@@ -56,6 +63,9 @@
           color: #1e293b;
           font-size: 2rem;
           font-weight: 700;
+          .dark-mode & {
+            color: var(--color-text-primary);
+          }
         }
       }
 
@@ -64,6 +74,9 @@
         color: #64748b;
         font-size: 1.1rem;
         line-height: 1.6;
+        .dark-mode & {
+          color: var(--color-text-secondary);
+        }
       }
     }
   }
@@ -90,7 +103,7 @@
       }
 
       &.highlight {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
         color: white;
 
         .stat-icon {
@@ -128,6 +141,10 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 1.5rem;
     border: 1px solid #e2e8f0;
+    .dark-mode & {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-primary);
+    }
 
     .search-filter-toolbar {
       display: flex;
@@ -166,6 +183,11 @@
             font-size: 0.875rem;
             background: #f8fafc;
             transition: all 0.2s ease;
+            .dark-mode & {
+              background: var(--sidebar-active);
+              border: 1px solid var(--color-border-secondary);
+              color: var(--color-text-primary);
+            }
 
             &:focus {
               outline: none;
@@ -187,6 +209,7 @@
         gap: 0.75rem;
         flex-wrap: wrap;
         margin-bottom: 0px;
+        background-color: var(--color-bg-card);
 
         @media (max-width: 1024px) {
           justify-content: stretch;
@@ -219,6 +242,11 @@
             min-width: 140px;
             cursor: pointer;
             transition: all 0.2s ease;
+            .dark-mode & {
+              background: var(--sidebar-active) !important;
+              border: 1px solid var(--color-border-secondary);
+              color: var(--color-text-primary);
+            }
 
             &:focus {
               outline: none;
@@ -236,6 +264,10 @@
               border-color: #3b82f6;
               color: #1e40af;
               font-weight: 500;
+              .dark-mode & {
+                background: var(--sidebar-active) !important;
+                color: var(--color-text-primary);
+              }
             }
           }
         }
@@ -338,10 +370,18 @@
       color: #64748b;
       cursor: pointer;
       transition: all 0.2s;
-
+      .dark-mode & {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border-secondary);
+        color: var(--color-text-primary);
+      }
       &:hover {
         border-color: #cbd5e1;
         background: #f8fafc;
+        .dark-mode & {
+          background: var(--color-bg-hover);
+          color: var(--color-text-primary);
+        }
       }
 
       &.active {
@@ -373,11 +413,16 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-
+    .dark-mode & {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-primary);
+    }
     .table-header {
       padding: 1.5rem;
       border-bottom: 1px solid #e2e8f0;
-
+      .dark-mode & {
+        border-bottom: 1px solid var(--color-border-primary);
+      }
       h3 {
         margin: 0;
         color: #1e293b;
@@ -386,7 +431,9 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
         .count {
           color: #64748b;
           font-weight: 400;
@@ -399,6 +446,10 @@
       padding: 4rem 2rem;
       text-align: center;
       color: #64748b;
+      border: none;
+      .dark-mode & {
+        background: var(--color-bg-card);
+      }
 
       .empty-icon {
         font-size: 4rem;
@@ -410,6 +461,9 @@
         margin: 0 0 0.5rem 0;
         color: #374151;
         font-size: 1.25rem;
+        .dark-mode & {
+          color: var(--color-text-primary);
+        }
       }
 
       p {
@@ -417,6 +471,9 @@
         max-width: 400px;
         margin: 0 auto;
         line-height: 1.6;
+        .dark-mode & {
+          color: var(--color-text-secondary);
+        }
       }
     }
 
@@ -430,6 +487,9 @@
 
       thead {
         background: #f8fafc;
+        .dark-mode & {
+          background: var(--sidebar-active);
+        }
 
         th {
           padding: 1rem;
@@ -439,6 +499,11 @@
           font-size: 0.875rem;
           border-bottom: 1px solid #e2e8f0;
           white-space: nowrap;
+          .dark-mode & {
+            background: var(--sidebar-active);
+            color: var(--color-text-primary);
+            border-bottom: 1px solid var(--color-border-primary);
+          }
         }
       }
 
@@ -449,14 +514,23 @@
 
           &:hover {
             background: #f8fafc;
+            .dark-mode & {
+              background: var(--color-bg-hover);
+            }
           }
 
           &.urgent-row {
             background: #fef3f2;
             border-left: 4px solid #ef4444;
+            .dark-mode & {
+              background: #490b05;
+            }
 
             &:hover {
               background: #fee2e2;
+              .dark-mode & {
+                background: #610c05;
+              }
             }
           }
         }
@@ -469,6 +543,9 @@
           &.quotation-number {
             font-weight: 600;
             color: #3b82f6;
+            .dark-mode & {
+              color: #74a2ec;
+            }
           }
 
           &.agency-cell {
@@ -476,6 +553,9 @@
               .agency-name {
                 font-weight: 500;
                 color: #1e293b;
+                .dark-mode & {
+                  color: var(--color-text-primary);
+                }
               }
             }
           }
@@ -486,6 +566,9 @@
                 font-weight: 500;
                 color: #059669;
                 font-size: 0.875rem;
+                .dark-mode & {
+                  color: #3ad171;
+                }
               }
             }
           }
@@ -493,12 +576,18 @@
           &.service-type {
             color: #64748b;
             max-width: 150px;
+            .dark-mode & {
+              color: var(--color-text-secondary);
+            }
           }
 
           &.property-address {
             color: #64748b;
             max-width: 200px;
             word-break: break-word;
+            .dark-mode & {
+              color: var(--color-text-secondary);
+            }
           }
 
           &.due-date {
@@ -507,11 +596,17 @@
                 display: block;
                 font-weight: 500;
                 color: #1e293b;
+                .dark-mode & {
+                  color: var(--color-text-primary);
+                }
               }
 
               small {
                 color: #64748b;
                 font-size: 0.75rem;
+                .dark-mode & {
+                  color: var(--color-text-secondary);
+                }
               }
             }
 
@@ -519,11 +614,18 @@
               .date-info {
                 span {
                   color: #dc2626;
+                  .dark-mode & {
+                    color: #ff6868;
+                  }
                 }
 
                 small {
                   color: #dc2626;
                   font-weight: 500;
+                  .dark-mode & {
+                    color: #ff6868;
+                    font-weight: 500;
+                  }
                 }
               }
             }
@@ -532,6 +634,9 @@
           &.amount {
             font-weight: 600;
             color: #059669;
+            .dark-mode & {
+              color: #3ad171;
+            }
           }
 
           &.status {
@@ -572,6 +677,9 @@
 
           &.created-date {
             color: #64748b;
+            .dark-mode & {
+              color: var(--color-text-secondary);
+            }
           }
 
           &.actions {

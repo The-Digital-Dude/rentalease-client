@@ -32,6 +32,7 @@ import {
   MdAssessment,
   MdCalendarToday,
   MdHelpOutline,
+  MdReceipt,
 } from "react-icons/md";
 import { RiFileList3Line } from "react-icons/ri";
 import "./Sidebar.scss";
@@ -74,6 +75,7 @@ const labelMap: Record<string, string> = {
   "lead-management": "Lead Management",
   "beyond-compliance": "Beyond Compliance",
   "quotation-management": "QMS Portal",
+  "invoice-management": "Invoice Management",
   "technician-dashboard": "Dashboard",
   "technician-calendar": "Calendar",
   "technician-support": "Support",
@@ -112,6 +114,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "lead-management": <MdPhone />,
   "beyond-compliance": <MdMiscellaneousServices />,
   "quotation-management": <RiFileList3Line />,
+  "invoice-management": <MdReceipt />,
   "technician-dashboard": <MdDashboard />,
   "technician-calendar": <MdCalendarToday />,
   "technician-support": <MdHelpOutline />,

@@ -80,6 +80,7 @@ const RegionalDashboard = lazy(
 );
 const BeyondCompliance = lazy(() => import("../pages/BeyondCompliance"));
 const QuotationManagement = lazy(() => import("../pages/QuotationManagement/QuotationManagement"));
+const InvoiceManagement = lazy(() => import("../pages/InvoiceManagement/InvoiceManagement"));
 
 // Define route configuration
 export const routeConfig = (userType: UserType) => {
@@ -120,6 +121,7 @@ export const routeConfig = (userType: UserType) => {
     regionalDashboard: RegionalDashboard,
     "beyond-compliance": BeyondCompliance,
     "quotation-management": QuotationManagement,
+    "invoice-management": InvoiceManagement,
     "technician-dashboard": TechnicianDashboard,
     "technician-calendar": TechnicianCalendar,
     "technician-support": TechnicianSupport,

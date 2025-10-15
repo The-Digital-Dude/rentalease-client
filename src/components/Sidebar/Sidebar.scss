@@ -7,7 +7,7 @@
   left: 0;
   top: 64px;
   height: calc(100vh - 64px);
-  width: 240px;
+  width: 250px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   overflow: hidden;
@@ -22,7 +22,7 @@
 
   &.collapsed {
     width: 80px;
-    
+
     .nav-label {
       opacity: 0;
       transform: translateX(-10px);

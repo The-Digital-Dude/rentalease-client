@@ -1,4 +1,4 @@
-.quotation-management {
+.invoice-management {
   padding: 2rem;
   background-color: #f8fafc;
   min-height: 100vh;
@@ -36,12 +36,16 @@
 
   .page-header {
     margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 
     .header-content {
       background: white;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      flex: 1;
       .dark-mode & {
         background: var(--color-bg-card);
         border: 1px solid var(--color-border-primary);
@@ -77,6 +81,33 @@
         .dark-mode & {
           color: var(--color-text-secondary);
         }
+      }
+    }
+
+    .create-invoice-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: 1rem;
+      white-space: nowrap;
+
+      &:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+
+      svg {
+        font-size: 1.25rem;
       }
     }
   }
@@ -141,7 +172,7 @@
     }
   }
 
-  .quotation-filters-panel {
+  .invoice-filters-panel {
     background: white;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -264,7 +295,6 @@
               border-color: #cbd5e1;
             }
 
-            // Style for when a filter is selected
             &:not([value=""]) {
               background: #eff6ff;
               border-color: #3b82f6;
@@ -381,6 +411,7 @@
         border: 1px solid var(--color-border-secondary);
         color: var(--color-text-primary);
       }
+
       &:hover {
         border-color: #cbd5e1;
         background: #f8fafc;
@@ -414,7 +445,7 @@
     }
   }
 
-  .quotations-table-container {
+  .invoices-table-container {
     background: white;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -423,12 +454,14 @@
       background: var(--color-bg-card);
       border: 1px solid var(--color-border-primary);
     }
+
     .table-header {
       padding: 1.5rem;
       border-bottom: 1px solid #e2e8f0;
       .dark-mode & {
         border-bottom: 1px solid var(--color-border-primary);
       }
+
       h3 {
         margin: 0;
         color: #1e293b;
@@ -440,6 +473,7 @@
         .dark-mode & {
           color: var(--color-text-primary);
         }
+
         .count {
           color: #64748b;
           font-weight: 400;
@@ -487,7 +521,7 @@
       overflow-x: auto;
     }
 
-    .quotations-table {
+    .invoices-table {
       width: 100%;
       border-collapse: collapse;
 
@@ -525,7 +559,7 @@
             }
           }
 
-          &.urgent-row {
+          &.overdue-row {
             background: #fef3f2;
             border-left: 4px solid #ef4444;
             .dark-mode & {
@@ -546,7 +580,7 @@
           vertical-align: top;
           font-size: 0.875rem;
 
-          &.quotation-number {
+          &.invoice-number {
             font-weight: 600;
             color: #3b82f6;
             .dark-mode & {
@@ -554,9 +588,9 @@
             }
           }
 
-          &.agency-cell {
-            .agency-info {
-              .agency-name {
+          &.property-cell {
+            .property-info {
+              .property-address {
                 font-weight: 500;
                 color: #1e293b;
                 .dark-mode & {
@@ -579,18 +613,9 @@
             }
           }
 
-          &.service-type {
-            color: #64748b;
-            max-width: 150px;
-            .dark-mode & {
-              color: var(--color-text-secondary);
-            }
-          }
-
-          &.property-address {
+          &.description {
             color: #64748b;
             max-width: 200px;
-            word-break: break-word;
             .dark-mode & {
               color: var(--color-text-secondary);
             }
@@ -616,7 +641,7 @@
               }
             }
 
-            &.urgent {
+            &.overdue {
               .date-info {
                 span {
                   color: #dc2626;
@@ -654,9 +679,9 @@
               text-transform: uppercase;
               letter-spacing: 0.025em;
 
-              &.status-draft {
-                background: #f3f4f6;
-                color: #6b7280;
+              &.status-pending {
+                background: #fef3c7;
+                color: #d97706;
               }
 
               &.status-sent {
@@ -664,19 +689,9 @@
                 color: #1d4ed8;
               }
 
-              &.status-accepted {
+              &.status-paid {
                 background: #dcfce7;
                 color: #166534;
-              }
-
-              &.status-rejected {
-                background: #fee2e2;
-                color: #dc2626;
-              }
-
-              &.status-expired {
-                background: #fef3f2;
-                color: #b91c1c;
               }
             }
           }
@@ -724,68 +739,33 @@
                   }
                 }
 
-                &.download-btn {
+                &.delete-btn {
+                  background: #fee2e2;
+                  color: #dc2626;
+
+                  &:hover {
+                    background: #fecaca;
+                    color: #b91c1c;
+                  }
+                }
+
+                &.status-btn {
                   background: #fef3c7;
                   color: #d97706;
 
-                  &:hover:not(:disabled) {
+                  &:hover {
                     background: #fde68a;
                     color: #b45309;
                   }
+                }
 
-                  &:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
-                  }
+                &:disabled {
+                  opacity: 0.5;
+                  cursor: not-allowed;
                 }
               }
             }
           }
-        }
-      }
-    }
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-
-    .modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-
-      h3 {
-        margin: 0 0 1rem 0;
-        color: #1e293b;
-      }
-
-      button {
-        margin-top: 1rem;
-        padding: 0.75rem 1.5rem;
-        background: #3b82f6;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.2s;
-
-        &:hover {
-          background: #2563eb;
         }
       }
     }
@@ -799,12 +779,14 @@
       gap: 1rem;
     }
 
-    .filters-container {
+    .page-header {
       flex-direction: column;
-      align-items: stretch;
 
-      .filter-select {
-        min-width: auto;
+      .create-invoice-btn {
+        margin-left: 0;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: center;
       }
     }
 
@@ -814,14 +796,10 @@
         justify-content: center;
         min-width: 0;
         padding: 0.5rem 1rem;
-
-        span {
-          display: none;
-        }
       }
     }
 
-    .quotations-table {
+    .invoices-table {
       font-size: 0.75rem;
 
       th,

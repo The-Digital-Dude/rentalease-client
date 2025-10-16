@@ -45,7 +45,10 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
       fetchProperties();
       if (invoice) {
         setFormData({
-          property: typeof invoice.property === "object" ? invoice.property._id : invoice.property,
+          property:
+            typeof invoice.property === "object"
+              ? invoice.property._id
+              : invoice.property,
           description: invoice.description,
           amount: invoice.amount.toString(),
           dueDate: invoice.dueDate.split("T")[0], // Format for input[type="date"]
@@ -61,11 +64,13 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
     try {
       const response = await propertyService.getProperties({ limit: 1000 });
       if (response.status === "success" && response.data.properties) {
-        const transformedProperties = response.data.properties.map((prop: any) => ({
-          id: prop.id,
-          fullAddress: prop.fullAddress,
-          assignedPropertyManager: prop.assignedPropertyManager,
-        }));
+        const transformedProperties = response.data.properties.map(
+          (prop: any) => ({
+            id: prop.id,
+            fullAddress: prop.fullAddress,
+            assignedPropertyManager: prop.assignedPropertyManager,
+          })
+        );
         setProperties(transformedProperties);
       }
     } catch (error) {
@@ -97,7 +102,10 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
       dueDate: formData.dueDate,
     };
 
-    const validation = propertyManagerInvoiceService.validatePropertyManagerInvoiceRequest(validationData);
+    const validation =
+      propertyManagerInvoiceService.validatePropertyManagerInvoiceRequest(
+        validationData
+      );
 
     if (!validation.isValid) {
       setErrors(validation.errors);
@@ -109,12 +117,15 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
     try {
       if (invoice) {
         // Update existing invoice
-        await propertyManagerInvoiceService.updatePropertyManagerInvoice(invoice._id, {
-          description: formData.description,
-          amount: parseFloat(formData.amount),
-          dueDate: formData.dueDate,
-          notes: formData.notes || undefined,
-        });
+        await propertyManagerInvoiceService.updatePropertyManagerInvoice(
+          invoice._id,
+          {
+            description: formData.description,
+            amount: parseFloat(formData.amount),
+            dueDate: formData.dueDate,
+            notes: formData.notes || undefined,
+          }
+        );
         toast.success("Invoice updated successfully");
       } else {
         // Create new invoice
@@ -150,10 +161,21 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
 
   return (
     <div className="invoice-create-modal-overlay" onClick={onClose}>
-      <div className="invoice-create-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="invoice-create-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>
-            {invoice ? <><MdEdit /> Edit Invoice</> : <><MdAdd /> Create Invoice</>}
+            {invoice ? (
+              <>
+                <MdEdit /> Edit Invoice
+              </>
+            ) : (
+              <>
+                <MdAdd /> Create Invoice
+              </>
+            )}
           </h2>
           <button className="close-btn" onClick={onClose} type="button">
             <MdClose />
@@ -178,7 +200,9 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
             <select
               id="property"
               value={formData.property}
-              onChange={(e) => setFormData({ ...formData, property: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, property: e.target.value })
+              }
               required
             >
               <option value="">Select a property</option>
@@ -197,7 +221,9 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
             <textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Enter invoice description..."
               rows={4}
               required
@@ -208,44 +234,50 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
             </small>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="amount">
-              Amount (AUD) <span className="required">*</span>
-            </label>
-            <input
-              type="number"
-              id="amount"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              placeholder="0.00"
-              step="0.01"
-              min="0.01"
-              required
-            />
+          <div className="form-row two-col">
+            <div className="form-group">
+              <label htmlFor="amount">
+                Amount (AUD) <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                id="amount"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: e.target.value })
+                }
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="dueDate">
+                Due Date <span className="required">*</span>
+              </label>
+              <input
+                type="date"
+                id="dueDate"
+                value={formData.dueDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, dueDate: e.target.value })
+                }
+                min={new Date().toISOString().split("T")[0]}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="dueDate">
-              Due Date <span className="required">*</span>
-            </label>
-            <input
-              type="date"
-              id="dueDate"
-              value={formData.dueDate}
-              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              min={new Date().toISOString().split("T")[0]}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="notes">
-              Notes (Optional)
-            </label>
+            <label htmlFor="notes">Notes (Optional)</label>
             <textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               placeholder="Additional notes or comments..."
               rows={3}
               maxLength={500}
@@ -256,11 +288,20 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
           </div>
 
           <div className="modal-footer">
-            <button type="button" onClick={onClose} className="cancel-btn" disabled={loading}>
+            <button
+              type="button"
+              onClick={onClose}
+              className="cancel-btn"
+              disabled={loading}
+            >
               Cancel
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Saving..." : invoice ? "Update Invoice" : "Create Invoice"}
+              {loading
+                ? "Saving..."
+                : invoice
+                ? "Update Invoice"
+                : "Create Invoice"}
             </button>
           </div>
         </form>

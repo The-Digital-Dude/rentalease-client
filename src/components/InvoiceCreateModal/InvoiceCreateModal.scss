@@ -164,6 +164,17 @@
         }
       }
 
+      .form-row.two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+
+        // Stack on small screens
+        @media (max-width: 640px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
       .modal-footer {
         display: flex;
         justify-content: flex-end;

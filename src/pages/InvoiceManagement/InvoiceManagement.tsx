@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import {
   MdFilterList,
   MdSearch,
@@ -7,7 +6,6 @@ import {
   MdEdit,
   MdCheckCircle,
   MdCancel,
-  MdAccessTime,
   MdTrendingUp,
   MdReceipt,
   MdPendingActions,
@@ -26,23 +24,26 @@ import "./InvoiceManagement.scss";
 interface DashboardStats {
   totalInvoices: number;
   pendingInvoices: number;
-  sentInvoices: number;
-  paidInvoices: number;
+  acceptedInvoices: number;
+  rejectedInvoices: number;
   totalValue: number;
-  paidValue: number;
+  acceptedValue: number;
   pendingValue: number;
 }
 
 interface InvoiceListItem {
   _id: string;
   invoiceNumber: string;
-  property?: any;
-  propertyManager?: any;
-  agency?: any;
+  propertyId?: any; // New API format
+  propertyManagerId?: any; // New API format
+  agencyId?: any; // New API format
+  property?: any; // Old format for backwards compatibility
+  propertyManager?: any; // Old format for backwards compatibility
+  agency?: any; // Old format for backwards compatibility
   description: string;
   amount: number;
   dueDate: string;
-  status: "Pending" | "Sent" | "Paid";
+  status: "Pending" | "Accepted" | "Rejected";
   notes?: string;
   sentAt?: string;
   paidAt?: string;
@@ -52,7 +53,7 @@ interface InvoiceListItem {
   updatedAt?: string;
 }
 
-type TabType = "pending" | "sent" | "paid" | "all";
+type TabType = "pending" | "accepted" | "rejected" | "all";
 
 interface Property {
   id: string;
@@ -73,10 +74,10 @@ export const InvoiceManagement: React.FC = () => {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalInvoices: 0,
     pendingInvoices: 0,
-    sentInvoices: 0,
-    paidInvoices: 0,
+    acceptedInvoices: 0,
+    rejectedInvoices: 0,
     totalValue: 0,
-    paidValue: 0,
+    acceptedValue: 0,
     pendingValue: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -92,8 +93,6 @@ export const InvoiceManagement: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
   const { userType } = useAppSelector((state) => state.user);
 
   useEffect(() => {
@@ -112,13 +111,18 @@ export const InvoiceManagement: React.FC = () => {
         await propertyManagerInvoiceService.getAllPropertyManagerInvoices();
 
       if (response.status === "success" && response.data?.invoices) {
-        // Map the invoices to add _id field for compatibility
+        // Map the invoices to preserve both old and new formats
         const mappedInvoices = response.data.invoices.map((invoice: any) => ({
           ...invoice,
           _id: invoice.id || invoice._id,
-          property: invoice.propertyId || invoice.property,
-          propertyManager: invoice.propertyManagerId || invoice.propertyManager,
-          agency: invoice.agencyId || invoice.agency,
+          // Keep the new format fields
+          propertyId: invoice.propertyId,
+          propertyManagerId: invoice.propertyManagerId,
+          agencyId: invoice.agencyId,
+          // Also keep old format fields for backwards compatibility
+          property: invoice.property || invoice.propertyId,
+          propertyManager: invoice.propertyManager || invoice.propertyManagerId,
+          agency: invoice.agency || invoice.agencyId,
         }));
 
         setInvoices(mappedInvoices);
@@ -160,14 +164,14 @@ export const InvoiceManagement: React.FC = () => {
     const stats: DashboardStats = {
       totalInvoices: data.length,
       pendingInvoices: data.filter((i) => i.status === "Pending").length,
-      sentInvoices: data.filter((i) => i.status === "Sent").length,
-      paidInvoices: data.filter((i) => i.status === "Paid").length,
+      acceptedInvoices: data.filter((i) => i.status === "Accepted").length,
+      rejectedInvoices: data.filter((i) => i.status === "Rejected").length,
       totalValue: data.reduce((sum, i) => sum + (i.amount || 0), 0),
-      paidValue: data
-        .filter((i) => i.status === "Paid")
+      acceptedValue: data
+        .filter((i) => i.status === "Accepted")
         .reduce((sum, i) => sum + (i.amount || 0), 0),
       pendingValue: data
-        .filter((i) => i.status === "Pending" || i.status === "Sent")
+        .filter((i) => i.status === "Pending")
         .reduce((sum, i) => sum + (i.amount || 0), 0),
     };
     setDashboardStats(stats);
@@ -181,11 +185,11 @@ export const InvoiceManagement: React.FC = () => {
       case "pending":
         filtered = filtered.filter((i) => i.status === "Pending");
         break;
-      case "sent":
-        filtered = filtered.filter((i) => i.status === "Sent");
+      case "accepted":
+        filtered = filtered.filter((i) => i.status === "Accepted");
         break;
-      case "paid":
-        filtered = filtered.filter((i) => i.status === "Paid");
+      case "rejected":
+        filtered = filtered.filter((i) => i.status === "Rejected");
         break;
       case "all":
         break;
@@ -272,18 +276,49 @@ export const InvoiceManagement: React.FC = () => {
   };
 
   const getPropertyAddress = (invoice: InvoiceListItem): string => {
+    // Handle new API format with propertyId object
+    if (invoice.propertyId && typeof invoice.propertyId === "object") {
+      return invoice.propertyId.address?.fullAddress || "Unknown Property";
+    }
+
+    // Handle old format with property object
     const property = invoice.property;
     if (typeof property === "string") return "Unknown Property";
     if (!property) return "Unknown Property";
-    // Handle new API format with address object
+
+    // Handle nested address format
     if (property.address?.fullAddress) {
       return property.address.fullAddress;
     }
-    // Handle old format
+
+    // Handle old flat format
     return property.fullAddress || "Unknown Property";
   };
 
   const getPropertyManagerName = (invoice: InvoiceListItem): string => {
+    // Handle new API format with propertyManagerId object
+    if (
+      invoice.propertyManagerId &&
+      typeof invoice.propertyManagerId === "object"
+    ) {
+      const pm = invoice.propertyManagerId;
+      return (
+        `${pm.firstName || ""} ${pm.lastName || ""}`.trim() || pm.email || ""
+      );
+    }
+
+    // Handle property's assigned property manager from new nested format
+    if (invoice.propertyId && typeof invoice.propertyId === "object") {
+      const property = invoice.propertyId as any;
+      if (property.assignedPropertyManager) {
+        const pm = property.assignedPropertyManager;
+        return (
+          `${pm.firstName || ""} ${pm.lastName || ""}`.trim() || pm.email || ""
+        );
+      }
+    }
+
+    // Handle old format with propertyManager object
     const pm = invoice.propertyManager;
     if (!pm) return "";
     if (typeof pm === "string") return "";
@@ -296,10 +331,10 @@ export const InvoiceManagement: React.FC = () => {
     switch (status) {
       case "Pending":
         return "status-pending";
-      case "Sent":
-        return "status-sent";
-      case "Paid":
-        return "status-paid";
+      case "Accepted":
+        return "status-accepted";
+      case "Rejected":
+        return "status-rejected";
       default:
         return "status-pending";
     }
@@ -335,14 +370,14 @@ export const InvoiceManagement: React.FC = () => {
       count: invoices.filter((i) => i.status === "Pending").length,
     },
     {
-      key: "sent" as TabType,
-      label: "Sent",
-      count: invoices.filter((i) => i.status === "Sent").length,
+      key: "accepted" as TabType,
+      label: "Accepted",
+      count: invoices.filter((i) => i.status === "Accepted").length,
     },
     {
-      key: "paid" as TabType,
-      label: "Paid",
-      count: invoices.filter((i) => i.status === "Paid").length,
+      key: "rejected" as TabType,
+      label: "Rejected",
+      count: invoices.filter((i) => i.status === "Rejected").length,
     },
     { key: "all" as TabType, label: "All", count: invoices.length },
   ];
@@ -387,12 +422,12 @@ export const InvoiceManagement: React.FC = () => {
               <h1>Invoice Management</h1>
             </div>
             <p className="header-subtitle">
-              Create and manage invoices for property managers
+              {userType === "agency"
+                ? "View invoices for property managers"
+                : "Create and manage invoices for property managers"}
             </p>
           </div>
-          {(userType === "super_user" ||
-            userType === "team_member" ||
-            userType === "agency") && (
+          {userType === "super_user" && (
             <button
               className="create-invoice-btn"
               onClick={() => {
@@ -431,8 +466,8 @@ export const InvoiceManagement: React.FC = () => {
             <MdCheckCircle />
           </div>
           <div className="stat-content">
-            <h3>{dashboardStats.paidInvoices}</h3>
-            <p>Paid</p>
+            <h3>{dashboardStats.acceptedInvoices}</h3>
+            <p>Accepted</p>
           </div>
         </div>
         <div className="stat-card highlight">
@@ -440,8 +475,8 @@ export const InvoiceManagement: React.FC = () => {
             <MdTrendingUp />
           </div>
           <div className="stat-content">
-            <h3>{formatCurrency(dashboardStats.paidValue)}</h3>
-            <p>Paid Value</p>
+            <h3>{formatCurrency(dashboardStats.acceptedValue)}</h3>
+            <p>Accepted Value</p>
           </div>
         </div>
       </div>
@@ -698,31 +733,47 @@ export const InvoiceManagement: React.FC = () => {
                           >
                             <MdVisibility />
                           </button>
-                          {(userType === "super_user" ||
-                            userType === "team_member" ||
-                            userType === "agency") && (
+                          {userType === "property_manager" && (
+                            <button
+                              className="action-btn status-btn"
+                              onClick={() => handleUpdateStatus(invoice)}
+                              title="Update Status"
+                            >
+                              <MdCheckCircle />
+                            </button>
+                          )}
+
+                          {userType === "super_user" && (
                             <>
                               <button
                                 className="action-btn edit-btn"
                                 onClick={() => handleEditInvoice(invoice)}
-                                title="Edit Invoice"
+                                title={
+                                  invoice.status === "Accepted" ||
+                                  invoice.status === "Rejected"
+                                    ? "Cannot edit accepted or rejected invoices"
+                                    : "Edit Invoice"
+                                }
+                                disabled={
+                                  invoice.status === "Accepted" ||
+                                  invoice.status === "Rejected"
+                                }
                               >
                                 <MdEdit />
                               </button>
-                              {userType === "property_manager" && (
-                                <button
-                                  className="action-btn status-btn"
-                                  onClick={() => handleUpdateStatus(invoice)}
-                                  title="Update Status"
-                                >
-                                  <MdCheckCircle />
-                                </button>
-                              )}
                               <button
                                 className="action-btn delete-btn"
                                 onClick={() => handleDeleteInvoice(invoice)}
-                                title="Delete Invoice"
-                                disabled={invoice.status === "Paid"}
+                                title={
+                                  invoice.status === "Accepted" ||
+                                  invoice.status === "Rejected"
+                                    ? "Cannot delete accepted or rejected invoices"
+                                    : "Delete Invoice"
+                                }
+                                disabled={
+                                  invoice.status === "Accepted" ||
+                                  invoice.status === "Rejected"
+                                }
                               >
                                 <MdDelete />
                               </button>

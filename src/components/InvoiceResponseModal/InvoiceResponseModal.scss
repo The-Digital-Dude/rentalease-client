@@ -340,13 +340,16 @@
           padding: 0.75rem 1.5rem;
           border-radius: 6px;
           font-size: 0.875rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
           border: none;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
 
           &:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
           }
 
@@ -361,7 +364,11 @@
           }
 
           &.submit-btn {
-            &.accept {
+            svg {
+              font-size: 1.125rem;
+            }
+
+            &.status-accepted {
               background: #16a34a;
               color: white;
 
@@ -371,7 +378,7 @@
               }
             }
 
-            &.reject {
+            &.status-rejected {
               background: #dc2626;
               color: white;
 

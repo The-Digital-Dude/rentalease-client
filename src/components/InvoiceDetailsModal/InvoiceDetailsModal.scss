@@ -226,9 +226,39 @@
       padding: 1.5rem;
       border-top: 1px solid #e2e8f0;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
       .dark-mode & {
         border-top: 1px solid var(--color-border-primary);
+      }
+
+      .download-pdf-btn {
+        padding: 0.75rem 1.5rem;
+        background: #059669;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        svg {
+          font-size: 1.125rem;
+        }
+
+        &:hover {
+          background: #047857;
+          box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+          transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
       }
 
       .close-footer-btn {
@@ -295,9 +325,12 @@
 
       .modal-footer {
         padding: 1rem;
+        flex-direction: column;
 
+        .download-pdf-btn,
         .close-footer-btn {
           width: 100%;
+          justify-content: center;
         }
       }
     }

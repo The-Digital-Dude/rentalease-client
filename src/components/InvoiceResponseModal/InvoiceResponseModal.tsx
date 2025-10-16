@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MdClose, MdCheckCircle, MdSend, MdPending } from "react-icons/md";
+import { MdClose, MdCheckCircle, MdCancel, MdPending } from "react-icons/md";
 import propertyManagerInvoiceService from "../../services/propertyManagerInvoiceService";
 import type { PropertyManagerInvoice } from "../../services/propertyManagerInvoiceService";
 import { toast } from "react-toastify";
@@ -20,28 +20,9 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
   onSuccess,
 }) => {
   const { userType } = useAppSelector((state) => state.user);
-  const [status, setStatus] = useState<"Pending" | "Sent" | "Paid">("Sent");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [paymentReference, setPaymentReference] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && invoice) {
-      // Set initial status to next logical status
-      if (invoice.status === "Pending") {
-        setStatus("Sent");
-      } else if (invoice.status === "Sent") {
-        setStatus("Paid");
-      } else {
-        setStatus(invoice.status);
-      }
-      setPaymentMethod("");
-      setPaymentReference("");
-    }
-  }, [isOpen, invoice]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateStatus = async (newStatus: "Accepted" | "Rejected") => {
     setLoading(true);
 
     try {
@@ -54,21 +35,11 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
         return;
       }
 
-      // Validate payment fields if marking as Paid
-      if (status === "Paid" && !paymentMethod.trim()) {
-        toast.error("Payment method is required when marking invoice as paid");
-        setLoading(false);
-        return;
-      }
-
       await propertyManagerInvoiceService.updateInvoiceStatus(invoice._id, {
-        status,
-        paymentMethod: status === "Paid" ? paymentMethod.trim() : undefined,
-        paymentReference:
-          status === "Paid" ? paymentReference.trim() : undefined,
+        status: newStatus,
       });
 
-      toast.success(`Invoice status updated to ${status} successfully`);
+      toast.success(`Invoice ${newStatus.toLowerCase()} successfully`);
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -94,23 +65,80 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
   };
 
   const getPropertyAddress = () => {
+    if (!invoice) return "Unknown Property";
+
+    // Handle new API format with propertyId object
+    if (invoice.propertyId && typeof invoice.propertyId === "object") {
+      return invoice.propertyId.address?.fullAddress || "Unknown Property";
+    }
+
+    // Handle old format with property object
+    if (invoice.property && typeof invoice.property === "object") {
+      // Handle new nested address format
+      if (invoice.property.address?.fullAddress) {
+        return invoice.property.address.fullAddress;
+      }
+      // Handle old flat format
+      return invoice.property.fullAddress || "Unknown Property";
+    }
+
+    return "Unknown Property";
+  };
+
+  const getPropertyManagerName = () => {
     if (!invoice) return "";
-    if (typeof invoice.property === "string") return "Unknown Property";
-    return invoice.property?.fullAddress || "Unknown Property";
+
+    // Handle new API format with propertyManagerId object
+    if (
+      invoice.propertyManagerId &&
+      typeof invoice.propertyManagerId === "object"
+    ) {
+      const pm = invoice.propertyManagerId;
+      return (
+        `${pm.firstName || ""} ${pm.lastName || ""}`.trim() || pm.email || ""
+      );
+    }
+
+    // Handle property's assigned property manager from new nested format
+    if (invoice.propertyId && typeof invoice.propertyId === "object") {
+      const property = invoice.propertyId as any;
+      if (property.assignedPropertyManager) {
+        const pm = property.assignedPropertyManager;
+        return (
+          `${pm.firstName || ""} ${pm.lastName || ""}`.trim() || pm.email || ""
+        );
+      }
+    }
+
+    // Handle old format with propertyManager object
+    if (
+      invoice.propertyManager &&
+      typeof invoice.propertyManager === "object"
+    ) {
+      const pm = invoice.propertyManager;
+      return (
+        `${pm.firstName || ""} ${pm.lastName || ""}`.trim() || pm.email || ""
+      );
+    }
+
+    return "";
   };
 
   const getStatusIcon = (statusValue: string) => {
     switch (statusValue) {
       case "Pending":
         return <MdPending />;
-      case "Sent":
-        return <MdSend />;
-      case "Paid":
+      case "Accepted":
         return <MdCheckCircle />;
+      case "Rejected":
+        return <MdCancel />;
       default:
         return <MdPending />;
     }
   };
+
+  const isStatusLocked =
+    invoice?.status === "Accepted" || invoice?.status === "Rejected";
 
   if (!isOpen || !invoice) return null;
 
@@ -121,13 +149,13 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h2>{getStatusIcon(status)} Update Invoice Status</h2>
+          <h2>{getStatusIcon(invoice.status)} Update Invoice Status</h2>
           <button className="close-btn" onClick={onClose} type="button">
             <MdClose />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body">
+        <div className="modal-body">
           {/* Invoice Summary */}
           <div className="invoice-summary">
             <div className="summary-item">
@@ -138,6 +166,12 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
               <span className="label">Property:</span>
               <span className="value">{getPropertyAddress()}</span>
             </div>
+            {getPropertyManagerName() && (
+              <div className="summary-item">
+                <span className="label">Property Manager:</span>
+                <span className="value">{getPropertyManagerName()}</span>
+              </div>
+            )}
             <div className="summary-item">
               <span className="label">Amount:</span>
               <span className="value amount">
@@ -158,132 +192,59 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
             </div>
           </div>
 
-          {/* Status Selection */}
-          <div className="action-selection">
-            <label className="action-label">Update Status To:</label>
-            <div className="status-buttons">
-              <button
-                type="button"
-                className={`status-btn pending-btn ${
-                  status === "Pending" ? "active" : ""
-                }`}
-                onClick={() =>
-                  userType === "property_manager" && setStatus("Pending")
-                }
-                disabled={userType !== "property_manager"}
-              >
-                <MdPending /> Pending
-              </button>
-              <button
-                type="button"
-                className={`status-btn sent-btn ${
-                  status === "Sent" ? "active" : ""
-                }`}
-                onClick={() =>
-                  userType === "property_manager" && setStatus("Sent")
-                }
-                disabled={userType !== "property_manager"}
-              >
-                <MdSend /> Sent
-              </button>
-              <button
-                type="button"
-                className={`status-btn paid-btn ${
-                  status === "Paid" ? "active" : ""
-                }`}
-                onClick={() =>
-                  userType === "property_manager" && setStatus("Paid")
-                }
-                disabled={userType !== "property_manager"}
-              >
-                <MdCheckCircle /> Paid
-              </button>
-            </div>
-          </div>
-
-          {/* Payment Details - Show only when status is Paid */}
-          {status === "Paid" && (
-            <div className="payment-details">
-              <h4>Payment Details</h4>
-              <div className="form-group">
-                <label htmlFor="paymentMethod">
-                  Payment Method <span className="required">*</span>
-                </label>
-                <select
-                  id="paymentMethod"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  required
-                >
-                  <option value="">Select payment method</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Debit Card">Debit Card</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Cheque">Cheque</option>
-                  <option value="PayPal">PayPal</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="paymentReference">
-                  Payment Reference (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="paymentReference"
-                  value={paymentReference}
-                  onChange={(e) => setPaymentReference(e.target.value)}
-                  placeholder="Transaction ID, cheque number, etc."
-                  maxLength={100}
-                />
-              </div>
+          {/* Status Locked Message */}
+          {isStatusLocked && (
+            <div
+              className={`confirmation-message ${invoice.status.toLowerCase()}`}
+            >
+              <p>
+                {invoice.status === "Accepted" ? (
+                  <MdCheckCircle />
+                ) : (
+                  <MdCancel />
+                )}
+                This invoice has been {invoice.status.toLowerCase()}. The status
+                cannot be changed.
+              </p>
             </div>
           )}
-
-          {/* Confirmation Message */}
-          <div className={`confirmation-message ${status.toLowerCase()}`}>
-            {status === "Pending" && (
-              <p>
-                <MdPending /> This invoice will be marked as Pending. It has not
-                yet been sent to the property manager.
-              </p>
-            )}
-            {status === "Sent" && (
-              <p>
-                <MdSend /> This invoice will be marked as Sent. The property
-                manager has been notified.
-              </p>
-            )}
-            {status === "Paid" && (
-              <p>
-                <MdCheckCircle /> This invoice will be marked as Paid for{" "}
-                <strong>{formatCurrency(invoice.amount)}</strong>. This action
-                cannot be easily undone.
-              </p>
-            )}
-          </div>
 
           {/* Footer Actions */}
           <div className="modal-footer">
             <button
               type="button"
-              onClick={onClose}
-              className="cancel-btn"
-              disabled={loading}
+              onClick={() => handleUpdateStatus("Rejected")}
+              className="submit-btn status-rejected"
+              disabled={
+                loading || userType !== "property_manager" || isStatusLocked
+              }
             >
-              Cancel
+              {loading ? (
+                "Processing..."
+              ) : (
+                <>
+                  <MdCancel /> Reject Invoice
+                </>
+              )}
             </button>
             <button
-              type="submit"
-              className={`submit-btn status-${status.toLowerCase()}`}
-              disabled={loading || userType !== "property_manager"}
+              type="button"
+              onClick={() => handleUpdateStatus("Accepted")}
+              className="submit-btn status-accepted"
+              disabled={
+                loading || userType !== "property_manager" || isStatusLocked
+              }
             >
-              {loading ? "Updating..." : `Mark as ${status}`}
+              {loading ? (
+                "Processing..."
+              ) : (
+                <>
+                  <MdCheckCircle /> Accept Invoice
+                </>
+              )}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

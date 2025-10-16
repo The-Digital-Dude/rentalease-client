@@ -43,6 +43,8 @@ export const allowedRoutes: Record<UserType, string[]> = {
     // "lead-management",
     "agencyJobs",
     "beyond-compliance",
+    "quotation-management",
+    "invoice-management",
     "subscription",
     "scheduled-jobs",
     "overdue-jobs",

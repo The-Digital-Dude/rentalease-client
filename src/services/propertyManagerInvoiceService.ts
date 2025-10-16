@@ -19,7 +19,7 @@ export interface PropertyManagerInvoice {
     region: string;
   };
   property?: // For backwards compatibility
-    | {
+  | {
         _id: string;
         fullAddress: string;
         assignedPropertyManager?: {
@@ -40,7 +40,7 @@ export interface PropertyManagerInvoice {
     phone: string;
   };
   propertyManager?: // For backwards compatibility
-    | {
+  | {
         _id: string;
         firstName: string;
         lastName: string;
@@ -53,7 +53,7 @@ export interface PropertyManagerInvoice {
     contactPerson: string;
   };
   agency?: // For backwards compatibility
-    | {
+  | {
         _id: string;
         agencyName: string;
       }
@@ -61,7 +61,7 @@ export interface PropertyManagerInvoice {
   description: string;
   amount: number;
   dueDate: string;
-  status: "Pending" | "Sent" | "Paid";
+  status: "Pending" | "Accepted" | "Rejected";
   notes?: string;
   createdBy?: {
     userType: "SuperUser" | "TeamMember" | "Agency";
@@ -88,13 +88,11 @@ export interface UpdatePropertyManagerInvoiceRequest {
   amount?: number;
   dueDate?: string;
   notes?: string;
-  status?: "Pending" | "Sent" | "Paid";
+  status?: "Pending" | "Accepted" | "Rejected";
 }
 
 export interface UpdateInvoiceStatusRequest {
-  status: "Pending" | "Sent" | "Paid";
-  paymentMethod?: string;
-  paymentReference?: string;
+  status: "Pending" | "Accepted" | "Rejected";
 }
 
 export interface PropertyManagerInvoiceListResponse {
@@ -234,6 +232,7 @@ class PropertyManagerInvoiceService {
         await api.get(
           "/v1/property-manager-invoices" // Get all invoices for management interface
         );
+      console.log(response);
       return response.data;
     } catch (error: any) {
       throw new Error(

@@ -26,6 +26,7 @@ import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
 import invoiceService, { type Invoice } from "../../services/invoiceService";
+import inspectionReportService, { type InspectionReport } from "../../services/inspectionReportService";
 import toast from "react-hot-toast";
 
 const PropertyProfile: React.FC = () => {
@@ -40,6 +41,9 @@ const PropertyProfile: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
+  const [inspectionReports, setInspectionReports] = useState<InspectionReport[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [documentUploading, setDocumentUploading] = useState(false);
   const [documentDeleting, setDocumentDeleting] = useState<string | null>(null);
@@ -98,10 +102,36 @@ const PropertyProfile: React.FC = () => {
     }
   }, [id]);
 
+  const loadInspectionReports = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setReportsLoading(true);
+      setReportsError(null);
+      const response = await inspectionReportService.getReportsForProperty(id, {
+        limit: 50, // Load more reports for comprehensive view
+      });
+
+      if (response.status === "success" && response.data) {
+        setInspectionReports(response.data.reports);
+      } else {
+        setReportsError(response.message || "Failed to load inspection reports");
+        setInspectionReports([]);
+      }
+    } catch (loadReportsError: any) {
+      console.error("Error loading inspection reports:", loadReportsError);
+      setReportsError(loadReportsError.message || "Failed to load inspection reports");
+      setInspectionReports([]);
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     loadProperty();
     loadJobs();
-  }, [loadProperty, loadJobs]);
+    loadInspectionReports();
+  }, [loadProperty, loadJobs, loadInspectionReports]);
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
@@ -1158,6 +1188,82 @@ const PropertyProfile: React.FC = () => {
                 </table>
               )}
             </>
+          )}
+        </div>
+
+        {/* Inspection Reports Section */}
+        <div className="profile-section">
+          <h2>
+            <RiFileListLine /> Inspection Reports
+          </h2>
+          {reportsLoading ? (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Loading inspection reports...</p>
+            </div>
+          ) : reportsError ? (
+            <div className="error-state">
+              <p>{reportsError}</p>
+            </div>
+          ) : inspectionReports.length === 0 ? (
+            <div className="empty-state">
+              <p>No inspection reports found for this property.</p>
+            </div>
+          ) : (
+            <div className="inspection-reports-grid">
+              {inspectionReports.map((report) => (
+                <div key={report.id} className="inspection-report-card">
+                  <div className="report-header">
+                    <h3 className="report-type">
+                      {inspectionReportService.getJobTypeDisplayName(report.jobType)}
+                    </h3>
+                    <span className="report-date">
+                      {formatDateTime(report.submittedAt)}
+                    </span>
+                  </div>
+
+                  <div className="report-details">
+                    <div className="report-field">
+                      <label>Technician:</label>
+                      <span>{inspectionReportService.formatTechnicianName(report.technician)}</span>
+                    </div>
+
+                    {report.technician.email && (
+                      <div className="report-field">
+                        <label>Contact:</label>
+                        <span>{report.technician.email}</span>
+                      </div>
+                    )}
+
+                    {report.notes && (
+                      <div className="report-field">
+                        <label>Notes:</label>
+                        <span>{report.notes}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="report-actions">
+                    {report.pdf?.url && (
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => window.open(report.pdf!.url, '_blank')}
+                        title="View PDF Report"
+                      >
+                        <RiDownloadLine />
+                        View PDF
+                      </button>
+                    )}
+
+                    {report.media && report.media.length > 0 && (
+                      <span className="media-count">
+                        {report.media.length} photo{report.media.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

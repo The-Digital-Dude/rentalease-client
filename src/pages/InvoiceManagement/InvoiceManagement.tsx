@@ -427,7 +427,7 @@ export const InvoiceManagement: React.FC = () => {
                 : "Create and manage invoices for property managers"}
             </p>
           </div>
-          {userType === "super_user" && (
+          {(userType === "super_user" || userType === "team_member") && (
             <button
               className="create-invoice-btn"
               onClick={() => {
@@ -743,7 +743,7 @@ export const InvoiceManagement: React.FC = () => {
                             </button>
                           )}
 
-                          {userType === "super_user" && (
+                          {(userType === "super_user" || userType === "team_member") && (
                             <>
                               <button
                                 className="action-btn edit-btn"

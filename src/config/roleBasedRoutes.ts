@@ -83,6 +83,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "propertyManagerManagement",
     "jobs",
     "technician",
+    "invoice-management",
     "technicianPayments",
     "reports",
     "regionalDashboard",

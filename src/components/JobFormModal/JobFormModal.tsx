@@ -7,7 +7,7 @@ export interface JobFormData {
   id?: string;
   job_id?: string;
   propertyId: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs" | "Pool Safety" | "Routine Inspection";
+  jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Pool Safety" | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string;
   status?: "Pending" | "Scheduled" | "Completed" | "Overdue";
@@ -98,6 +98,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
                 <option value="Gas">Gas Safety</option>
                 <option value="Electrical">Electrical Safety</option>
                 <option value="Smoke">Smoke Alarm</option>
+                <option value="MinimumSafetyStandard">Minimum Safety Standard</option>
               </optgroup>
               <optgroup label="General Jobs">
                 <option value="Repairs">Repairs</option>

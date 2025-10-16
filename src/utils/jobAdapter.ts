@@ -6,11 +6,11 @@ export interface ComponentJob {
   job_id: string;
   propertyAddress: string;
   propertyId: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs";
+  jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Pool Safety" | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string; // Display name for table
   assignedTechnicianId: string; // ID for form submission
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue";
+  status: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
   createdDate: string;

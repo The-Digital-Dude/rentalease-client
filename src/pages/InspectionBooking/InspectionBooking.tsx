@@ -32,12 +32,6 @@ interface ComplianceData {
       nextInspection: string | null;
       dueDate: string | null;
     };
-    poolSafety?: {
-      required: boolean;
-      status: string;
-      nextInspection: string | null;
-      dueDate: string | null;
-    };
   };
   summary: {
     totalCompliance: number;
@@ -139,16 +133,17 @@ const InspectionBooking: React.FC = () => {
 
         if (data.success) {
           // Get the specific compliance type data
-          const complianceTypeKey =
-            complienceType === "gasCompliance"
-              ? "gasCompliance"
-              : complienceType === "electricalSafety"
-              ? "electricalSafety"
-              : complienceType === "smokeAlarms"
-              ? "smokeAlarms"
-              : complienceType === "poolSafety"
-              ? "poolSafety"
-              : "gasCompliance";
+          const complianceTypeKey = (() => {
+            switch (complienceType) {
+              case "gasCompliance":
+              case "electricalSafety":
+              case "smokeAlarms":
+              case "minimumSafetyStandard":
+                return complienceType;
+              default:
+                return "gasCompliance";
+            }
+          })();
 
           const complianceData = data.data.compliance[complianceTypeKey];
           const dueDate = ensureDateFormat(
@@ -307,8 +302,8 @@ const InspectionBooking: React.FC = () => {
         return "Electrical Safety";
       case "smokeAlarms":
         return "Smoke Alarms";
-      case "poolSafety":
-        return "Pool Safety";
+      case "minimumSafetyStandard":
+        return "Minimum Safety Standard";
       default:
         return "Compliance Inspection";
     }
@@ -323,8 +318,8 @@ const InspectionBooking: React.FC = () => {
         return "Electrical Safety";
       case "gasCompliance":
         return "Gas Compliance";
-      case "poolSafety":
-        return "Pool Safety";
+      case "minimumSafetyStandard":
+        return "Minimum Safety Standard";
       default:
         return complianceType;
     }

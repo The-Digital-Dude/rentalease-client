@@ -54,7 +54,7 @@ interface PropertyFormData {
   gasInspectionDate: string;
   electricalInspectionDate: string;
   smokeAlarmInspectionDate: string;
-  poolSafetyInspectionDate: string;
+  minimumSafetyStandardInspectionDate: string;
 
   // Additional
   notes: string;
@@ -84,7 +84,7 @@ const initialFormData: PropertyFormData = {
   gasInspectionDate: "",
   electricalInspectionDate: "",
   smokeAlarmInspectionDate: "",
-  poolSafetyInspectionDate: "",
+  minimumSafetyStandardInspectionDate: "",
 
   // Additional
   notes: "",
@@ -166,8 +166,9 @@ const PropertyFormModal = ({
             ?.nextInspection || "",
         smokeAlarmInspectionDate:
           editingProperty.complianceSchedule?.smokeAlarms?.nextInspection || "",
-        poolSafetyInspectionDate:
-          editingProperty.complianceSchedule?.poolSafety?.nextInspection || "",
+        minimumSafetyStandardInspectionDate:
+          editingProperty.complianceSchedule?.minimumSafetyStandard
+            ?.nextInspection || "",
 
         // Additional
         notes: editingProperty.notes || "",
@@ -412,12 +413,14 @@ const PropertyFormModal = ({
               nextInspection: formData.smokeAlarmInspectionDate,
             }
           : undefined,
-        poolSafety: formData.poolSafetyInspectionDate
-          ? {
-              nextInspection: formData.poolSafetyInspectionDate,
-              required: true,
-            }
-          : { required: false, status: "Not Required" },
+        minimumSafetyStandard:
+          formData.minimumSafetyStandardInspectionDate
+            ? {
+                nextInspection:
+                  formData.minimumSafetyStandardInspectionDate,
+                required: true,
+              }
+            : undefined,
       },
       notes: formData.notes,
     };
@@ -849,18 +852,21 @@ const PropertyFormModal = ({
                     </div>
 
                     <div className="form-field">
-                      <label>Pool Safety Check</label>
+                      <label>Minimum Safety Standard Check</label>
                       <input
                         type="date"
-                        value={formData.poolSafetyInspectionDate}
+                        value={
+                          formData.minimumSafetyStandardInspectionDate
+                        }
                         onChange={(e) =>
                           handleInputChange(
-                            "poolSafetyInspectionDate",
+                            "minimumSafetyStandardInspectionDate",
                             e.target.value
                           )
                         }
                       />
                     </div>
+
                   </div>
                 </div>
 

@@ -40,8 +40,6 @@ export const getJobTypeIcon = (jobType: string): string => {
       return "🚨";
     case "Repairs":
       return "🔧";
-    case "Pool Safety":
-      return "🏊";
     case "Routine Inspection":
       return "📋";
     default:

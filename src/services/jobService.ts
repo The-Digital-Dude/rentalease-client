@@ -32,7 +32,6 @@ export interface Job {
     | "Smoke"
     | "MinimumSafetyStandard"
     | "Repairs"
-    | "Pool Safety"
     | "Routine Inspection";
   dueDate: string;
   assignedTechnician:
@@ -92,7 +91,6 @@ export interface CreateJobData {
     | "Smoke"
     | "MinimumSafetyStandard"
     | "Repairs"
-    | "Pool Safety"
     | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string | null;
@@ -104,7 +102,7 @@ export interface CreateJobData {
 
 export interface UpdateJobData {
   property?: string;
-  jobType?: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Pool Safety" | "Routine Inspection";
+  jobType?: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate?: string;
   assignedTechnician?: string;
   status?: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";

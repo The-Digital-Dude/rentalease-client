@@ -39,8 +39,6 @@ const JobProfileHeader: React.FC<JobProfileHeaderProps> = ({
       complianceType = "electrical";
     } else if (job.jobType === "Smoke") {
       complianceType = "smoke";
-    } else if (job.jobType === "Pool Safety") {
-      complianceType = "pool-safety";
     }
 
     navigate(`/book-inspection/${job.id}/${complianceType}`);

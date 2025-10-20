@@ -57,7 +57,7 @@ export interface Property {
     gasCompliance?: ComplianceStatus;
     electricalSafety?: ComplianceStatus;
     smokeAlarms?: ComplianceStatus;
-    poolSafety?: ComplianceStatus;
+    minimumSafetyStandard?: ComplianceStatus;
   };
   complianceSummary?: {
     compliant?: number;
@@ -141,7 +141,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       complianceSchedule?.gasCompliance?.status,
       complianceSchedule?.electricalSafety?.status,
       complianceSchedule?.smokeAlarms?.status,
-      complianceSchedule?.poolSafety?.status,
+      complianceSchedule?.minimumSafetyStandard?.status,
     ].filter(Boolean) as Array<ComplianceStatus["status"]>;
 
     return statuses.reduce(

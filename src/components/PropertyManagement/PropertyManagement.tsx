@@ -88,11 +88,11 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
       compliance.gasCompliance?.status === "Overdue" ||
       compliance.electricalSafety?.status === "Overdue" ||
       compliance.smokeAlarms?.status === "Overdue" ||
-      compliance.poolSafety?.status === "Overdue" ||
+      compliance.minimumSafetyStandard?.status === "Overdue" ||
       compliance.gasCompliance?.status === "Due Soon" ||
       compliance.electricalSafety?.status === "Due Soon" ||
       compliance.smokeAlarms?.status === "Due Soon" ||
-      compliance.poolSafety?.status === "Due Soon"
+      compliance.minimumSafetyStandard?.status === "Due Soon"
     );
   };
 
@@ -105,7 +105,7 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
       compliance.gasCompliance?.status === "Overdue" ||
       compliance.electricalSafety?.status === "Overdue" ||
       compliance.smokeAlarms?.status === "Overdue" ||
-      compliance.poolSafety?.status === "Overdue"
+      compliance.minimumSafetyStandard?.status === "Overdue"
     );
   };
 
@@ -114,14 +114,13 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
     const compliance = property.complianceSchedule;
     if (!compliance) return false;
 
-    const hasOverdue = hasOverdueCompliance(property);
-    if (hasOverdue) return false;
+    if (hasOverdueCompliance(property)) return false;
 
     return (
       compliance.gasCompliance?.status === "Due Soon" ||
       compliance.electricalSafety?.status === "Due Soon" ||
       compliance.smokeAlarms?.status === "Due Soon" ||
-      compliance.poolSafety?.status === "Due Soon"
+      compliance.minimumSafetyStandard?.status === "Due Soon"
     );
   };
 
@@ -149,10 +148,12 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
           compliance.smokeAlarms?.status === "Overdue" ||
           compliance.smokeAlarms?.status === "Due Soon"
         );
-      case "pool":
+      case "minimumSafetyStandard":
+      case "minimum-safety-standard":
+      case "minimumSafety":
         return (
-          compliance.poolSafety?.status === "Overdue" ||
-          compliance.poolSafety?.status === "Due Soon"
+          compliance.minimumSafetyStandard?.status === "Overdue" ||
+          compliance.minimumSafetyStandard?.status === "Due Soon"
         );
       default:
         return false;

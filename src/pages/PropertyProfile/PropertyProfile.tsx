@@ -793,7 +793,7 @@ const PropertyProfile: React.FC = () => {
     },
     {
       date: "2023-12-20",
-      event: "Pool safety certificate uploaded",
+      event: "Safety certificate uploaded",
       details: "Certificate uploaded by landlord.",
     },
     {
@@ -1079,38 +1079,37 @@ const PropertyProfile: React.FC = () => {
               )}
             </div>
 
-            {property.complianceSchedule?.poolSafety?.required && (
-              <div
-                className={`compliance-card ${getComplianceStatusColor(
-                  property.complianceSchedule?.poolSafety?.status ||
-                    "Not Required"
-                )}`}
-              >
-                <h3>Pool Safety</h3>
-                <div className="compliance-status">
-                  <span
-                    className={`status-badge ${getComplianceStatusColor(
-                      property.complianceSchedule?.poolSafety?.status ||
-                        "Not Required"
-                    )}`}
-                  >
-                    {property.complianceSchedule?.poolSafety?.status ||
-                      "Not Required"}
+            <div
+              className={`compliance-card ${getComplianceStatusColor(
+                property.complianceSchedule?.minimumSafetyStandard?.status ||
+                  "Not Required"
+              )}`}
+            >
+              <h3>Minimum Safety Standard</h3>
+              <div className="compliance-status">
+                <span
+                  className={`status-badge ${getComplianceStatusColor(
+                    property.complianceSchedule?.minimumSafetyStandard?.status ||
+                      "Not Required"
+                  )}`}
+                >
+                  {property.complianceSchedule?.minimumSafetyStandard?.status ||
+                    "Not Required"}
+                </span>
+              </div>
+              {property.complianceSchedule?.minimumSafetyStandard?.nextInspection && (
+                <div className="inspection-date">
+                  <RiCalendarLine />
+                  <span>
+                    Next Inspection:{" "}
+                    {formatDateTime(
+                      property.complianceSchedule.minimumSafetyStandard.nextInspection
+                    )}
                   </span>
                 </div>
-                {property.complianceSchedule?.poolSafety?.nextInspection && (
-                  <div className="inspection-date">
-                    <RiCalendarLine />
-                    <span>
-                      Next Inspection:{" "}
-                      {formatDateTime(
-                        property.complianceSchedule.poolSafety.nextInspection
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
+
           </div>
         </div>
 

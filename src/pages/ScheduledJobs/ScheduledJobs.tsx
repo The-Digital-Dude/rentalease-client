@@ -528,7 +528,6 @@ const ScheduledJobs = () => {
                 <option value="Electrical">Electrical</option>
                 <option value="Smoke">Smoke</option>
                 <option value="Repairs">Repairs</option>
-                <option value="Pool Safety">Pool Safety</option>
                 <option value="Routine Inspection">Routine Inspection</option>
               </select>
             </div>

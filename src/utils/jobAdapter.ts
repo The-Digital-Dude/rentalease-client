@@ -6,7 +6,7 @@ export interface ComponentJob {
   job_id: string;
   propertyAddress: string;
   propertyId: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Pool Safety" | "Routine Inspection";
+  jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string; // Display name for table
   assignedTechnicianId: string; // ID for form submission

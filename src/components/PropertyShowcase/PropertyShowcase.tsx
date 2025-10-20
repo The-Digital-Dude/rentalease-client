@@ -42,11 +42,11 @@ const sampleProperties: Property[] = [
       gasCompliance: { status: "Compliant" },
       electricalSafety: { status: "Due Soon" },
       smokeAlarms: { status: "Compliant" },
-      poolSafety: { status: "Not Required" },
+      minimumSafetyStandard: { status: "Due Soon" },
     },
     complianceSummary: {
       compliant: 2,
-      dueSoon: 1,
+      dueSoon: 2,
       overdue: 0,
     },
     bedrooms: 2,
@@ -82,7 +82,7 @@ const sampleProperties: Property[] = [
       gasCompliance: { status: "Due Soon" },
       electricalSafety: { status: "Compliant" },
       smokeAlarms: { status: "Compliant" },
-      poolSafety: { status: "Not Required" },
+      minimumSafetyStandard: { status: "Compliant" },
     },
     complianceSummary: {
       compliant: 3,

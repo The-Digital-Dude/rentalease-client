@@ -122,8 +122,6 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
         return "🚨";
       case "Repairs":
         return "🔧";
-      case "Pool Safety":
-        return "🏊";
       case "Routine Inspection":
         return "📋";
       default:
@@ -229,7 +227,6 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
                 <option value="Electrical">Electrical</option>
                 <option value="Smoke">Smoke</option>
                 <option value="Repairs">Repairs</option>
-                <option value="Pool Safety">Pool Safety</option>
                 <option value="Routine Inspection">Routine Inspection</option>
               </select>
             </div>

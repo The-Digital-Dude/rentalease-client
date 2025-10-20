@@ -33,7 +33,7 @@ import "./JobManagement.scss";
 
 interface JobFormData {
   propertyId: string;
-  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs" | "Pool Safety" | "Routine Inspection";
+  jobType: "Gas" | "Electrical" | "Smoke" | "Repairs" | "Routine Inspection";
   dueDate: string;
   assignedTechnician: string;
   priority: "Low" | "Medium" | "High" | "Urgent";

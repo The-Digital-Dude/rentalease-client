@@ -42,7 +42,7 @@ export interface ComplianceSchedule {
   gasCompliance?: ComplianceItem;
   electricalSafety?: ComplianceItem;
   smokeAlarms?: ComplianceItem;
-  poolSafety?: ComplianceItem;
+  minimumSafetyStandard?: ComplianceItem;
 }
 
 export interface ComplianceSummary {

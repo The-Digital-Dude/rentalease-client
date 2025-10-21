@@ -210,8 +210,16 @@ const ChatWithUs: React.FC = () => {
   // Get user info for chat
   const chatUser = {
     id: currentUser.id || "",
-    type: currentUser.userType as "agency" | "super_user" | "team_member",
-    name: currentUser.name || currentUser.companyName || "User",
+    type: currentUser.userType as
+      | "agency"
+      | "super_user"
+      | "team_member"
+      | "property_manager",
+    name:
+      currentUser.name ||
+      currentUser.companyName ||
+      `${currentUser.firstName ?? ""} ${currentUser.lastName ?? ""}`.trim() ||
+      "User",
     email: currentUser.email || "",
   };
 

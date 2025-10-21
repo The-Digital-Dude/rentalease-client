@@ -45,7 +45,6 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "beyond-compliance",
     "quotation-management",
     "invoice-management",
-    "subscription",
     "scheduled-jobs",
     "overdue-jobs",
     "completed-jobs",

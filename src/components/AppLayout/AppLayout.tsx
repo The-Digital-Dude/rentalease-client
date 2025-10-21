@@ -43,8 +43,10 @@ const AppLayoutContent = ({ children }: AppLayoutProps) => {
       {/* Main Content */}
       <main className="main-content">{children}</main>
       
-      {/* Chat Support Widget - Only for Agency users */}
-      {userType === 'agency' && <ChatWithUs />}
+      {/* Chat Support Widget - Agency and Property Manager users */}
+      {(userType === 'agency' || userType === 'property_manager') && (
+        <ChatWithUs />
+      )}
     </div>
   );
 };

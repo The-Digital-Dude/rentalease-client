@@ -292,6 +292,90 @@
             }
           }
         }
+
+        &.attachments-section {
+          .attachments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .attachment-item {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 12px;
+              background-color: white;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              transition: all 0.2s;
+
+              &:hover {
+                background-color: #f9fafb;
+                border-color: #d1d5db;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+              }
+
+              .attachment-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex: 1;
+                min-width: 0;
+
+                .file-icon {
+                  font-size: 1.5rem;
+                  flex-shrink: 0;
+                }
+
+                .file-details {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 4px;
+                  min-width: 0;
+
+                  .file-name {
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #1e293b;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
+
+                  .file-meta {
+                    font-size: 0.75rem;
+                    color: #64748b;
+                  }
+                }
+              }
+
+              .attachment-link {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 12px;
+                background-color: #3b82f6;
+                color: white;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                flex-shrink: 0;
+
+                svg {
+                  font-size: 1rem;
+                }
+
+                &:hover {
+                  background-color: #2563eb;
+                  transform: translateY(-1px);
+                  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+                }
+              }
+            }
+          }
+        }
       }
     }
 

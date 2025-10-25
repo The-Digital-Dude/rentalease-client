@@ -22,6 +22,15 @@ export interface Quotation {
   jobType: "Vacant Property Cleaning" | "Water Connection" | "Gas Connection" | "Electricity Connection" | "Landscaping & Outdoor Maintenance" | "Pest Control" | "Grout Cleaning" | "Removalists" | "Handyman Services" | "Painters";
   dueDate: string;
   description: string;
+  attachments?: Array<{
+    _id: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+    mimeType: string;
+    cloudinaryId: string;
+    uploadedAt: string;
+  }>;
   amount?: number;
   notes?: string;
   validUntil: string;
@@ -106,12 +115,22 @@ export interface ApiResponse {
 class QuotationService {
   // Create a new quotation request
   async createQuotationRequest(
-    quotationData: CreateQuotationRequest
+    quotationData: CreateQuotationRequest | FormData
   ): Promise<SingleQuotationResponse> {
     try {
+      const isFormData = quotationData instanceof FormData;
+      const config = isFormData
+        ? {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        : undefined;
+
       const response: AxiosResponse<SingleQuotationResponse> = await api.post(
         "/v1/quotations",
-        quotationData
+        quotationData,
+        config
       );
       return response.data;
     } catch (error: any) {

@@ -7,6 +7,8 @@ import {
   RiHomeLine,
   RiSendPlaneLine,
   RiDraftLine,
+  RiAttachmentLine,
+  RiDeleteBinLine,
 } from "react-icons/ri";
 import { quotationService, propertyService } from "../../services";
 import { useAppSelector } from "../../store";
@@ -48,6 +50,8 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
   const [loadingProperties, setLoadingProperties] = useState(false);
   const [toast, setToast] = useState<ToastType | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   const { userType } = useAppSelector((state) => state.user);
 
@@ -75,6 +79,7 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
         description: "",
       });
       setErrors({});
+      setAttachments([]);
     }
   }, [isOpen]);
 
@@ -131,13 +136,32 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
     try {
       setLoading(true);
 
-      await quotationService.createQuotationRequest({
-        jobType: formData.jobType,
-        property: formData.property,
-        dueDate: formData.dueDate,
-        description: formData.description,
-        status: status,
-      });
+      // Only use FormData if there are attachments, otherwise send JSON
+      if (attachments.length > 0) {
+        setUploadingFiles(true);
+        const formDataToSend = new FormData();
+        formDataToSend.append("jobType", formData.jobType);
+        formDataToSend.append("property", formData.property);
+        formDataToSend.append("dueDate", formData.dueDate);
+        formDataToSend.append("description", formData.description);
+        formDataToSend.append("status", status);
+
+        // Append attachments
+        attachments.forEach((file) => {
+          formDataToSend.append("attachments", file);
+        });
+
+        await quotationService.createQuotationRequest(formDataToSend);
+      } else {
+        // Send regular JSON when no attachments
+        await quotationService.createQuotationRequest({
+          jobType: formData.jobType,
+          property: formData.property,
+          dueDate: formData.dueDate,
+          description: formData.description,
+          status: status,
+        });
+      }
 
       const message = status === "Draft"
         ? "Quotation request saved as draft!"
@@ -161,6 +185,7 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
       });
     } finally {
       setLoading(false);
+      setUploadingFiles(false);
     }
   };
 
@@ -186,6 +211,41 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+
+      // Validate file sizes (max 10MB per file)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      const invalidFiles = fileArray.filter(file => file.size > maxSize);
+
+      if (invalidFiles.length > 0) {
+        setToast({
+          message: `Some files are too large. Maximum file size is 10MB.`,
+          type: "error"
+        });
+        return;
+      }
+
+      setAttachments(prev => [...prev, ...fileArray]);
+    }
+    // Reset input value to allow selecting the same file again
+    e.target.value = "";
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   if (!isOpen) return null;
@@ -299,6 +359,56 @@ const QuotationRequestModal: React.FC<QuotationRequestModalProps> = ({
               {formData.description.length}/1000 characters
             </div>
             {errors.description && <span className="error-message">{errors.description}</span>}
+          </div>
+
+          {/* Attachments */}
+          <div className="form-group">
+            <label htmlFor="attachments">
+              <RiAttachmentLine />
+              Attachments (Optional)
+            </label>
+            <div className="file-upload-wrapper">
+              <input
+                type="file"
+                id="attachments"
+                multiple
+                onChange={handleFileChange}
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="attachments" className="file-upload-button">
+                <RiAttachmentLine />
+                Choose Files
+              </label>
+              <span className="file-upload-hint">
+                Max 10MB per file. Accepted: Images, PDF, Word, Excel
+              </span>
+            </div>
+
+            {/* Display selected files */}
+            {attachments.length > 0 && (
+              <div className="attached-files-list">
+                {attachments.map((file, index) => (
+                  <div key={index} className="attached-file-item">
+                    <div className="file-info">
+                      <RiAttachmentLine className="file-icon" />
+                      <div className="file-details">
+                        <span className="file-name">{file.name}</span>
+                        <span className="file-size">{formatFileSize(file.size)}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="remove-file-btn"
+                      onClick={() => handleRemoveFile(index)}
+                      title="Remove file"
+                    >
+                      <RiDeleteBinLine />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Service Info */}

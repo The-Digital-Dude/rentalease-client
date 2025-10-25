@@ -15,6 +15,8 @@ import {
   MdDownload,
   MdNoteAlt,
   MdInfo,
+  MdAttachFile,
+  MdOpenInNew,
 } from "react-icons/md";
 import { toast } from "react-toastify";
 import quotationService from "../../services/quotationService";
@@ -53,6 +55,15 @@ interface QuotationViewModalProps {
     createdAt: string;
     sentAt?: string;
     respondedAt?: string;
+    attachments?: Array<{
+      _id: string;
+      fileName: string;
+      fileUrl: string;
+      fileSize: number;
+      mimeType: string;
+      cloudinaryId: string;
+      uploadedAt: string;
+    }>;
     agencyResponse?: {
       responseNotes?: string;
       responseDate?: string;
@@ -72,6 +83,15 @@ export const QuotationViewModal: React.FC<QuotationViewModalProps> = ({
   const [responseNotes, setResponseNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  // Debug: Log quotation data to check if attachments are present
+  React.useEffect(() => {
+    if (isOpen && quotation) {
+      console.log('Quotation data:', quotation);
+      console.log('Attachments:', quotation.attachments);
+      console.log('Has attachments:', quotation.attachments && quotation.attachments.length > 0);
+    }
+  }, [isOpen, quotation]);
 
   if (!isOpen) return null;
 
@@ -99,6 +119,22 @@ export const QuotationViewModal: React.FC<QuotationViewModalProps> = ({
       month: "short",
       year: "numeric",
     });
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return '🖼️';
+    if (mimeType.includes('pdf')) return '📄';
+    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
+    return '📎';
   };
 
   const getStatusIcon = (status: string) => {
@@ -364,6 +400,43 @@ export const QuotationViewModal: React.FC<QuotationViewModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Attachments Section */}
+            {quotation.attachments && quotation.attachments.length > 0 && (
+              <div className="detail-section attachments-section">
+                <div className="section-header">
+                  <MdAttachFile className="section-icon" />
+                  <h3>Attachments ({quotation.attachments.length})</h3>
+                </div>
+                <div className="section-content">
+                  <div className="attachments-list">
+                    {quotation.attachments.map((attachment) => (
+                      <div key={attachment._id} className="attachment-item">
+                        <div className="attachment-info">
+                          <span className="file-icon">{getFileIcon(attachment.mimeType)}</span>
+                          <div className="file-details">
+                            <span className="file-name">{attachment.fileName}</span>
+                            <span className="file-meta">
+                              {formatFileSize(attachment.fileSize)} • {formatDateShort(attachment.uploadedAt)}
+                            </span>
+                          </div>
+                        </div>
+                        <a
+                          href={attachment.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="attachment-link"
+                          title="View attachment"
+                        >
+                          <MdOpenInNew />
+                          View
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Timeline Information */}
             <div className="detail-section">

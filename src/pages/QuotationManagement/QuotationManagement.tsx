@@ -67,6 +67,15 @@ interface QuotationListItem {
   status: "Draft" | "Sent" | "Accepted" | "Rejected" | "Expired";
   createdAt: string;
   validUntil?: string;
+  attachments?: Array<{
+    _id: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+    mimeType: string;
+    cloudinaryId: string;
+    uploadedAt: string;
+  }>;
 }
 
 type TabType = "new" | "pending" | "accepted" | "rejected" | "all";

@@ -6,6 +6,7 @@ import {
   RiEyeLine,
   RiVipCrown2Line,
   RiShieldCheckLine,
+  RiMailLine,
 } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import type { Agency } from "../../services/agencyService";
@@ -16,6 +17,7 @@ interface AgencyCardProps {
   onEdit: (agency: Agency) => void;
   onDelete: (id: string) => void;
   onResendCredentials: (id: string) => void;
+  onSendEmail: (agency: Agency) => void;
 }
 
 const AgencyCard: React.FC<AgencyCardProps> = ({
@@ -23,6 +25,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   onEdit,
   onDelete,
   onResendCredentials,
+  onSendEmail,
 }) => {
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -75,6 +78,11 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   const handleViewProfile = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigate(`/agencies/${agency.id}`);
+  };
+
+  const handleSendEmail = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSendEmail(agency);
   };
 
   return (
@@ -208,9 +216,23 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             </div>
           )}
         </div>
-        <button className="btn-secondary" onClick={() => onEdit(agency)}>
-          Edit
-        </button>
+        <div className="footer-actions">
+          <button
+            className="btn-email"
+            onClick={handleSendEmail}
+            title="Send Email to Agency"
+          >
+            <RiMailLine />
+            Email
+          </button>
+          <button
+            className="btn-secondary"
+            onClick={() => onEdit(agency)}
+            title="Edit Agency"
+          >
+            <RiEditLine />
+          </button>
+        </div>
       </div>
     </div>
   );

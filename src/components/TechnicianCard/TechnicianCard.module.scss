@@ -409,3 +409,38 @@
   color: #3b82f6;
   transform: translateY(-1px);
 }
+
+// Clickable email styles
+.clickableEmail {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0 -12px;
+  padding: 12px !important;
+
+  &:hover {
+    background: #eff6ff;
+    transform: translateX(4px);
+    border-color: transparent !important;
+
+    :global(.dark-mode) & {
+      background: var(--color-bg-secondary);
+    }
+
+    .contactIcon {
+      color: #0891b2 !important;
+      transform: scale(1.1);
+    }
+
+    .contactValue {
+      color: #0891b2;
+      :global(.dark-mode) & {
+        color: #0891b2;
+      }
+    }
+  }
+
+  &:active {
+    transform: translateX(2px);
+  }
+}

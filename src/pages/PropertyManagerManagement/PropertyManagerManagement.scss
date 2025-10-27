@@ -629,7 +629,7 @@
     }
 
     .card-actions {
-      padding: 1rem 1.5rem;
+      padding: 1rem;
       border-top: 1px solid #f1f5f9;
       display: flex;
       gap: 0.5rem;
@@ -734,7 +734,7 @@
         .dropdown-menu {
           position: absolute;
           top: 100%;
-          right: 0;
+          left: 0;
           background: white;
           border: 1px solid #e2e8f0;
           border-radius: 0.5rem;

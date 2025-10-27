@@ -473,6 +473,28 @@ class PropertyManagerService {
       );
     }
   }
+
+  // Send email to PropertyManager
+  async sendEmailToPropertyManager(
+    email: string,
+    data: { subject: string; html: string }
+  ): Promise<any> {
+    try {
+      const response = await api.post(
+        `/v1/emails/send-general`,
+        {
+          to: email,
+          subject: data.subject,
+          html: data.html
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to send email to PropertyManager"
+      );
+    }
+  }
 }
 
 export default new PropertyManagerService();

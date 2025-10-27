@@ -518,4 +518,30 @@ export const agencyService = {
       };
     }
   },
+
+  // Send email to Agency
+  sendEmailToAgency: async (
+    email: string,
+    data: { subject: string; html: string }
+  ): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.post(
+        `/v1/emails/send-general`,
+        {
+          to: email,
+          subject: data.subject,
+          html: data.html
+        }
+      );
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to send email to Agency",
+      };
+    }
+  },
 };

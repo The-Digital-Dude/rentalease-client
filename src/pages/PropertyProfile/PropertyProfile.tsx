@@ -21,6 +21,8 @@ import propertyService, {
   type Property,
   type PropertyDocument,
 } from "../../services/propertyService";
+import { agencyService } from "../../services";
+import EmailContactModal from "../../components/EmailContactModal";
 import { formatDateTime } from "../../utils";
 import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
@@ -51,6 +53,17 @@ const PropertyProfile: React.FC = () => {
   const [firstDeleteConfirmation, setFirstDeleteConfirmation] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoDataUrlRef = useRef<string | null>(null);
+
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailRecipient, setEmailRecipient] = useState<{
+    email: string;
+    name: string;
+    type: 'agency' | 'tenant' | 'landlord';
+  } | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
 
   const loadProperty = useCallback(async () => {
     if (!id) return;
@@ -162,6 +175,54 @@ const PropertyProfile: React.FC = () => {
   const handleContactTenant = () => alert("Contact Tenant action");
   const handleContactLandlord = () => alert("Contact Landlord action");
   const handleContactAgency = () => alert("Contact Agency action");
+
+  // Email handlers
+  const handleOpenEmailModal = (email: string, name: string, type: 'agency' | 'tenant' | 'landlord') => {
+    setEmailRecipient({ email, name, type });
+    setShowEmailModal(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+  };
+
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
+    setEmailRecipient(null);
+    setEmailError(null);
+    setEmailSuccess(null);
+    setEmailLoading(false);
+  };
+
+  const handleSendEmail = async (subject: string, html: string) => {
+    if (!emailRecipient) return;
+
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+
+    try {
+      const response = await agencyService.sendEmailToAgency(
+        emailRecipient.email,
+        { subject, html }
+      );
+
+      if (response.success) {
+        setEmailSuccess("Email sent successfully!");
+        toast.success(`✅ Email sent to ${emailRecipient.name}`);
+
+        setTimeout(() => {
+          handleCloseEmailModal();
+        }, 1500);
+      } else {
+        throw new Error(response.message || "Failed to send email");
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to send email";
+      setEmailError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -924,6 +985,18 @@ const PropertyProfile: React.FC = () => {
                 </div>
               </div>
             </div>
+            <button
+              className="btn-email"
+              onClick={() => handleOpenEmailModal(
+                property.agency.email,
+                property.agency.companyName,
+                'agency'
+              )}
+              title="Send Email to Agency"
+            >
+              <RiMailLine />
+              Email
+            </button>
           </div>
         </div>
 
@@ -948,6 +1021,18 @@ const PropertyProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <button
+                className="btn-email"
+                onClick={() => handleOpenEmailModal(
+                  property.currentTenant!.email,
+                  property.currentTenant!.name,
+                  'tenant'
+                )}
+                title="Send Email to Tenant"
+              >
+                <RiMailLine />
+                Email
+              </button>
             </div>
           </div>
         )}
@@ -973,6 +1058,18 @@ const PropertyProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <button
+                className="btn-email"
+                onClick={() => handleOpenEmailModal(
+                  property.currentLandlord!.email,
+                  property.currentLandlord!.name,
+                  'landlord'
+                )}
+                title="Send Email to Landlord"
+              >
+                <RiMailLine />
+                Email
+              </button>
             </div>
           </div>
         )}
@@ -1549,6 +1646,20 @@ const PropertyProfile: React.FC = () => {
         </div>
         */}
       </div>
+
+      {/* Email Contact Modal */}
+      {emailRecipient && (
+        <EmailContactModal
+          isOpen={showEmailModal}
+          onClose={handleCloseEmailModal}
+          onSend={handleSendEmail}
+          to={emailRecipient.email}
+          contactName={emailRecipient.name}
+          loading={emailLoading}
+          error={emailError}
+          success={emailSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -20,6 +20,7 @@ import {
   RiHomeLine,
   RiUserSettingsLine,
   RiMoreLine,
+  RiMailLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import {
@@ -33,6 +34,7 @@ import {
 } from "../../services";
 import PropertyManagerFormModal from "../../components/PropertyManagerFormModal";
 import AgencyAssignment from "../../components/AgencyAssignment";
+import EmailContactModal from "../../components/EmailContactModal";
 import "./PropertyManagerManagement.scss";
 import toast from "react-hot-toast";
 
@@ -107,6 +109,14 @@ const PropertyManagerManagementPage = () => {
 
   // Add Property Manager Modal state
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailingPropertyManager, setEmailingPropertyManager] =
+    useState<PropertyManager | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
 
   // Agency assignment state
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
@@ -612,6 +622,53 @@ const PropertyManagerManagementPage = () => {
     }
   };
 
+  // Handle opening email modal
+  const handleSendEmail = (propertyManager: PropertyManager) => {
+    setEmailingPropertyManager(propertyManager);
+    setShowEmailModal(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+  };
+
+  // Handle closing email modal
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
+    setEmailingPropertyManager(null);
+    setEmailError(null);
+    setEmailSuccess(null);
+    setEmailLoading(false);
+  };
+
+  // Handle actual email sending
+  const handleOnSendEmail = async (subject: string, html: string) => {
+    if (!emailingPropertyManager) return;
+
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+
+    try {
+      await propertyManagerService.sendEmailToPropertyManager(
+        emailingPropertyManager.email,
+        { subject, html }
+      );
+
+      setEmailSuccess("Email sent successfully!");
+      toast.success(`✅ Email sent to ${emailingPropertyManager.fullName}`);
+
+      // Close modal after a short delay
+      setTimeout(() => {
+        handleCloseEmailModal();
+      }, 1500);
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to send email";
+      setEmailError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -891,6 +948,13 @@ const PropertyManagerManagementPage = () => {
                   onClick={() => handleViewPropertyManager(propertyManager)}
                 >
                   <RiEyeLine /> View
+                </button>
+                <button
+                  className="btn-secondary"
+                  onClick={() => handleSendEmail(propertyManager)}
+                  title={`Send email to ${propertyManager.email}`}
+                >
+                  <RiMailLine /> Email
                 </button>
                 {canEditPropertyManagers && (
                   <button
@@ -1449,6 +1513,20 @@ const PropertyManagerManagementPage = () => {
         onClose={() => setShowAddModal(false)}
         onSuccess={handleAddSuccess}
       />
+
+      {/* Email Contact Modal */}
+      {emailingPropertyManager && (
+        <EmailContactModal
+          isOpen={showEmailModal}
+          onClose={handleCloseEmailModal}
+          onSend={handleOnSendEmail}
+          to={emailingPropertyManager.email}
+          contactName={emailingPropertyManager.fullName}
+          loading={emailLoading}
+          error={emailError}
+          success={emailSuccess}
+        />
+      )}
     </div>
   );
 };

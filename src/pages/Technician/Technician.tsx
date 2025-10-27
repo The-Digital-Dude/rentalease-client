@@ -27,6 +27,7 @@ import {
   type Job,
 } from "../../services";
 import TechnicianCard from "../../components/TechnicianCard";
+import EmailContactModal from "../../components/EmailContactModal";
 import "./Technician.scss";
 import toast from "react-hot-toast";
 
@@ -105,6 +106,16 @@ const TechnicianPage = () => {
   );
   const [technicianJobs, setTechnicianJobs] = useState<Job[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
+
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailingTechnician, setEmailingTechnician] = useState<{
+    email: string;
+    name: string;
+  } | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
 
   // Get current user info for role-based display
   const { userType, name } = useAppSelector((state) => state.user);
@@ -481,6 +492,64 @@ const TechnicianPage = () => {
     }
   };
 
+  // Handle opening email modal
+  const handleSendEmail = (cardTechnician: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+    availability: string;
+    accountStatus: string;
+    completedJobs: number;
+    avgRating: number;
+    hourlyRate: number;
+  }) => {
+    setEmailingTechnician({
+      email: cardTechnician.email,
+      name: cardTechnician.name,
+    });
+    setShowEmailModal(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+  };
+
+  // Handle closing email modal
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
+    setEmailingTechnician(null);
+    setEmailError(null);
+    setEmailSuccess(null);
+    setEmailLoading(false);
+  };
+
+  // Handle actual email sending
+  const handleOnSendEmail = async (subject: string, html: string) => {
+    if (!emailingTechnician) return;
+
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+
+    try {
+      await technicianService.sendEmailToTechnician(emailingTechnician.email, {
+        subject,
+        html,
+      });
+      setEmailSuccess("Email sent successfully!");
+      toast.success(`✅ Email sent to ${emailingTechnician.name}`);
+      setTimeout(() => {
+        handleCloseEmailModal();
+      }, 1500);
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to send email";
+      setEmailError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   // Filter technicians based on current filters
   const filteredTechnicians = technicians.filter((technician) => {
     const searchTermLower = searchTerm.toLowerCase();
@@ -647,6 +716,7 @@ const TechnicianPage = () => {
                 onView={() => handleViewTechnician(technician)}
                 onEdit={() => handleEditTechnician(technician)}
                 onDelete={() => handleDeleteTechnician(technician.id)}
+                onSendEmail={handleSendEmail}
               />
             ))}
           </div>
@@ -1197,6 +1267,20 @@ const TechnicianPage = () => {
       {/* Modals */}
       {showViewModal && renderViewModal()}
       {showEditModal && renderEditModal()}
+
+      {/* Email Modal */}
+      {showEmailModal && emailingTechnician && (
+        <EmailContactModal
+          isOpen={showEmailModal}
+          onClose={handleCloseEmailModal}
+          to={emailingTechnician.email}
+          contactName={emailingTechnician.name}
+          onSend={handleOnSendEmail}
+          loading={emailLoading}
+          error={emailError}
+          success={emailSuccess}
+        />
+      )}
     </div>
   );
 };

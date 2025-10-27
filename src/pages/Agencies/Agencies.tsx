@@ -6,6 +6,7 @@ import {
   AgencyFormModal,
   ConfirmationModal,
 } from "../../components";
+import EmailContactModal from "../../components/EmailContactModal";
 import { agencyService } from "../../services";
 import type { Agency } from "../../services/agencyService";
 import { VALID_REGIONS } from "../../constants";
@@ -28,6 +29,13 @@ const Agencies = () => {
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailingAgency, setEmailingAgency] = useState<Agency | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
 
   // Auto-clear success message after 5 seconds
   useEffect(() => {
@@ -220,6 +228,57 @@ const Agencies = () => {
     setSuccessMessage("");
   };
 
+  // Handle opening email modal
+  const handleSendEmail = (agency: Agency) => {
+    setEmailingAgency(agency);
+    setShowEmailModal(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+  };
+
+  // Handle closing email modal
+  const handleCloseEmailModal = () => {
+    setShowEmailModal(false);
+    setEmailingAgency(null);
+    setEmailError(null);
+    setEmailSuccess(null);
+    setEmailLoading(false);
+  };
+
+  // Handle actual email sending
+  const handleOnSendEmail = async (subject: string, html: string) => {
+    if (!emailingAgency) return;
+
+    setEmailLoading(true);
+    setEmailError(null);
+    setEmailSuccess(null);
+
+    try {
+      const response = await agencyService.sendEmailToAgency(
+        emailingAgency.contactEmail,
+        { subject, html }
+      );
+
+      if (response.success) {
+        setEmailSuccess("Email sent successfully!");
+        toast.success(`✅ Email sent to ${emailingAgency.name}`);
+
+        // Close modal after a short delay
+        setTimeout(() => {
+          handleCloseEmailModal();
+        }, 1500);
+      } else {
+        throw new Error(response.message || "Failed to send email");
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to send email";
+      setEmailError(errorMessage);
+      toast.error(`❌ ${errorMessage}`);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -351,6 +410,7 @@ const Agencies = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onResendCredentials={handleResendCredentials}
+              onSendEmail={handleSendEmail}
             />
           ))
         )}
@@ -365,6 +425,20 @@ const Agencies = () => {
         regions={VALID_REGIONS}
         isSubmitting={submitLoading}
       />
+
+      {/* Email Contact Modal */}
+      {emailingAgency && (
+        <EmailContactModal
+          isOpen={showEmailModal}
+          onClose={handleCloseEmailModal}
+          onSend={handleOnSendEmail}
+          to={emailingAgency.contactEmail}
+          contactName={emailingAgency.name}
+          loading={emailLoading}
+          error={emailError}
+          success={emailSuccess}
+        />
+      )}
     </div>
   );
 };

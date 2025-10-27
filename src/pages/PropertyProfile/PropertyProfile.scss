@@ -224,11 +224,16 @@
         border-radius: 8px;
         padding: 20px;
         border-left: 4px solid #3498db;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
         .dark-mode & {
           background: var(--sidebar-active);
         }
 
         .contact-info {
+          flex: 1;
           h3 {
             margin: 0 0 8px 0;
             font-size: 18px;
@@ -271,6 +276,44 @@
                   color: #9baaab;
                 }
               }
+            }
+          }
+        }
+
+        .btn-email {
+          padding: 0.75rem 1rem;
+          border: 1px solid #0891b2;
+          background: white;
+          color: #0891b2;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9375rem;
+          white-space: nowrap;
+          align-self: flex-start;
+
+          &:hover {
+            background: #0891b2;
+            color: white;
+            border-color: #0891b2;
+          }
+
+          svg {
+            font-size: 1rem;
+          }
+
+          .dark-mode & {
+            background: var(--sidebar-active);
+            color: #0891b2;
+            border-color: #0891b2;
+
+            &:hover {
+              background: #0891b2;
+              color: white;
             }
           }
         }

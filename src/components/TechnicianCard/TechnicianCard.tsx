@@ -19,13 +19,15 @@ interface TechnicianCardProps {
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onSendEmail: (technician: TechnicianCardProps['technician']) => void;
 }
 
 const TechnicianCard: React.FC<TechnicianCardProps> = ({
   technician,
   onView,
   onEdit,
-  onDelete
+  onDelete,
+  onSendEmail
 }) => {
   const navigate = useNavigate();
 
@@ -151,7 +153,11 @@ const TechnicianCard: React.FC<TechnicianCardProps> = ({
           <span className={styles.contactLabel}>Phone</span>
           <span className={styles.contactValue}>{technician.phone}</span>
         </div>
-        <div className={styles.contactItem}>
+        <div
+          className={`${styles.contactItem} ${styles.clickableEmail}`}
+          onClick={() => onSendEmail(technician)}
+          title="Send email to technician"
+        >
           <RiMailLine className={styles.contactIcon} />
           <span className={styles.contactLabel}>Email</span>
           <span className={styles.contactValue}>{technician.email}</span>

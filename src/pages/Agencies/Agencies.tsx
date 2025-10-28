@@ -10,6 +10,7 @@ import EmailContactModal from "../../components/EmailContactModal";
 import { agencyService } from "../../services";
 import type { Agency } from "../../services/agencyService";
 import { VALID_REGIONS } from "../../constants";
+import { useAppSelector } from "../../store";
 import "./Agencies.scss";
 
 const complianceLevels = [
@@ -29,6 +30,12 @@ const Agencies = () => {
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  // Get current user info for role-based access
+  const { userType } = useAppSelector((state) => state.user);
+
+  // Check if user can send emails (only super_user and team_member)
+  const canSendEmail = userType === "super_user" || userType === "team_member";
 
   // Email modal state
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -410,7 +417,7 @@ const Agencies = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onResendCredentials={handleResendCredentials}
-              onSendEmail={handleSendEmail}
+              onSendEmail={canSendEmail ? handleSendEmail : undefined}
             />
           ))
         )}

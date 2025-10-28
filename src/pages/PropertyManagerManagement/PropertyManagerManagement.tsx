@@ -949,13 +949,15 @@ const PropertyManagerManagementPage = () => {
                 >
                   <RiEyeLine /> View
                 </button>
-                <button
-                  className="btn-secondary"
-                  onClick={() => handleSendEmail(propertyManager)}
-                  title={`Send email to ${propertyManager.email}`}
-                >
-                  <RiMailLine /> Email
-                </button>
+                {canSeeAllPropertyManagers && (
+                  <button
+                    className="btn-secondary"
+                    onClick={() => handleSendEmail(propertyManager)}
+                    title={`Send email to ${propertyManager.email}`}
+                  >
+                    <RiMailLine /> Email
+                  </button>
+                )}
                 {canEditPropertyManagers && (
                   <button
                     className="btn-secondary"

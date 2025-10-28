@@ -17,7 +17,7 @@ interface AgencyCardProps {
   onEdit: (agency: Agency) => void;
   onDelete: (id: string) => void;
   onResendCredentials: (id: string) => void;
-  onSendEmail: (agency: Agency) => void;
+  onSendEmail?: (agency: Agency) => void;
 }
 
 const AgencyCard: React.FC<AgencyCardProps> = ({
@@ -217,14 +217,16 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
           )}
         </div>
         <div className="footer-actions">
-          <button
-            className="btn-email"
-            onClick={handleSendEmail}
-            title="Send Email to Agency"
-          >
-            <RiMailLine />
-            Email
-          </button>
+          {onSendEmail && (
+            <button
+              className="btn-email"
+              onClick={handleSendEmail}
+              title="Send Email to Agency"
+            >
+              <RiMailLine />
+              Email
+            </button>
+          )}
           <button
             className="btn-secondary"
             onClick={() => onEdit(agency)}

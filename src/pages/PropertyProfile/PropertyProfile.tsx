@@ -30,10 +30,17 @@ import type { Job } from "../../services/jobService";
 import invoiceService, { type Invoice } from "../../services/invoiceService";
 import inspectionReportService, { type InspectionReport } from "../../services/inspectionReportService";
 import toast from "react-hot-toast";
+import { useAppSelector } from "../../store";
 
 const PropertyProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // Get current user info for role-based access
+  const { userType } = useAppSelector((state) => state.user);
+
+  // Check if user can send emails (only super_user and team_member)
+  const canSendEmail = userType === "super_user" || userType === "team_member";
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -985,18 +992,20 @@ const PropertyProfile: React.FC = () => {
                 </div>
               </div>
             </div>
-            <button
-              className="btn-email"
-              onClick={() => handleOpenEmailModal(
-                property.agency.email,
-                property.agency.companyName,
-                'agency'
-              )}
-              title="Send Email to Agency"
-            >
-              <RiMailLine />
-              Email
-            </button>
+            {canSendEmail && (
+              <button
+                className="btn-email"
+                onClick={() => handleOpenEmailModal(
+                  property.agency.email,
+                  property.agency.companyName,
+                  'agency'
+                )}
+                title="Send Email to Agency"
+              >
+                <RiMailLine />
+                Email
+              </button>
+            )}
           </div>
         </div>
 
@@ -1021,18 +1030,20 @@ const PropertyProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <button
-                className="btn-email"
-                onClick={() => handleOpenEmailModal(
-                  property.currentTenant!.email,
-                  property.currentTenant!.name,
-                  'tenant'
-                )}
-                title="Send Email to Tenant"
-              >
-                <RiMailLine />
-                Email
-              </button>
+              {canSendEmail && (
+                <button
+                  className="btn-email"
+                  onClick={() => handleOpenEmailModal(
+                    property.currentTenant!.email,
+                    property.currentTenant!.name,
+                    'tenant'
+                  )}
+                  title="Send Email to Tenant"
+                >
+                  <RiMailLine />
+                  Email
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -1058,18 +1069,20 @@ const PropertyProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <button
-                className="btn-email"
-                onClick={() => handleOpenEmailModal(
-                  property.currentLandlord!.email,
-                  property.currentLandlord!.name,
-                  'landlord'
-                )}
-                title="Send Email to Landlord"
-              >
-                <RiMailLine />
-                Email
-              </button>
+              {canSendEmail && (
+                <button
+                  className="btn-email"
+                  onClick={() => handleOpenEmailModal(
+                    property.currentLandlord!.email,
+                    property.currentLandlord!.name,
+                    'landlord'
+                  )}
+                  title="Send Email to Landlord"
+                >
+                  <RiMailLine />
+                  Email
+                </button>
+              )}
             </div>
           </div>
         )}

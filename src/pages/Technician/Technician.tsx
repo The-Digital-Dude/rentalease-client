@@ -120,6 +120,9 @@ const TechnicianPage = () => {
   // Get current user info for role-based display
   const { userType, name } = useAppSelector((state) => state.user);
 
+  // Check if user can send emails (only super_user and team_member)
+  const canSendEmail = userType === "super_user" || userType === "team_member";
+
   // Debounced search
   const [searchDebounce, setSearchDebounce] = useState<number | null>(null);
 
@@ -716,7 +719,7 @@ const TechnicianPage = () => {
                 onView={() => handleViewTechnician(technician)}
                 onEdit={() => handleEditTechnician(technician)}
                 onDelete={() => handleDeleteTechnician(technician.id)}
-                onSendEmail={handleSendEmail}
+                onSendEmail={canSendEmail ? handleSendEmail : undefined}
               />
             ))}
           </div>

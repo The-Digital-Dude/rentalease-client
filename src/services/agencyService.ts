@@ -4,7 +4,13 @@ import type { Region } from "../constants";
 export interface AgencySubscription {
   id: string;
   planType: "starter" | "pro" | "enterprise";
-  status: "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid";
+  status:
+    | "trial"
+    | "active"
+    | "past_due"
+    | "canceled"
+    | "incomplete"
+    | "unpaid";
   subscriptionStartDate?: string;
   subscriptionEndDate?: string;
   trialEndsAt?: string;
@@ -74,6 +80,7 @@ export interface AgencyProfile {
     joinedDate?: string;
     createdAt?: string;
     lastUpdated?: string;
+    subscriptionAmount?: number;
     subscription?: {
       id: string;
       planType: string;
@@ -232,23 +239,37 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   complianceLevel: serverData.compliance,
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
-  subscription: serverData.subscription ? {
-    id: serverData.subscription.id,
-    planType: serverData.subscription.planType.toLowerCase() as "starter" | "pro" | "enterprise",
-    status: serverData.subscription.status.toLowerCase() as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid",
-    subscriptionStartDate: serverData.subscription.subscriptionStartDate,
-    subscriptionEndDate: serverData.subscription.subscriptionEndDate,
-    trialEndsAt: serverData.subscription.trialEndsAt,
-    currentPeriodStart: serverData.subscription.currentPeriodStart,
-    currentPeriodEnd: serverData.subscription.currentPeriodEnd,
-  } : undefined,
+  subscriptionAmount: serverData.subscriptionAmount,
+  subscription: serverData.subscription
+    ? {
+        id: serverData.subscription.id,
+        planType: serverData.subscription.planType.toLowerCase() as
+          | "starter"
+          | "pro"
+          | "enterprise",
+        status: serverData.subscription.status.toLowerCase() as
+          | "trial"
+          | "active"
+          | "past_due"
+          | "canceled"
+          | "incomplete"
+          | "unpaid",
+        subscriptionStartDate: serverData.subscription.subscriptionStartDate,
+        subscriptionEndDate: serverData.subscription.subscriptionEndDate,
+        trialEndsAt: serverData.subscription.trialEndsAt,
+        currentPeriodStart: serverData.subscription.currentPeriodStart,
+        currentPeriodEnd: serverData.subscription.currentPeriodEnd,
+      }
+    : undefined,
 });
 
 export const agencyService = {
   // Get all agencies
   getAllAgencies: async (): Promise<AgencyResponse> => {
     try {
-      const response = await api.get<ServerResponse>("/v1/agency/auth/all?limit=100");
+      const response = await api.get<ServerResponse>(
+        "/v1/agency/auth/all?limit=100"
+      );
 
       if (response.data.status === "success" && response.data.data.agencies) {
         const mappedData = response.data.data.agencies.map(mapServerToClient);
@@ -274,7 +295,10 @@ export const agencyService = {
 
   // Create new agency
   createAgency: async (
-    agency: Omit<Agency, "id"> & { password?: string; subscriptionAmount?: number }
+    agency: Omit<Agency, "id"> & {
+      password?: string;
+      subscriptionAmount?: number;
+    }
   ): Promise<AgencyResponse> => {
     try {
       // Map client data to server format
@@ -475,7 +499,10 @@ export const agencyService = {
       const response = await api.get(`/v1/technicians/${technicianId}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Failed to fetch technician information");
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch technician information"
+      );
     }
   },
 
@@ -489,15 +516,27 @@ export const agencyService = {
   }> => {
     try {
       const response = await api.get(`/v1/agency/${agencyId}/subscription`);
-      
-      if (response.data.status === "success" && response.data.data?.subscription) {
+
+      if (
+        response.data.status === "success" &&
+        response.data.data?.subscription
+      ) {
         const subscription = response.data.data.subscription;
         return {
           success: true,
           data: {
             id: subscription.id,
-            planType: subscription.planType?.toLowerCase() as "starter" | "pro" | "enterprise",
-            status: subscription.status?.toLowerCase() as "trial" | "active" | "past_due" | "canceled" | "incomplete" | "unpaid",
+            planType: subscription.planType?.toLowerCase() as
+              | "starter"
+              | "pro"
+              | "enterprise",
+            status: subscription.status?.toLowerCase() as
+              | "trial"
+              | "active"
+              | "past_due"
+              | "canceled"
+              | "incomplete"
+              | "unpaid",
             subscriptionStartDate: subscription.subscriptionStartDate,
             subscriptionEndDate: subscription.subscriptionEndDate,
             trialEndsAt: subscription.trialEndsAt,
@@ -514,7 +553,9 @@ export const agencyService = {
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch agency subscription",
+        message:
+          error.response?.data?.message ||
+          "Failed to fetch agency subscription",
       };
     }
   },
@@ -525,14 +566,11 @@ export const agencyService = {
     data: { subject: string; html: string }
   ): Promise<ApiResponse<any>> => {
     try {
-      const response = await api.post(
-        `/v1/emails/send-general`,
-        {
-          to: email,
-          subject: data.subject,
-          html: data.html
-        }
-      );
+      const response = await api.post(`/v1/emails/send-general`, {
+        to: email,
+        subject: data.subject,
+        html: data.html,
+      });
       return {
         success: true,
         data: response.data,
@@ -540,7 +578,8 @@ export const agencyService = {
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to send email to Agency",
+        message:
+          error.response?.data?.message || "Failed to send email to Agency",
       };
     }
   },

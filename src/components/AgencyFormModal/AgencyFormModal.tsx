@@ -210,7 +210,7 @@ const AgencyFormModal = ({
               ))}
             </select>
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="complianceLevel">Compliance Level</label>
             <select
               id="complianceLevel"
@@ -227,7 +227,7 @@ const AgencyFormModal = ({
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
           <div className="form-group">
             <label htmlFor="status">Status</label>
             <select
@@ -248,7 +248,7 @@ const AgencyFormModal = ({
           {!editingAgency && (
             <div className="form-group">
               <label htmlFor="subscriptionAmount">
-                Monthly Subscription Amount (AUD)
+                Subscription Amount (AUD)
               </label>
               <input
                 type="number"

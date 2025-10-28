@@ -188,6 +188,99 @@ export interface OperationalAnalyticsResponse {
   data: OperationalAnalytics;
 }
 
+export interface AgencyAnalytics {
+  overview: {
+    totalAgencies: number;
+    activeAgencies: number;
+    inactiveAgencies: number;
+    suspendedAgencies: number;
+    pendingAgencies: number;
+    activeRate: number;
+    churnRate: number;
+  };
+  revenue: {
+    totalMonthlyRevenue: number;
+    averageSubscription: number;
+    minimumSubscription: number;
+    maximumSubscription: number;
+    projectedAnnualRevenue: number;
+    revenueByStatus: {
+      [key: string]: number;
+    };
+  };
+  growth: {
+    thisWeek: {
+      newAgencies: number;
+      growth: string;
+    };
+    thisMonth: {
+      newAgencies: number;
+      growth: string;
+    };
+    yearToDate: {
+      newAgencies: number;
+    };
+  };
+  distribution: {
+    bySubscription: Array<{
+      range: string;
+      count: number;
+      totalRevenue: number;
+      percentage: string;
+    }>;
+    byRegion: Array<{
+      region: string;
+      totalAgencies: number;
+      activeAgencies: number;
+      totalSubscription: number;
+      avgSubscription: number;
+      percentageOfTotal: string;
+    }>;
+  };
+  trends: {
+    monthly: Array<{
+      period: string;
+      newAgencies: number;
+      totalSubscription: number;
+      avgSubscription: number;
+    }>;
+  };
+  topPerformers: {
+    bySubscription: Array<{
+      id: string;
+      companyName: string;
+      email: string;
+      subscriptionAmount: number;
+      totalProperties: number;
+      region: string;
+      memberSince: string;
+    }>;
+  };
+  properties: {
+    totalPropertiesManaged: number;
+    avgPropertiesPerAgency: number;
+  };
+  recentActivity: {
+    newAgencies: Array<{
+      id: string;
+      companyName: string;
+      email: string;
+      region: string;
+      subscriptionAmount: number;
+      status: string;
+      totalProperties: number;
+      joinedDate: string;
+    }>;
+  };
+  lastUpdated: string;
+}
+
+export interface AgencyAnalyticsResponse {
+  status: "success" | "error";
+  message: string;
+  data: AgencyAnalytics;
+}
+
 class ReportService {
   private baseUrl = "/v1/properties/reports";
 
@@ -287,6 +380,22 @@ class ReportService {
         error?.response?.data || {
           status: "error",
           message: "Failed to fetch operational analytics data",
+        }
+      );
+    }
+  }
+
+  async getAgencyAnalytics(): Promise<AgencyAnalyticsResponse> {
+    try {
+      const response: AxiosResponse<AgencyAnalyticsResponse> = await api.get(
+        `/v1/dashboard/agency-analytics`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch agency analytics data",
         }
       );
     }

@@ -64,6 +64,7 @@ const Agencies = () => {
       if (response.success) {
         // Ensure we always have an array
         setAgencies(Array.isArray(response.data) ? response.data : []);
+        console.log(response.data);
       } else {
         toast.error(response.message || "Failed to fetch agencies");
         setAgencies([]); // Set empty array on error
@@ -142,7 +143,11 @@ const Agencies = () => {
           return;
         }
 
-        if (!formData.subscriptionAmount || formData.subscriptionAmount < 1 || formData.subscriptionAmount > 100000) {
+        if (
+          !formData.subscriptionAmount ||
+          formData.subscriptionAmount < 1 ||
+          formData.subscriptionAmount > 100000
+        ) {
           toast.error("Subscription amount must be between $1 and $100,000");
           return;
         }

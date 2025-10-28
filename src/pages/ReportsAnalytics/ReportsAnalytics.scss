@@ -567,6 +567,14 @@
   .performance-grid {
     grid-template-columns: 1fr;
   }
+
+  .performers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 // Executive Dashboard Styles
@@ -644,6 +652,232 @@
               &.negative {
                 background: #fee2e2;
                 color: #991b1b;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .agency-analytics-section {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 1.5rem 0;
+    }
+
+    h5 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #374151;
+      margin: 0 0 1rem 0;
+    }
+
+    .kpi-breakdown {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+
+      .kpi-period {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+
+        h5 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #374151;
+          margin: 0 0 1rem 0;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .kpi-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 1rem;
+
+          .kpi-card {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+
+            .kpi-value {
+              font-size: 1.5rem;
+              font-weight: 700;
+              color: #1e293b;
+              margin-bottom: 0.25rem;
+            }
+
+            .kpi-label {
+              font-size: 0.75rem;
+              color: #64748b;
+              margin-bottom: 0.5rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+            }
+
+            .kpi-growth {
+              font-size: 0.75rem;
+              font-weight: 600;
+              padding: 0.25rem 0.5rem;
+              border-radius: 9999px;
+
+              &.positive {
+                background: #d1fae5;
+                color: #065f46;
+              }
+
+              &.negative {
+                background: #fee2e2;
+                color: #991b1b;
+              }
+            }
+
+            .kpi-breakdown {
+              font-size: 0.75rem;
+              color: #64748b;
+            }
+          }
+        }
+      }
+    }
+
+    .top-performers-section {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+
+      .performers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+
+        .performer-card {
+          background: white;
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
+
+          .performer-header {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+
+            strong {
+              font-size: 1rem;
+              color: #1e293b;
+              flex: 1;
+            }
+
+            .performer-region {
+              font-size: 0.75rem;
+              color: #64748b;
+              padding: 0.25rem 0.5rem;
+              background: #f8fafc;
+              border-radius: 0.375rem;
+              border: 1px solid #e2e8f0;
+            }
+          }
+
+          .performer-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .metric-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 0.875rem;
+
+              span:first-child {
+                color: #64748b;
+              }
+
+              .metric-value {
+                font-weight: 600;
+                color: #1e293b;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .regional-distribution-section {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+
+      .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+
+        .distribution-card {
+          background: white;
+          border-radius: 0.75rem;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
+
+          .distribution-header {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+
+            strong {
+              font-size: 1rem;
+              color: #1e293b;
+              flex: 1;
+            }
+
+            .distribution-percentage {
+              font-size: 0.75rem;
+              color: #3b82f6;
+              font-weight: 600;
+              padding: 0.25rem 0.5rem;
+              background: #dbeafe;
+              border-radius: 9999px;
+            }
+          }
+
+          .distribution-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .metric-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 0.875rem;
+
+              span:first-child {
+                color: #64748b;
+              }
+
+              span:last-child {
+                font-weight: 600;
+                color: #1e293b;
               }
             }
           }

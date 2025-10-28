@@ -12,6 +12,7 @@ import {
 import reportService, {
   type ExecutiveDashboard,
   type OperationalAnalytics,
+  type AgencyAnalytics,
 } from "../../services/reportService";
 import toast from "react-hot-toast";
 import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
@@ -19,7 +20,7 @@ import { useAppSelector } from "../../store";
 import "./ReportsAnalytics.scss";
 
 const ReportsAnalytics = () => {
-  const { userType } = useAppSelector(state => state.user);
+  const { userType } = useAppSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("executive");
   const [executiveDashboard, setExecutiveDashboard] =
     useState<ExecutiveDashboard | null>(null);
@@ -27,9 +28,11 @@ const ReportsAnalytics = () => {
   const [operationalAnalytics, setOperationalAnalytics] =
     useState<OperationalAnalytics | null>(null);
   const [loadingOperational, setLoadingOperational] = useState(true);
+  const [agencyAnalytics, setAgencyAnalytics] =
+    useState<AgencyAnalytics | null>(null);
+  const [loadingAgency, setLoadingAgency] = useState(true);
 
   useEffect(() => {
-
     const fetchExecutiveDashboard = async () => {
       try {
         setLoadingExecutive(true);
@@ -42,8 +45,21 @@ const ReportsAnalytics = () => {
       }
     };
 
+    const fetchAgencyAnalytics = async () => {
+      try {
+        setLoadingAgency(true);
+        const response = await reportService.getAgencyAnalytics();
+        setAgencyAnalytics(response.data);
+      } catch {
+        toast.error("Failed to fetch agency analytics");
+      } finally {
+        setLoadingAgency(false);
+      }
+    };
+
     if (activeTab === "executive") {
       fetchExecutiveDashboard();
+      fetchAgencyAnalytics();
     }
 
     const fetchOperationalAnalytics = async () => {
@@ -61,17 +77,16 @@ const ReportsAnalytics = () => {
     if (activeTab === "operational") {
       fetchOperationalAnalytics();
     }
-
   }, [activeTab]);
-
-
-
-
 
   const tabs = useMemo(() => {
     const baseTabs = [
       { id: "executive", label: "Executive Dashboard", icon: RiDashboardLine },
-      { id: "operational", label: "Operational Analytics", icon: RiBuildingLine },
+      {
+        id: "operational",
+        label: "Operational Analytics",
+        icon: RiBuildingLine,
+      },
       {
         id: "payments",
         label: "Technician Payments",
@@ -80,7 +95,7 @@ const ReportsAnalytics = () => {
     ];
 
     if (userType === "property_manager") {
-      return baseTabs.filter(tab => tab.id !== "payments");
+      return baseTabs.filter((tab) => tab.id !== "payments");
     }
 
     return baseTabs;
@@ -92,6 +107,222 @@ const ReportsAnalytics = () => {
     }
   }, [userType, activeTab]);
 
+  const renderAgencyAnalytics = () => {
+    if (loadingAgency) {
+      return (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading agency analytics...</p>
+        </div>
+      );
+    }
+
+    if (!agencyAnalytics) {
+      return (
+        <div className="error-state">
+          <p>Failed to load agency analytics data</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="agency-analytics-section">
+        <h4>Agency Analytics</h4>
+
+        {/* Agency Overview KPIs */}
+        <div className="kpi-grid">
+          <div className="kpi-period">
+            <h5>This Week</h5>
+            <div className="kpi-cards">
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.growth.thisWeek.newAgencies}
+                </div>
+                <div className="kpi-label">New Agencies</div>
+                <div
+                  className={`kpi-growth ${
+                    parseFloat(agencyAnalytics.growth.thisWeek.growth) >= 0
+                      ? "positive"
+                      : "negative"
+                  }`}
+                >
+                  {parseFloat(agencyAnalytics.growth.thisWeek.growth) >= 0
+                    ? "+"
+                    : ""}
+                  {agencyAnalytics.growth.thisWeek.growth}%
+                </div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.overview.activeAgencies}
+                </div>
+                <div className="kpi-label">Active Agencies</div>
+                <div className="kpi-growth positive">
+                  {agencyAnalytics.overview.activeRate.toFixed(1)}%
+                </div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  $
+                  {agencyAnalytics.revenue.averageSubscription.toLocaleString()}
+                </div>
+                <div className="kpi-label">Avg Subscription</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="kpi-period">
+            <h5>This Month</h5>
+            <div className="kpi-cards">
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.growth.thisMonth.newAgencies}
+                </div>
+                <div className="kpi-label">New Agencies</div>
+                <div
+                  className={`kpi-growth ${
+                    parseFloat(agencyAnalytics.growth.thisMonth.growth) >= 0
+                      ? "positive"
+                      : "negative"
+                  }`}
+                >
+                  {parseFloat(agencyAnalytics.growth.thisMonth.growth) >= 0
+                    ? "+"
+                    : ""}
+                  {agencyAnalytics.growth.thisMonth.growth}%
+                </div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.overview.totalAgencies}
+                </div>
+                <div className="kpi-label">Total Agencies</div>
+                {/* <div className="kpi-breakdown">
+                  {agencyAnalytics.overview.inactiveAgencies} Inactive •{" "}
+                  {agencyAnalytics.overview.suspendedAgencies} Suspended
+                </div> */}
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  $
+                  {agencyAnalytics.revenue.totalMonthlyRevenue.toLocaleString()}
+                </div>
+                <div className="kpi-label">Monthly Payments</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="kpi-period">
+            <h5>Year to Date</h5>
+            <div className="kpi-cards">
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.growth.yearToDate.newAgencies}
+                </div>
+                <div className="kpi-label">New Agencies</div>
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  {agencyAnalytics.properties.totalPropertiesManaged}
+                </div>
+                <div className="kpi-label">Total Properties</div>
+                {/* <div className="kpi-breakdown">
+                  Avg: {agencyAnalytics.properties.avgPropertiesPerAgency.toFixed(1)} per agency
+                </div> */}
+              </div>
+              <div className="kpi-card">
+                <div className="kpi-value">
+                  $
+                  {agencyAnalytics.revenue.projectedAnnualRevenue.toLocaleString()}
+                </div>
+                <div className="kpi-label">Projected Payment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Performers */}
+        {agencyAnalytics.topPerformers.bySubscription.length > 0 && (
+          <div className="top-performers-section">
+            <h5>Top Performing Agencies (By Subscription)</h5>
+            <div className="performers-grid">
+              {agencyAnalytics.topPerformers.bySubscription
+                .slice(0, 5)
+                .map((agency) => (
+                  <div key={agency.id} className="performer-card">
+                    <div className="performer-header">
+                      <strong>{agency.companyName}</strong>
+                      <span className="performer-region">{agency.region}</span>
+                    </div>
+                    <div className="performer-metrics">
+                      <div className="metric-row">
+                        <span>Subscription:</span>
+                        <span className="metric-value">
+                          ${agency.subscriptionAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="metric-row">
+                        <span>Properties:</span>
+                        <span className="metric-value">
+                          {agency.totalProperties}
+                        </span>
+                      </div>
+                      <div className="metric-row">
+                        <span>Member Since:</span>
+                        <span className="metric-value">
+                          {new Date(agency.memberSince).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Regional Distribution */}
+        {agencyAnalytics.distribution.byRegion.length > 0 && (
+          <div className="regional-distribution-section">
+            <h5>Agency Distribution by Region</h5>
+            <div className="distribution-grid">
+              {agencyAnalytics.distribution.byRegion
+                .slice(0, 6)
+                .map((region, index) => (
+                  <div key={index} className="distribution-card">
+                    <div className="distribution-header">
+                      <strong>{region.region}</strong>
+                      <span className="distribution-percentage">
+                        {region.percentageOfTotal}% of total
+                      </span>
+                    </div>
+                    <div className="distribution-metrics">
+                      <div className="metric-row">
+                        <span>Total Agencies:</span>
+                        <span>{region.totalAgencies}</span>
+                      </div>
+                      <div className="metric-row">
+                        <span>Active:</span>
+                        <span>{region.activeAgencies}</span>
+                      </div>
+                      <div className="metric-row">
+                        <span>Total Subscription:</span>
+                        <span>
+                          ${region.totalSubscription.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="metric-row">
+                        <span>Avg Subscription:</span>
+                        <span>${region.avgSubscription.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderExecutiveDashboard = () => (
     <div className="executive-dashboard">
@@ -333,6 +564,9 @@ const ReportsAnalytics = () => {
             </div>
           </div>
 
+          {/* Agency Analytics Section */}
+          {renderAgencyAnalytics()}
+
           {/* Business Health Section */}
           <div className="business-health-section">
             <h4>Business Health Indicators</h4>
@@ -495,8 +729,9 @@ const ReportsAnalytics = () => {
                   <div className="health-label">Accepted Quotations Value</div>
                   <div className="health-breakdown">
                     {executiveDashboard.quotations.acceptedQuotations} of{" "}
-                    {executiveDashboard.quotations.totalQuotations} quotations
-                    ({executiveDashboard.quotations.acceptanceRate}% acceptance rate)
+                    {executiveDashboard.quotations.totalQuotations} quotations (
+                    {executiveDashboard.quotations.acceptanceRate}% acceptance
+                    rate)
                   </div>
                 </div>
               </div>

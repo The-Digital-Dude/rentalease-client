@@ -27,20 +27,20 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   onResendCredentials,
   onSendEmail,
 }) => {
+  // console.log(agency);
+
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCredentialsConfirm, setShowCredentialsConfirm] = useState(false);
 
   // Format subscription status for display
   const formatStatus = (status: string) => {
-    return status
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
+    return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   // Get CSS class for subscription status
   const getStatusClass = (status: string) => {
-    return status.replace(/_/g, '-');
+    return status.replace(/_/g, "-");
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -194,19 +194,26 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             <span>{agency.region}</span>
           </div>
           <div className="detail-item">
-            <span className="label">Compliance</span>
-            <span>{agency.complianceLevel}</span>
+            <span className="label">Subscription Amount</span>
+            <span>AUD ${agency.subscriptionAmount}</span>
           </div>
         </div>
       </div>
 
       <div className="agency-footer">
-        <div className="subscription-info">
+        {/* <div className="subscription-info">
           {agency.subscription ? (
             <div className="subscription-status">
-              <div className={`subscription-badge ${agency.subscription.planType} ${getStatusClass(agency.subscription.status)}`}>
+              <div
+                className={`subscription-badge ${
+                  agency.subscription.planType
+                } ${getStatusClass(agency.subscription.status)}`}
+              >
                 <RiVipCrown2Line className="subscription-icon" />
-                <span>{formatStatus(agency.subscription.planType)} Plan - {formatStatus(agency.subscription.status)}</span>
+                <span>
+                  {formatStatus(agency.subscription.planType)} Plan -{" "}
+                  {formatStatus(agency.subscription.status)}
+                </span>
               </div>
             </div>
           ) : (
@@ -215,7 +222,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
               <span className="no-sub-text">No Subscription</span>
             </div>
           )}
-        </div>
+        </div> */}
         <div className="footer-actions">
           {onSendEmail && (
             <button

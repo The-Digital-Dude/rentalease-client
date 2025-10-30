@@ -264,16 +264,53 @@ class TechnicianService {
    */
   async sendEmailToTechnician(
     email: string,
-    data: { subject: string; html: string }
+    data: { subject: string; html: string; attachments?: File[] }
   ): Promise<any> {
     try {
-      const response = await api.post(`/v1/emails/send-general`, {
-        to: email,
-        subject: data.subject,
-        html: data.html,
-      });
-      return response.data;
+      let response;
+      
+      // If there are attachments, use FormData
+      if (data.attachments && data.attachments.length > 0) {
+        const formData = new FormData();
+        formData.append('to', email);
+        formData.append('subject', data.subject);
+        formData.append('html', data.html);
+        
+        // Add attachments
+        data.attachments.forEach((file) => {
+          formData.append('attachments', file);
+        });
+
+        response = await api.post(`/v1/emails/send-general`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        // No attachments, use JSON
+        response = await api.post(`/v1/emails/send-general`, {
+          to: email,
+          subject: data.subject,
+          html: data.html,
+        });
+      }
+      
+      console.log('📧 Email API Response:', response.data);
+      
+      // Handle both response formats: { success: true } or { status: "success" }
+      const isSuccess = response.data?.success === true || 
+                       response.data?.status === 'success' ||
+                       (response.status >= 200 && response.status < 300);
+      
+      console.log('✅ Email success status:', isSuccess);
+      
+      return {
+        success: isSuccess,
+        data: response.data?.data || response.data,
+        message: response.data?.message || 'Email sent successfully',
+      };
     } catch (error: any) {
+      console.error('❌ Email send error:', error.response?.data || error.message);
       throw new Error(
         error.response?.data?.message || "Failed to send email to Technician"
       );

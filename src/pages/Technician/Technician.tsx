@@ -527,7 +527,7 @@ const TechnicianPage = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string) => {
+  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
     if (!emailingTechnician) return;
 
     setEmailLoading(true);
@@ -535,15 +535,22 @@ const TechnicianPage = () => {
     setEmailSuccess(null);
 
     try {
-      await technicianService.sendEmailToTechnician(emailingTechnician.email, {
+      const response = await technicianService.sendEmailToTechnician(emailingTechnician.email, {
         subject,
         html,
+        attachments,
       });
-      setEmailSuccess("Email sent successfully!");
-      toast.success(`✅ Email sent to ${emailingTechnician.name}`);
-      setTimeout(() => {
-        handleCloseEmailModal();
-      }, 1500);
+      
+      // Check if email was sent successfully
+      if (response?.success) {
+        setEmailSuccess("Email sent successfully!");
+        toast.success(`✅ Email sent to ${emailingTechnician.name}`);
+        setTimeout(() => {
+          handleCloseEmailModal();
+        }, 1500);
+      } else {
+        throw new Error(response?.message || "Failed to send email");
+      }
     } catch (err: any) {
       const errorMessage = err.message || "Failed to send email";
       setEmailError(errorMessage);

@@ -258,7 +258,7 @@ const Agencies = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string) => {
+  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
     if (!emailingAgency) return;
 
     setEmailLoading(true);
@@ -268,7 +268,7 @@ const Agencies = () => {
     try {
       const response = await agencyService.sendEmailToAgency(
         emailingAgency.contactEmail,
-        { subject, html }
+        { subject, html, attachments }
       );
 
       if (response.success) {

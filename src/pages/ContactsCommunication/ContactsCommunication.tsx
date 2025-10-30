@@ -192,16 +192,22 @@ const ContactsCommunication = () => {
     setEmailSuccess(null);
   };
 
-  const handleSendEmail = async (subject: string, html: string) => {
+  const handleSendEmail = async (subject: string, html: string, attachments?: File[]) => {
     if (!emailContact) return;
     setEmailLoading(true);
     setEmailError(null);
     setEmailSuccess(null);
     try {
-      await contactsAPI.sendEmailToContact(emailContact.id, { subject, html });
-      setEmailSuccess("Email sent successfully!");
+      const response = await contactsAPI.sendEmailToContact(emailContact.id, { subject, html, attachments });
+      
+      // Check if email was sent successfully
+      if (response?.data?.success) {
+        setEmailSuccess("Email sent successfully!");
+      } else {
+        throw new Error(response?.data?.message || "Failed to send email");
+      }
     } catch (err: any) {
-      setEmailError(err.response?.data?.message || "Failed to send email");
+      setEmailError(err.response?.data?.message || err.message || "Failed to send email");
     } finally {
       setEmailLoading(false);
     }

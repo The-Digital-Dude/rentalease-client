@@ -199,7 +199,7 @@ const PropertyProfile: React.FC = () => {
     setEmailLoading(false);
   };
 
-  const handleSendEmail = async (subject: string, html: string) => {
+  const handleSendEmail = async (subject: string, html: string, attachments?: File[]) => {
     if (!emailRecipient) return;
 
     setEmailLoading(true);
@@ -209,7 +209,7 @@ const PropertyProfile: React.FC = () => {
     try {
       const response = await agencyService.sendEmailToAgency(
         emailRecipient.email,
-        { subject, html }
+        { subject, html, attachments }
       );
 
       if (response.success) {

@@ -640,7 +640,7 @@ const PropertyManagerManagementPage = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string) => {
+  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
     if (!emailingPropertyManager) return;
 
     setEmailLoading(true);
@@ -648,18 +648,23 @@ const PropertyManagerManagementPage = () => {
     setEmailSuccess(null);
 
     try {
-      await propertyManagerService.sendEmailToPropertyManager(
+      const response = await propertyManagerService.sendEmailToPropertyManager(
         emailingPropertyManager.email,
-        { subject, html }
+        { subject, html, attachments }
       );
 
-      setEmailSuccess("Email sent successfully!");
-      toast.success(`✅ Email sent to ${emailingPropertyManager.fullName}`);
+      // Check if email was sent successfully
+      if (response?.success) {
+        setEmailSuccess("Email sent successfully!");
+        toast.success(`✅ Email sent to ${emailingPropertyManager.fullName}`);
 
-      // Close modal after a short delay
-      setTimeout(() => {
-        handleCloseEmailModal();
-      }, 1500);
+        // Close modal after a short delay
+        setTimeout(() => {
+          handleCloseEmailModal();
+        }, 1500);
+      } else {
+        throw new Error(response?.message || "Failed to send email");
+      }
     } catch (err: any) {
       const errorMessage = err.message || "Failed to send email";
       setEmailError(errorMessage);

@@ -174,9 +174,48 @@ export const contactsAPI = {
   // Send custom email to a contact
   sendEmailToContact: async (
     id: string,
-    data: { subject: string; html: string }
+    data: { subject: string; html: string; attachments?: File[] }
   ) => {
-    return api.post(`/v1/contacts/${id}/send-email`, data);
+    let response;
+    
+    // If there are attachments, use FormData
+    if (data.attachments && data.attachments.length > 0) {
+      const formData = new FormData();
+      formData.append('subject', data.subject);
+      formData.append('html', data.html);
+      
+      // Add attachments
+      data.attachments.forEach((file) => {
+        formData.append('attachments', file);
+      });
+
+      response = await api.post(`/v1/contacts/${id}/send-email`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else {
+      // No attachments, use JSON
+      response = await api.post(`/v1/contacts/${id}/send-email`, data);
+    }
+    
+    console.log('📧 Email API Response:', response.data);
+    
+    // Handle both response formats: { success: true } or { status: "success" }
+    const isSuccess = response.data?.success === true || 
+                     response.data?.status === 'success' ||
+                     (response.status >= 200 && response.status < 300);
+    
+    console.log('✅ Email success status:', isSuccess);
+    
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        success: isSuccess,
+        message: response.data?.message || 'Email sent successfully',
+      }
+    };
   },
 };
 

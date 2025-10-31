@@ -214,6 +214,91 @@ export interface AssignPropertyManagerData {
   role?: "Primary" | "Secondary";
 }
 
+// Property Log interfaces
+export interface PropertyLogChange {
+  field: string;
+  fieldLabel: string;
+  oldValue: any;
+  newValue: any;
+}
+
+export interface PropertyLogSnapshot {
+  agency?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  tenant?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  landlord?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  propertyManager?: {
+    id: string;
+    name: string;
+    email?: string;
+  };
+}
+
+export interface PropertyLog {
+  _id: string;
+  propertyId: string;
+  changeType: string;
+  description: string;
+  changes: PropertyLogChange[];
+  changedBy: {
+    userId: string;
+    userName: string;
+    userType: string;
+  };
+  previousSnapshot?: PropertyLogSnapshot;
+  metadata?: {
+    ipAddress?: string;
+    userAgent?: string;
+  };
+  createdAt: string;
+}
+
+export interface PropertyLogsResponse {
+  status: "success" | "error";
+  message?: string;
+  data: {
+    logs: PropertyLog[];
+    pagination?: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
+}
+
+export interface PropertyLogsSummaryResponse {
+  status: "success" | "error";
+  message?: string;
+  data: {
+    summary: {
+      [key: string]: number;
+    };
+    totalChanges: number;
+  };
+}
+
+export interface PropertyLogFilters {
+  changeType?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
 // Property Service Class
 class PropertyService {
   private baseUrl = "/v1/properties";
@@ -543,6 +628,45 @@ class PropertyService {
         error?.response?.data || {
           status: "error",
           message: "Failed to assign team member",
+        }
+      );
+    }
+  }
+
+  // Property Logs Methods
+  async getPropertyLogs(
+    propertyId: string,
+    filters?: PropertyLogFilters
+  ): Promise<PropertyLogsResponse> {
+    try {
+      const response: AxiosResponse<PropertyLogsResponse> = await api.get(
+        `${this.baseUrl}/${propertyId}/logs`,
+        { params: filters }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch property logs",
+        }
+      );
+    }
+  }
+
+  async getPropertyLogsSummary(
+    propertyId: string
+  ): Promise<PropertyLogsSummaryResponse> {
+    try {
+      const response: AxiosResponse<PropertyLogsSummaryResponse> = await api.get(
+        `${this.baseUrl}/${propertyId}/logs/summary`
+      );
+      return response.data;
+    } catch (error: any) {
+      throw (
+        error?.response?.data || {
+          status: "error",
+          message: "Failed to fetch property logs summary",
         }
       );
     }

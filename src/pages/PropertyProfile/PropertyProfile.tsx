@@ -15,6 +15,7 @@ import {
   RiUploadLine,
   RiDownloadLine,
   RiDeleteBinLine,
+  RiHistoryLine,
 } from "react-icons/ri";
 import { jsPDF } from "jspdf";
 import propertyService, {
@@ -23,6 +24,7 @@ import propertyService, {
 } from "../../services/propertyService";
 import { agencyService } from "../../services";
 import EmailContactModal from "../../components/EmailContactModal";
+import PropertyLogsModal from "../../components/PropertyLogsModal";
 import { formatDateTime } from "../../utils";
 import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
@@ -71,6 +73,9 @@ const PropertyProfile: React.FC = () => {
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+
+  // Logs modal state
+  const [showLogsModal, setShowLogsModal] = useState(false);
 
   const loadProperty = useCallback(async () => {
     if (!id) return;
@@ -1253,6 +1258,17 @@ const PropertyProfile: React.FC = () => {
                 <p className="status overdue">Has Overdue Compliance</p>
               </div>
             )}
+            <div className="metadata-item">
+              <label>Change History</label>
+              <button
+                className="btn-view-logs"
+                onClick={() => setShowLogsModal(true)}
+                title="View property change history"
+              >
+                <RiHistoryLine />
+                View History
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1673,6 +1689,14 @@ const PropertyProfile: React.FC = () => {
           success={emailSuccess}
         />
       )}
+
+      {/* Property Logs Modal */}
+      <PropertyLogsModal
+        isOpen={showLogsModal}
+        onClose={() => setShowLogsModal(false)}
+        propertyId={id || ""}
+        propertyAddress={property?.address?.fullAddress || ""}
+      />
     </div>
   );
 };

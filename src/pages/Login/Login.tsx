@@ -12,22 +12,24 @@ import "./Login.scss";
 
 const Login = () => {
   const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains('dark-mode')
+    document.documentElement.classList.contains("dark-mode")
   );
 
   useEffect(() => {
     // Listen for dark mode changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        if (mutation.attributeName === "class") {
+          setIsDarkMode(
+            document.documentElement.classList.contains("dark-mode")
+          );
         }
       });
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
@@ -39,7 +41,11 @@ const Login = () => {
         <div className="login-header">
           <div className="logo-container">
             <img
-              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
+              src={
+                isDarkMode
+                  ? "/rentalease-logo-light.png"
+                  : "/rentalease-logo.png"
+              }
               alt="RentalEase"
               className="login-logo"
             />
@@ -57,7 +63,8 @@ const Login = () => {
               <div className="option-content">
                 <h3>Admin Login</h3>
                 <p>
-                  Access admin panel, manage users, and oversee system operations
+                  Access admin panel, manage users, and oversee system
+                  operations
                 </p>
               </div>
               <div className="option-arrow">
@@ -72,7 +79,8 @@ const Login = () => {
               <div className="option-content">
                 <h3>Team Member</h3>
                 <p>
-                  Access team member portal with admin-level privileges and permissions
+                  Access team member portal with admin-level privileges and
+                  permissions
                 </p>
               </div>
               <div className="option-arrow">
@@ -103,7 +111,8 @@ const Login = () => {
               <div className="option-content">
                 <h3>Property Manager</h3>
                 <p>
-                  Access property management portal and oversee property operations
+                  Access property management portal and oversee property
+                  operations
                 </p>
               </div>
               <div className="option-arrow">
@@ -130,7 +139,8 @@ const Login = () => {
 
         <div className="login-footer">
           <p>
-            Having trouble signing in? <a href="#contact">Contact support</a>
+            Having trouble signing in?{" "}
+            <a href="tel:0359067723">Contact support</a>
           </p>
         </div>
       </div>

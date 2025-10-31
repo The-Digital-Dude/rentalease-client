@@ -29,4 +29,18 @@ export default defineConfig(({ mode }) => ({
     // Drop console and debugger in production
     drop: mode === "production" ? ["console", "debugger"] : [],
   },
+  server: {
+    allowedHosts: [
+      "rentalease-client-web.onrender.com",
+      ".onrender.com", // Allow all Render subdomains
+      "localhost",
+    ],
+  },
+  preview: {
+    allowedHosts: [
+      "rentalease-client-web.onrender.com",
+      ".onrender.com", // Allow all Render subdomains
+      "localhost",
+    ],
+  },
 }));

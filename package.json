@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "start": "vite preview",
     "build:check": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.0",

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: rentalease-client
+    env: node
+    buildCommand: pnpm install && pnpm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+

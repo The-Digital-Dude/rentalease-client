@@ -13,6 +13,7 @@ import {
   JobFormModal,
   JobAllocationTool,
   JobsOverview,
+  LoadingSpinner,
 } from "../../components";
 import { jobService } from "../../services";
 import technicianService from "../../services/technicianService";
@@ -503,7 +504,17 @@ const JobManagement = () => {
   };
 
   if (isLoading) {
-    return <div className="page-container">Loading jobs...</div>;
+    return (
+      <div className="page-container modern-job-management">
+        <div className="loading-state-container">
+          <LoadingSpinner
+            size="large"
+            text="Loading jobs and data..."
+            variant="primary"
+          />
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -10,6 +10,31 @@
   @media (max-width: 768px) {
     padding: 1rem;
   }
+
+  /* Loading State Container */
+  .loading-state-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    width: 100%;
+    background: white;
+    border: 1px solid #e4e4e7;
+    border-radius: 12px;
+    margin-top: 2rem;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+
+    .dark-mode & {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-primary);
+      box-shadow: 0 2px 12px rgba(52, 152, 219, 0.07);
+    }
+
+    @media (max-width: 768px) {
+      min-height: 50vh;
+      margin-top: 1rem;
+    }
+  }
 }
 
 /* Clean Page Header */

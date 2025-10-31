@@ -35,6 +35,7 @@ export { AgencyCard } from "./AgencyCard";
 export { LoginForm } from "./LoginForm";
 export { default as NotificationBell } from "./NotificationBell";
 export { default as Toast } from "./Toast";
+export { default as LoadingSpinner } from "./LoadingSpinner";
 export { default as TechnicianJobTable } from "./TechnicianJobTable";
 export { default as TechnicianPaymentTable } from "./TechnicianPaymentTable";
 export { default as JobProfileHeader } from "./JobProfileHeader";

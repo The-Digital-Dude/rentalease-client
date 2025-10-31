@@ -40,7 +40,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains('dark-mode')
+    document.documentElement.classList.contains("dark-mode")
   );
 
   const dispatch = useAppDispatch();
@@ -50,15 +50,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     // Listen for dark mode changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          setIsDarkMode(document.documentElement.classList.contains('dark-mode'));
+        if (mutation.attributeName === "class") {
+          setIsDarkMode(
+            document.documentElement.classList.contains("dark-mode")
+          );
         }
       });
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
@@ -146,7 +148,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         <div className="login-header">
           <div className="logo-container">
             <img
-              src={isDarkMode ? "/rentalease-logo-light.png" : "/rentalease-logo.png"}
+              src={
+                isDarkMode
+                  ? "/rentalease-logo-light.png"
+                  : "/rentalease-logo.png"
+              }
               alt="RentalEase"
               className="login-logo"
             />
@@ -219,7 +225,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             <Link to={switchLoginLink}>{switchLoginText}</Link>
           </p>
           <p>
-            Having trouble signing in? <a href="#contact">Contact support</a>
+            Having trouble signing in?{" "}
+            <a href="tel:0359067723">Contact support</a>
           </p>
         </div>
       </div>

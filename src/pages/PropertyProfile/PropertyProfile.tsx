@@ -16,6 +16,7 @@ import {
   RiDownloadLine,
   RiDeleteBinLine,
   RiHistoryLine,
+  RiArrowRightLine,
 } from "react-icons/ri";
 import { jsPDF } from "jspdf";
 import propertyService, {
@@ -25,12 +26,16 @@ import propertyService, {
 import { agencyService } from "../../services";
 import EmailContactModal from "../../components/EmailContactModal";
 import PropertyLogsModal from "../../components/PropertyLogsModal";
+import PropertyChangeComparisonModal from "../../components/PropertyChangeComparisonModal";
 import { formatDateTime } from "../../utils";
+import type { PropertyLog } from "../../services/propertyService";
 import "./PropertyProfile.scss";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
 import invoiceService, { type Invoice } from "../../services/invoiceService";
-import inspectionReportService, { type InspectionReport } from "../../services/inspectionReportService";
+import inspectionReportService, {
+  type InspectionReport,
+} from "../../services/inspectionReportService";
 import toast from "react-hot-toast";
 import { useAppSelector } from "../../store";
 
@@ -52,14 +57,20 @@ const PropertyProfile: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
-  const [inspectionReports, setInspectionReports] = useState<InspectionReport[]>([]);
+  const [inspectionReports, setInspectionReports] = useState<
+    InspectionReport[]
+  >([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [documentUploading, setDocumentUploading] = useState(false);
   const [documentDeleting, setDocumentDeleting] = useState<string | null>(null);
-  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
-  const [firstDeleteConfirmation, setFirstDeleteConfirmation] = useState<string | null>(null);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(
+    null
+  );
+  const [firstDeleteConfirmation, setFirstDeleteConfirmation] = useState<
+    string | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoDataUrlRef = useRef<string | null>(null);
 
@@ -68,7 +79,7 @@ const PropertyProfile: React.FC = () => {
   const [emailRecipient, setEmailRecipient] = useState<{
     email: string;
     name: string;
-    type: 'agency' | 'tenant' | 'landlord';
+    type: "agency" | "tenant" | "landlord";
   } | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -76,6 +87,14 @@ const PropertyProfile: React.FC = () => {
 
   // Logs modal state
   const [showLogsModal, setShowLogsModal] = useState(false);
+
+  // Recent activity state
+  const [recentLogs, setRecentLogs] = useState<PropertyLog[]>([]);
+  const [recentLogsLoading, setRecentLogsLoading] = useState(false);
+
+  // Comparison modal state
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<PropertyLog | null>(null);
 
   const loadProperty = useCallback(async () => {
     if (!id) return;
@@ -140,15 +159,43 @@ const PropertyProfile: React.FC = () => {
       if (response.status === "success" && response.data) {
         setInspectionReports(response.data.reports);
       } else {
-        setReportsError(response.message || "Failed to load inspection reports");
+        setReportsError(
+          response.message || "Failed to load inspection reports"
+        );
         setInspectionReports([]);
       }
     } catch (loadReportsError: any) {
       console.error("Error loading inspection reports:", loadReportsError);
-      setReportsError(loadReportsError.message || "Failed to load inspection reports");
+      setReportsError(
+        loadReportsError.message || "Failed to load inspection reports"
+      );
       setInspectionReports([]);
     } finally {
       setReportsLoading(false);
+    }
+  }, [id]);
+
+  const loadRecentLogs = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setRecentLogsLoading(true);
+      const response = await propertyService.getPropertyLogs(id, {
+        page: 1,
+        limit: 100, // Load all changes
+      });
+
+      if (response.status === "success" && response.data.logs) {
+        console.log(response.data.logs);
+        setRecentLogs(response.data.logs);
+      } else {
+        setRecentLogs([]);
+      }
+    } catch (error: any) {
+      console.error("Error loading recent logs:", error);
+      setRecentLogs([]);
+    } finally {
+      setRecentLogsLoading(false);
     }
   }, [id]);
 
@@ -156,7 +203,8 @@ const PropertyProfile: React.FC = () => {
     loadProperty();
     loadJobs();
     loadInspectionReports();
-  }, [loadProperty, loadJobs, loadInspectionReports]);
+    loadRecentLogs();
+  }, [loadProperty, loadJobs, loadInspectionReports, loadRecentLogs]);
 
   const getComplianceStatusColor = (status: string) => {
     switch (status) {
@@ -171,6 +219,33 @@ const PropertyProfile: React.FC = () => {
       default:
         return "default";
     }
+  };
+
+  const getChangeTypeLabel = (changeType: string) => {
+    const typeLabels: { [key: string]: string } = {
+      property_created: "Property Created",
+      agency_changed: "Agency Changed",
+      tenant_changed: "Tenant Changed",
+      landlord_changed: "Landlord Changed",
+      property_manager_changed: "Property Manager Changed",
+      address_changed: "Address Changed",
+      compliance_updated: "Compliance Updated",
+      property_type_changed: "Property Type Changed",
+      region_changed: "Region Changed",
+      notes_updated: "Notes Updated",
+    };
+
+    return typeLabels[changeType] || changeType;
+  };
+
+  const handleLogClick = (log: PropertyLog) => {
+    setSelectedLog(log);
+    setShowComparisonModal(true);
+  };
+
+  const handleCloseComparisonModal = () => {
+    setShowComparisonModal(false);
+    setSelectedLog(null);
   };
 
   const handleEdit = () => {
@@ -189,7 +264,11 @@ const PropertyProfile: React.FC = () => {
   const handleContactAgency = () => alert("Contact Agency action");
 
   // Email handlers
-  const handleOpenEmailModal = (email: string, name: string, type: 'agency' | 'tenant' | 'landlord') => {
+  const handleOpenEmailModal = (
+    email: string,
+    name: string,
+    type: "agency" | "tenant" | "landlord"
+  ) => {
     setEmailRecipient({ email, name, type });
     setShowEmailModal(true);
     setEmailError(null);
@@ -204,7 +283,11 @@ const PropertyProfile: React.FC = () => {
     setEmailLoading(false);
   };
 
-  const handleSendEmail = async (subject: string, html: string, attachments?: File[]) => {
+  const handleSendEmail = async (
+    subject: string,
+    html: string,
+    attachments?: File[]
+  ) => {
     if (!emailRecipient) return;
 
     setEmailLoading(true);
@@ -283,7 +366,10 @@ const PropertyProfile: React.FC = () => {
     event.target.value = "";
   };
 
-  const handleDeleteDocument = async (documentId: string, documentName: string) => {
+  const handleDeleteDocument = async (
+    documentId: string,
+    documentName: string
+  ) => {
     if (!id) return;
 
     // First confirmation
@@ -311,7 +397,9 @@ const PropertyProfile: React.FC = () => {
 
       if (response.status === "success") {
         const updatedProperty = response.data.property;
-        setProperty(prev => prev ? { ...prev, documents: updatedProperty.documents ?? [] } : null);
+        setProperty((prev) =>
+          prev ? { ...prev, documents: updatedProperty.documents ?? [] } : null
+        );
         setDocuments(updatedProperty.documents ?? []);
         toast.success("Document deleted successfully.");
       } else {
@@ -339,70 +427,75 @@ const PropertyProfile: React.FC = () => {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const fetchInvoicesForJobs = useCallback(
-    async (jobList: Job[]) => {
-      const invoiceIds = new Set<string>();
-      const jobsNeedingLookup: string[] = [];
+  const fetchInvoicesForJobs = useCallback(async (jobList: Job[]) => {
+    const invoiceIds = new Set<string>();
+    const jobsNeedingLookup: string[] = [];
 
-      jobList.forEach((job) => {
-        const invoiceRef = job.invoice;
+    jobList.forEach((job) => {
+      const invoiceRef = job.invoice;
 
-        if (typeof invoiceRef === "string" && invoiceRef.trim().length > 0) {
-          invoiceIds.add(invoiceRef);
+      if (typeof invoiceRef === "string" && invoiceRef.trim().length > 0) {
+        invoiceIds.add(invoiceRef);
+        return;
+      }
+
+      if (invoiceRef && typeof invoiceRef === "object") {
+        const derivedId = invoiceRef._id || invoiceRef.id;
+
+        if (derivedId) {
+          invoiceIds.add(derivedId);
           return;
         }
-
-        if (invoiceRef && typeof invoiceRef === "object") {
-          const derivedId = invoiceRef._id || invoiceRef.id;
-
-          if (derivedId) {
-            invoiceIds.add(derivedId);
-            return;
-          }
-        }
-
-        if (job.hasInvoice && job.id) {
-          jobsNeedingLookup.push(job.id);
-        }
-      });
-
-      const fetchedInvoicesMap = new Map<string, Invoice>();
-      const errors: string[] = [];
-
-      for (const invoiceId of invoiceIds) {
-        try {
-          const response = await invoiceService.getInvoiceById(invoiceId);
-          if (response.status === "success" && response.data?.invoice) {
-            fetchedInvoicesMap.set(response.data.invoice.id, response.data.invoice);
-          }
-        } catch (error) {
-          console.error(`Failed to load invoice ${invoiceId}:`, error);
-          errors.push(`Invoice ${invoiceId}`);
-        }
       }
 
-      for (const jobId of jobsNeedingLookup) {
-        try {
-          const response = await invoiceService.getInvoiceByJobId(jobId);
-          if (response.status === "success" && response.data?.invoice) {
-            fetchedInvoicesMap.set(response.data.invoice.id, response.data.invoice);
-          }
-        } catch (error) {
-          console.error(`Failed to load invoice for job ${jobId}:`, error);
-          errors.push(`Job ${jobId}`);
-        }
+      if (job.hasInvoice && job.id) {
+        jobsNeedingLookup.push(job.id);
       }
+    });
 
-      const fetchedInvoices = Array.from(fetchedInvoicesMap.values()).sort((a, b) => {
+    const fetchedInvoicesMap = new Map<string, Invoice>();
+    const errors: string[] = [];
+
+    for (const invoiceId of invoiceIds) {
+      try {
+        const response = await invoiceService.getInvoiceById(invoiceId);
+        if (response.status === "success" && response.data?.invoice) {
+          fetchedInvoicesMap.set(
+            response.data.invoice.id,
+            response.data.invoice
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to load invoice ${invoiceId}:`, error);
+        errors.push(`Invoice ${invoiceId}`);
+      }
+    }
+
+    for (const jobId of jobsNeedingLookup) {
+      try {
+        const response = await invoiceService.getInvoiceByJobId(jobId);
+        if (response.status === "success" && response.data?.invoice) {
+          fetchedInvoicesMap.set(
+            response.data.invoice.id,
+            response.data.invoice
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to load invoice for job ${jobId}:`, error);
+        errors.push(`Job ${jobId}`);
+      }
+    }
+
+    const fetchedInvoices = Array.from(fetchedInvoicesMap.values()).sort(
+      (a, b) => {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
         return dateB - dateA;
-      });
+      }
+    );
 
-      return { invoices: fetchedInvoices, errors };
-    },
-    []
-  );
+    return { invoices: fetchedInvoices, errors };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -427,7 +520,8 @@ const PropertyProfile: React.FC = () => {
       }
 
       try {
-        const { invoices: fetchedInvoices, errors } = await fetchInvoicesForJobs(jobs);
+        const { invoices: fetchedInvoices, errors } =
+          await fetchInvoicesForJobs(jobs);
 
         if (!isMounted) {
           return;
@@ -514,8 +608,10 @@ const PropertyProfile: React.FC = () => {
     }
 
     try {
-      const isDark = document.documentElement.classList.contains('dark-mode');
-      const logoPath = isDark ? "/rentalease-logo-light.png" : "/rentalease-logo.png";
+      const isDark = document.documentElement.classList.contains("dark-mode");
+      const logoPath = isDark
+        ? "/rentalease-logo-light.png"
+        : "/rentalease-logo.png";
       const response = await fetch(logoPath);
       if (!response.ok) {
         throw new Error("Logo not found");
@@ -593,7 +689,9 @@ const PropertyProfile: React.FC = () => {
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
-      doc.text("RentalEase Invoice", pageMargin + 70, 25, { baseline: "alphabetic" });
+      doc.text("RentalEase Invoice", pageMargin + 70, 25, {
+        baseline: "alphabetic",
+      });
 
       doc.setFontSize(12);
       doc.text(
@@ -604,14 +702,9 @@ const PropertyProfile: React.FC = () => {
 
       doc.setFont("helvetica", "normal");
       doc.setTextColor(226, 232, 240);
-      doc.text(
-        property.address.fullAddress,
-        pageMargin + 70,
-        50,
-        {
-          maxWidth: pageWidth - (pageMargin + 70) - 20,
-        }
-      );
+      doc.text(property.address.fullAddress, pageMargin + 70, 50, {
+        maxWidth: pageWidth - (pageMargin + 70) - 20,
+      });
 
       doc.setTextColor(210, 224, 237);
       doc.text(
@@ -629,7 +722,15 @@ const PropertyProfile: React.FC = () => {
 
       doc.setDrawColor(0, 0, 0, 0);
       doc.setFillColor(255, 255, 255);
-      doc.roundedRect(pageMargin, 70, pageWidth - pageMargin * 2, 40, 6, 6, "F");
+      doc.roundedRect(
+        pageMargin,
+        70,
+        pageWidth - pageMargin * 2,
+        40,
+        6,
+        6,
+        "F"
+      );
 
       doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
       doc.setFontSize(13);
@@ -685,7 +786,15 @@ const PropertyProfile: React.FC = () => {
 
       if (relatedJob) {
         doc.setFillColor(248, 250, 252);
-        doc.roundedRect(pageMargin, cursorY - 6, pageWidth - pageMargin * 2, 38, 6, 6, "F");
+        doc.roundedRect(
+          pageMargin,
+          cursorY - 6,
+          pageWidth - pageMargin * 2,
+          38,
+          6,
+          6,
+          "F"
+        );
         doc.setTextColor(textPrimary.r, textPrimary.g, textPrimary.b);
         doc.setFont("helvetica", "bold");
         doc.text("Job & Compliance", pageMargin + 12, cursorY + 6);
@@ -695,7 +804,9 @@ const PropertyProfile: React.FC = () => {
         doc.text(`Job ID: ${relatedJob.job_id}`, pageMargin + 12, cursorY + 16);
         doc.text(`Type: ${relatedJob.jobType}`, pageMargin + 12, cursorY + 24);
         doc.text(
-          `Technician: ${getTechnicianDisplayName(relatedJob.assignedTechnician)}`,
+          `Technician: ${getTechnicianDisplayName(
+            relatedJob.assignedTechnician
+          )}`,
           pageMargin + 140,
           cursorY + 16
         );
@@ -711,7 +822,12 @@ const PropertyProfile: React.FC = () => {
 
       const tableX = pageMargin;
       const tableWidth = pageWidth - pageMargin * 2;
-      const columnWidths = [tableWidth * 0.5, tableWidth * 0.15, tableWidth * 0.15, tableWidth * 0.2];
+      const columnWidths = [
+        tableWidth * 0.5,
+        tableWidth * 0.15,
+        tableWidth * 0.15,
+        tableWidth * 0.2,
+      ];
       const columnTitles = ["Line Item", "Qty", "Rate", "Amount"];
 
       doc.setFillColor(deepBlue.r, deepBlue.g, deepBlue.b);
@@ -748,18 +864,10 @@ const PropertyProfile: React.FC = () => {
           doc.text(`${item.quantity ?? 0}`, columnCursorX, cursorY);
           columnCursorX += columnWidths[1];
 
-          doc.text(
-            formatCurrencyForPdf(item.rate),
-            columnCursorX,
-            cursorY
-          );
+          doc.text(formatCurrencyForPdf(item.rate), columnCursorX, cursorY);
           columnCursorX += columnWidths[2];
 
-          doc.text(
-            formatCurrencyForPdf(item.amount),
-            columnCursorX,
-            cursorY
-          );
+          doc.text(formatCurrencyForPdf(item.amount), columnCursorX, cursorY);
 
           cursorY += 14;
         });
@@ -816,7 +924,9 @@ const PropertyProfile: React.FC = () => {
       doc.setFontSize(10);
       doc.setTextColor(textMuted.r, textMuted.g, textMuted.b);
       doc.text(
-        invoice.notes?.trim() || invoice.description || "Thank you for partnering with RentalEase.",
+        invoice.notes?.trim() ||
+          invoice.description ||
+          "Thank you for partnering with RentalEase.",
         pageMargin,
         cursorY,
         {
@@ -1000,11 +1110,13 @@ const PropertyProfile: React.FC = () => {
             {canSendEmail && (
               <button
                 className="btn-email"
-                onClick={() => handleOpenEmailModal(
-                  property.agency.email,
-                  property.agency.companyName,
-                  'agency'
-                )}
+                onClick={() =>
+                  handleOpenEmailModal(
+                    property.agency.email,
+                    property.agency.companyName,
+                    "agency"
+                  )
+                }
                 title="Send Email to Agency"
               >
                 <RiMailLine />
@@ -1038,11 +1150,13 @@ const PropertyProfile: React.FC = () => {
               {canSendEmail && (
                 <button
                   className="btn-email"
-                  onClick={() => handleOpenEmailModal(
-                    property.currentTenant!.email,
-                    property.currentTenant!.name,
-                    'tenant'
-                  )}
+                  onClick={() =>
+                    handleOpenEmailModal(
+                      property.currentTenant!.email,
+                      property.currentTenant!.name,
+                      "tenant"
+                    )
+                  }
                   title="Send Email to Tenant"
                 >
                   <RiMailLine />
@@ -1077,11 +1191,13 @@ const PropertyProfile: React.FC = () => {
               {canSendEmail && (
                 <button
                   className="btn-email"
-                  onClick={() => handleOpenEmailModal(
-                    property.currentLandlord!.email,
-                    property.currentLandlord!.name,
-                    'landlord'
-                  )}
+                  onClick={() =>
+                    handleOpenEmailModal(
+                      property.currentLandlord!.email,
+                      property.currentLandlord!.name,
+                      "landlord"
+                    )
+                  }
                   title="Send Email to Landlord"
                 >
                   <RiMailLine />
@@ -1204,27 +1320,28 @@ const PropertyProfile: React.FC = () => {
               <div className="compliance-status">
                 <span
                   className={`status-badge ${getComplianceStatusColor(
-                    property.complianceSchedule?.minimumSafetyStandard?.status ||
-                      "Not Required"
+                    property.complianceSchedule?.minimumSafetyStandard
+                      ?.status || "Not Required"
                   )}`}
                 >
                   {property.complianceSchedule?.minimumSafetyStandard?.status ||
                     "Not Required"}
                 </span>
               </div>
-              {property.complianceSchedule?.minimumSafetyStandard?.nextInspection && (
+              {property.complianceSchedule?.minimumSafetyStandard
+                ?.nextInspection && (
                 <div className="inspection-date">
                   <RiCalendarLine />
                   <span>
                     Next Inspection:{" "}
                     {formatDateTime(
-                      property.complianceSchedule.minimumSafetyStandard.nextInspection
+                      property.complianceSchedule.minimumSafetyStandard
+                        .nextInspection
                     )}
                   </span>
                 </div>
               )}
             </div>
-
           </div>
         </div>
 
@@ -1258,18 +1375,59 @@ const PropertyProfile: React.FC = () => {
                 <p className="status overdue">Has Overdue Compliance</p>
               </div>
             )}
-            <div className="metadata-item">
-              <label>Change History</label>
-              <button
-                className="btn-view-logs"
-                onClick={() => setShowLogsModal(true)}
-                title="View property change history"
-              >
-                <RiHistoryLine />
-                View History
-              </button>
-            </div>
           </div>
+        </div>
+
+        {/* Change History Section */}
+        <div className="profile-section">
+          <h2>
+            <RiHistoryLine /> Change History
+          </h2>
+
+          {recentLogsLoading ? (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Loading change history...</p>
+            </div>
+          ) : recentLogs.length === 0 ? (
+            <div className="empty-state">
+              <p>No change history to display.</p>
+            </div>
+          ) : (
+            <div className="recent-activity-list">
+              {recentLogs.map((log) => (
+                <div
+                  key={log._id}
+                  className="activity-item"
+                  onClick={() => handleLogClick(log)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleLogClick(log);
+                    }
+                  }}
+                >
+                  <div className="activity-icon">
+                    <RiHistoryLine />
+                  </div>
+                  <div className="activity-content">
+                    <div className="activity-title">
+                      Updated by {log.changedBy.userName}
+                    </div>
+                    <div className="activity-meta">
+                      <span className="activity-date">
+                        {formatDateTime(log.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="activity-arrow">
+                    <RiArrowRightLine />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Jobs Section */}
@@ -1306,7 +1464,9 @@ const PropertyProfile: React.FC = () => {
                         <td>{formatDateTime(job.dueDate)}</td>
                         <td>{job.status}</td>
                         <td>{job.priority}</td>
-                        <td>{getTechnicianDisplayName(job.assignedTechnician)}</td>
+                        <td>
+                          {getTechnicianDisplayName(job.assignedTechnician)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1340,7 +1500,9 @@ const PropertyProfile: React.FC = () => {
                 <div key={report.id} className="inspection-report-card">
                   <div className="report-header">
                     <h3 className="report-type">
-                      {inspectionReportService.getJobTypeDisplayName(report.jobType)}
+                      {inspectionReportService.getJobTypeDisplayName(
+                        report.jobType
+                      )}
                     </h3>
                     <span className="report-date">
                       {formatDateTime(report.submittedAt)}
@@ -1350,7 +1512,11 @@ const PropertyProfile: React.FC = () => {
                   <div className="report-details">
                     <div className="report-field">
                       <label>Technician:</label>
-                      <span>{inspectionReportService.formatTechnicianName(report.technician)}</span>
+                      <span>
+                        {inspectionReportService.formatTechnicianName(
+                          report.technician
+                        )}
+                      </span>
                     </div>
 
                     {report.technician.email && (
@@ -1372,7 +1538,7 @@ const PropertyProfile: React.FC = () => {
                     {report.pdf?.url && (
                       <button
                         className="btn btn-outline"
-                        onClick={() => window.open(report.pdf!.url, '_blank')}
+                        onClick={() => window.open(report.pdf!.url, "_blank")}
                         title="View PDF Report"
                       >
                         <RiDownloadLine />
@@ -1382,7 +1548,8 @@ const PropertyProfile: React.FC = () => {
 
                     {report.media && report.media.length > 0 && (
                       <span className="media-count">
-                        {report.media.length} photo{report.media.length !== 1 ? 's' : ''}
+                        {report.media.length} photo
+                        {report.media.length !== 1 ? "s" : ""}
                       </span>
                     )}
                   </div>
@@ -1426,20 +1593,29 @@ const PropertyProfile: React.FC = () => {
               ) : (
                 invoices.map((invoice) => {
                   const relatedJob = getInvoiceJobDetails(invoice);
-                  const issueDate = invoice.paidAt || invoice.sentAt || invoice.createdAt;
+                  const issueDate =
+                    invoice.paidAt || invoice.sentAt || invoice.createdAt;
 
                   return (
                     <tr key={invoice.id}>
                       <td>{formatDateTime(issueDate)}</td>
-                      <td>{relatedJob?.jobType || invoice.description || "Invoice"}</td>
+                      <td>
+                        {relatedJob?.jobType ||
+                          invoice.description ||
+                          "Invoice"}
+                      </td>
                       <td>{formatCurrency(invoice.totalCost)}</td>
                       <td>{getInvoiceStatusLabel(invoice)}</td>
                       <td>
                         <div className="invoice-notes">
-                          <span>{invoice.description || "No description provided."}</span>
+                          <span>
+                            {invoice.description || "No description provided."}
+                          </span>
                           <small>
                             Invoice #{invoice.invoiceNumber}
-                            {relatedJob?.job_id ? ` - Job ${relatedJob.job_id}` : ""}
+                            {relatedJob?.job_id
+                              ? ` - Job ${relatedJob.job_id}`
+                              : ""}
                           </small>
                         </div>
                       </td>
@@ -1484,7 +1660,9 @@ const PropertyProfile: React.FC = () => {
               disabled={documentUploading}
             >
               <RiUploadLine />
-              <span>{documentUploading ? "Uploading…" : "Upload documents"}</span>
+              <span>
+                {documentUploading ? "Uploading…" : "Upload documents"}
+              </span>
             </button>
             <p className="documents-upload__hint">
               Supports PDF, DOC, DOCX, JPG, PNG (max 10MB per file)
@@ -1501,10 +1679,14 @@ const PropertyProfile: React.FC = () => {
                   <div className="document-info">
                     <div className="document-header">
                       <span className="document-name">{doc.name}</span>
-                      <span className="document-size">{formatFileSize(doc.size)}</span>
+                      <span className="document-size">
+                        {formatFileSize(doc.size)}
+                      </span>
                     </div>
                     <div className="document-meta">
-                      <span className="document-type">{doc.type || "Document"}</span>
+                      <span className="document-type">
+                        {doc.type || "Document"}
+                      </span>
                       {doc.uploadDate && (
                         <span className="document-date">
                           {formatDateTime(doc.uploadDate)}
@@ -1518,7 +1700,9 @@ const PropertyProfile: React.FC = () => {
                         type="button"
                         className="download-btn"
                         title="Download"
-                        onClick={() => window.open(doc.url!, "_blank", "noopener")}
+                        onClick={() =>
+                          window.open(doc.url!, "_blank", "noopener")
+                        }
                       >
                         <RiDownloadLine />
                       </button>
@@ -1530,7 +1714,9 @@ const PropertyProfile: React.FC = () => {
                     <button
                       type="button"
                       className={`delete-btn ${
-                        firstDeleteConfirmation === doc.id ? "confirm-delete" : ""
+                        firstDeleteConfirmation === doc.id
+                          ? "confirm-delete"
+                          : ""
                       }`}
                       title={
                         firstDeleteConfirmation === doc.id
@@ -1554,24 +1740,6 @@ const PropertyProfile: React.FC = () => {
             <div className="documents-empty">No documents uploaded yet.</div>
           )}
         </div>
-
-        {/* Activity Log Section */}
-        {/*
-        <div className="profile-section">
-          <h2>
-            <RiCalendarLine /> Activity Log
-          </h2>
-          <div className="activity-log">
-            {mockActivityLog.map((log, idx) => (
-              <div className="activity-log-item" key={idx}>
-                <div className="activity-log-date">{log.date}</div>
-                <div className="activity-log-event">{log.event}</div>
-                <div className="activity-log-details">{log.details}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        */}
 
         {/* Map Section */}
         {/*
@@ -1696,6 +1864,13 @@ const PropertyProfile: React.FC = () => {
         onClose={() => setShowLogsModal(false)}
         propertyId={id || ""}
         propertyAddress={property?.address?.fullAddress || ""}
+      />
+
+      {/* Property Change Comparison Modal */}
+      <PropertyChangeComparisonModal
+        isOpen={showComparisonModal}
+        onClose={handleCloseComparisonModal}
+        log={selectedLog}
       />
     </div>
   );

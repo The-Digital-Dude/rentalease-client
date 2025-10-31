@@ -116,6 +116,34 @@ const PropertyLogsModal: React.FC<PropertyLogsModalProps> = ({
     return String(value);
   };
 
+  const getChangeLabels = (fieldLabel: string, field: string) => {
+    // Check if this specific field is about tenant
+    if (
+      fieldLabel?.toLowerCase().includes("tenant") ||
+      field?.toLowerCase().includes("tenant")
+    ) {
+      return {
+        before: "Previous Tenant:",
+        after: "Updated Tenant:",
+      };
+    }
+    // Check if this specific field is about landlord
+    if (
+      fieldLabel?.toLowerCase().includes("landlord") ||
+      field?.toLowerCase().includes("landlord")
+    ) {
+      return {
+        before: "Previous Landlord:",
+        after: "Updated Landlord:",
+      };
+    }
+    // Default for all other fields
+    return {
+      before: "Before:",
+      after: "After:",
+    };
+  };
+
   const renderSnapshotDetails = (log: PropertyLog) => {
     if (!log.previousSnapshot) return null;
 
@@ -270,28 +298,34 @@ const PropertyLogsModal: React.FC<PropertyLogsModalProps> = ({
                       {log.changes && log.changes.length > 0 && (
                         <div className="log-changes">
                           <h4>Changes:</h4>
-                          {log.changes.map((change, index) => (
-                            <div key={index} className="change-item">
-                              <div className="change-label">
-                                {change.fieldLabel}:
-                              </div>
-                              <div className="change-values">
-                                <div className="old-value">
-                                  <span className="value-label">Before:</span>
-                                  <span className="value">
-                                    {renderChangeValue(change.oldValue)}
-                                  </span>
+                          {log.changes.map((change, index) => {
+                            const labels = getChangeLabels(
+                              change.fieldLabel,
+                              change.field || ""
+                            );
+                            return (
+                              <div key={index} className="change-item">
+                                <div className="change-label">
+                                  {change.fieldLabel}:
                                 </div>
-                                <RiArrowRightLine className="arrow-icon" />
-                                <div className="new-value">
-                                  <span className="value-label">After:</span>
-                                  <span className="value">
-                                    {renderChangeValue(change.newValue)}
-                                  </span>
+                                <div className="change-values">
+                                  <div className="old-value">
+                                    <span className="value-label">{labels.before}</span>
+                                    <span className="value">
+                                      {renderChangeValue(change.oldValue)}
+                                    </span>
+                                  </div>
+                                  <RiArrowRightLine className="arrow-icon" />
+                                  <div className="new-value">
+                                    <span className="value-label">{labels.after}</span>
+                                    <span className="value">
+                                      {renderChangeValue(change.newValue)}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
 

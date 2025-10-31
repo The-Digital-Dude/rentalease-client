@@ -665,6 +665,203 @@
           }
         }
       }
+
+      // Section header with action button
+      .section-header-with-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #ecf0f1;
+
+        .dark-mode & {
+          border-bottom: 2px solid var(--color-border-primary);
+        }
+
+        h2 {
+          margin: 0;
+          padding: 0;
+          border: none;
+        }
+
+        .btn-view-all-logs {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: transparent;
+          color: #3498db;
+          border: 1px solid #3498db;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          .dark-mode & {
+            color: var(--color-primary);
+            border-color: var(--color-primary);
+
+            &:hover {
+              background: var(--color-primary);
+              color: white;
+            }
+          }
+        }
+      }
+
+      // Recent Activity List
+      .recent-activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .activity-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px;
+          background: #f8f9fa;
+          border-radius: 10px;
+          border: 1px solid #e1e5e9;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          .dark-mode & {
+            background: var(--sidebar-active);
+            border-color: var(--color-border-primary);
+          }
+
+          &:hover {
+            background: #eef2f7;
+            border-color: #3498db;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+
+            .dark-mode & {
+              background: #273a56;
+              border-color: var(--color-primary);
+            }
+
+            .activity-arrow {
+              transform: translateX(4px);
+            }
+          }
+
+          &:focus-visible {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
+          }
+
+          .activity-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            flex-shrink: 0;
+
+            .dark-mode & {
+              background: rgba(52, 152, 219, 0.2);
+            }
+
+            svg {
+              width: 20px;
+              height: 20px;
+              color: #3498db;
+
+              .dark-mode & {
+                color: var(--color-primary);
+              }
+            }
+          }
+
+          .activity-content {
+            flex: 1;
+            min-width: 0;
+
+            .activity-title {
+              font-size: 1rem;
+              font-weight: 600;
+              color: #2c3e50;
+              margin-bottom: 4px;
+
+              .dark-mode & {
+                color: var(--color-text-primary);
+              }
+            }
+
+            .activity-description {
+              font-size: 0.875rem;
+              color: #7f8c8d;
+              margin-bottom: 6px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+
+              .dark-mode & {
+                color: var(--color-text-secondary);
+              }
+            }
+
+            .activity-meta {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 0.8125rem;
+              color: #95a5a6;
+
+              .dark-mode & {
+                color: var(--color-text-secondary);
+              }
+
+              .activity-user {
+                font-weight: 500;
+              }
+
+              .activity-separator {
+                color: #cbd5e0;
+              }
+
+              .activity-date {
+                color: #a0aec0;
+              }
+            }
+          }
+
+          .activity-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+
+            svg {
+              width: 20px;
+              height: 20px;
+              color: #95a5a6;
+
+              .dark-mode & {
+                color: var(--color-text-secondary);
+              }
+            }
+          }
+        }
+      }
     }
   }
 

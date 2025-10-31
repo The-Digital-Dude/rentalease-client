@@ -244,6 +244,7 @@ export interface PropertyLogSnapshot {
     name: string;
     email?: string;
   };
+  status?: string;
 }
 
 export interface PropertyLog {
@@ -251,13 +252,15 @@ export interface PropertyLog {
   propertyId: string;
   changeType: string;
   description: string;
-  changes: PropertyLogChange[];
+  changes?: PropertyLogChange[];
   changedBy: {
     userId: string;
     userName: string;
     userType: string;
   };
   previousSnapshot?: PropertyLogSnapshot;
+  oldState?: PropertyLogSnapshot;
+  newState?: PropertyLogSnapshot;
   metadata?: {
     ipAddress?: string;
     userAgent?: string;

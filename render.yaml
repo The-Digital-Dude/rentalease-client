@@ -1,7 +1,9 @@
-static_sites:
-  - name: rentalease-client
+services:
+  - type: web
+    name: rentalease-client
+    env: node
     buildCommand: pnpm install --frozen-lockfile && pnpm run build
-    publishPath: ./dist
+    startCommand: pnpm start
     envVars:
       - key: NODE_ENV
         value: production

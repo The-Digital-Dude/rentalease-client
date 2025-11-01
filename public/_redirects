@@ -1,1 +1,6 @@
+# SPA fallback
 /*    /index.html   200
+
+# Specific routes (if needed)
+/dashboard    /index.html   200
+/login    /index.html   200

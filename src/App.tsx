@@ -12,7 +12,7 @@ import { restoreAuthState } from "./store/userSlice";
 import { routeConfig } from "./config/routeConfig";
 import { defaultRoutes } from "./config/roleBasedRoutes";
 import type { UserType } from "./store/userSlice";
-import { AppLayout, PublicLayout } from "./components";
+import { AppLayout, PublicLayout, GlobalChatNotifications } from "./components";
 import { WebSocketProvider } from "./contexts/WebSocketContext";
 import "./App.css";
 
@@ -93,6 +93,7 @@ const App = () => {
 
   return (
     <WebSocketProvider>
+      <GlobalChatNotifications />
       <Toaster
         position="top-right"
         toastOptions={{

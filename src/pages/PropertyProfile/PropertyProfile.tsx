@@ -65,6 +65,7 @@ const PropertyProfile: React.FC = () => {
   const [documents, setDocuments] = useState<PropertyDocument[]>([]);
   const [documentUploading, setDocumentUploading] = useState(false);
   const [documentDeleting, setDocumentDeleting] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(
     null
   );
@@ -364,6 +365,29 @@ const PropertyProfile: React.FC = () => {
       void handleDocumentUpload(selectedFiles);
     }
     event.target.value = "";
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(event.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      void handleDocumentUpload(droppedFiles);
+    }
   };
 
   const handleDeleteDocument = async (
@@ -1644,7 +1668,12 @@ const PropertyProfile: React.FC = () => {
           <h2>
             <RiFileListLine /> Documents
           </h2>
-          <div className="documents-upload">
+          <div
+            className={`documents-upload ${isDragging ? "is-dragging" : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -1665,7 +1694,9 @@ const PropertyProfile: React.FC = () => {
               </span>
             </button>
             <p className="documents-upload__hint">
-              Supports PDF, DOC, DOCX, JPG, PNG (max 10MB per file)
+              {isDragging
+                ? "Drop files here to upload"
+                : "Drag and drop files here or click to upload • Supports PDF, DOC, DOCX, JPG, PNG (max 10MB per file)"}
             </p>
           </div>
 

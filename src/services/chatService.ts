@@ -208,6 +208,26 @@ const chatService = {
       console.error('Error sending typing indicator:', error);
       throw error;
     }
+  },
+
+  // Send attachment
+  sendAttachment: async (sessionId: string, file: File, text?: string) => {
+    try {
+      const formData = new FormData();
+      formData.append('sessionId', sessionId);
+      formData.append('attachment', file);
+      if (text) {
+        formData.append('text', text);
+      }
+
+      // Let the browser set Content-Type header automatically with boundary
+      const response = await api.post('/v1/chat/message/attachment', formData);
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error sending attachment:', error);
+      throw error;
+    }
   }
 };
 

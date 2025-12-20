@@ -21,7 +21,6 @@ const getBaseURL = (): string => {
       return (
         import.meta.env.VITE_API_BASE_URL_DEV ||
         "https://rental-ease-server-112dd081b2eb.herokuapp.com/api"
-        // import.meta.env.VITE_API_BASE_URL_DEV || "http://localhost:4000/api"
       );
   }
 };

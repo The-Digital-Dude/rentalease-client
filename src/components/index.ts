@@ -49,6 +49,7 @@ export { EmailDetail } from "./EmailDetail";
 export { FloatingActionButton } from "./FloatingActionButton";
 export { SidebarToggle } from "./SidebarToggle";
 export { PaymentBanner } from "./PaymentBanner";
+export { default as GlobalChatNotifications } from "./GlobalChatNotifications";
 
 // Export types
 export type { TabItem } from "./TabNavigation";

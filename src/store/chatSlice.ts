@@ -205,6 +205,27 @@ export const sendChatMessage = createAsyncThunk(
   }
 );
 
+export const sendChatAttachment = createAsyncThunk(
+  "chat/sendAttachment",
+  async ({
+    sessionId,
+    file,
+    text,
+  }: {
+    sessionId: string;
+    file: File;
+    text?: string;
+  }) => {
+    const chatServiceModule = await import("../services/chatService");
+    const response = await chatServiceModule.default.sendAttachment(
+      sessionId,
+      file,
+      text
+    );
+    return response;
+  }
+);
+
 export const acceptChatSession = createAsyncThunk(
   "chat/acceptSession",
   async (sessionId: string) => {

@@ -1,7 +1,33 @@
 import jsPDF from "jspdf";
 import type { PropertyManagerInvoice } from "../services/propertyManagerInvoiceService";
 
-export const generateInvoicePDF = (invoice: PropertyManagerInvoice) => {
+// Helper function to load logo as data URL
+const loadLogoDataUrl = async (): Promise<string | null> => {
+  try {
+    const response = await fetch("/rentalease-logo-light.png");
+    if (!response.ok) {
+      throw new Error("Logo not found");
+    }
+    const blob = await response.blob();
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          resolve(reader.result);
+        } else {
+          reject(new Error("Failed to read logo"));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error("Unable to load logo for PDF:", error);
+    return null;
+  }
+};
+
+export const generateInvoicePDF = async (invoice: PropertyManagerInvoice) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -126,7 +152,11 @@ export const generateInvoicePDF = (invoice: PropertyManagerInvoice) => {
       return invoice.agencyId.companyName || "";
     }
     if (invoice.agency && typeof invoice.agency === "object") {
-      return (invoice.agency as any).agencyName || (invoice.agency as any).companyName || "";
+      return (
+        (invoice.agency as any).agencyName ||
+        (invoice.agency as any).companyName ||
+        ""
+      );
     }
     return "";
   };
@@ -154,13 +184,24 @@ export const generateInvoicePDF = (invoice: PropertyManagerInvoice) => {
   doc.setFillColor(14, 73, 115); // Dark blue color similar to the image
   doc.rect(0, 0, pageWidth, 60, "F");
 
-  // RentalEase logo/title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
-  doc.text("RentalEase", margin, 25);
+  // RentalEase logo
+  const logoDataUrl = await loadLogoDataUrl();
+  if (logoDataUrl) {
+    // Calculate logo dimensions (maintain aspect ratio)
+    // Logo should be sized appropriately for the header
+    const logoHeight = 15;
+    const logoWidth = 57; // Adjust based on your logo's aspect ratio
+    doc.addImage(logoDataUrl, "PNG", margin, 15, logoWidth, logoHeight);
+  } else {
+    // Fallback to text if logo fails to load
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.setFont("helvetica", "bold");
+    doc.text("RentalEase", margin, 25);
+  }
 
   // Invoice number (right side of header)
+  doc.setTextColor(255, 255, 255); // White text for invoice number
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   const invoiceText = `Invoice #: ${invoice.invoiceNumber}`;
@@ -219,7 +260,10 @@ export const generateInvoicePDF = (invoice: PropertyManagerInvoice) => {
   doc.text("Property:", col2LabelX, yPosition);
   doc.setFont("helvetica", "normal");
   const propertyAddress = getPropertyAddress();
-  const wrappedProperty = doc.splitTextToSize(propertyAddress, pageWidth - col2ValueX - margin);
+  const wrappedProperty = doc.splitTextToSize(
+    propertyAddress,
+    pageWidth - col2ValueX - margin
+  );
   doc.text(wrappedProperty[0], col2ValueX, yPosition);
   yPosition += 7;
 

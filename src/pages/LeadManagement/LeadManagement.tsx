@@ -5,6 +5,16 @@ import {
   RiMoreFill,
   RiSearchLine,
   RiDownloadLine,
+  RiCloseLine,
+  RiUserLine,
+  RiMailLine,
+  RiPhoneLine,
+  RiBriefcaseLine,
+  RiFileTextLine,
+  RiCalendarLine,
+  RiGlobalLine,
+  RiStickyNoteLine,
+  RiEyeLine,
 } from "react-icons/ri";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
@@ -30,7 +40,12 @@ const statusOptions: Array<{ value: LeadStatus; label: string }> = (
   Object.entries(statusLabels) as Array<[LeadStatus, string]>
 ).map(([value, label]) => ({ value, label }));
 
-type SortField = "createdAt" | "firstName" | "lastName" | "profession" | "status";
+type SortField =
+  | "createdAt"
+  | "firstName"
+  | "lastName"
+  | "profession"
+  | "status";
 
 type SortOptionValue =
   | "createdAt:desc"
@@ -66,7 +81,6 @@ const exportRangeOptions: Array<{ value: ExportRange; label: string }> = [
   { value: "custom", label: "Custom range" },
 ];
 
-
 const LeadManagement = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -78,16 +92,15 @@ const LeadManagement = () => {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
-  const [sortOption, setSortOption] = useState<SortOptionValue>("createdAt:desc");
+  const [sortOption, setSortOption] =
+    useState<SortOptionValue>("createdAt:desc");
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportRange, setExportRange] = useState<ExportRange>("7d");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
-  const maxDate = useMemo(
-    () => new Date().toISOString().split("T")[0],
-    []
-  );
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const maxDate = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   const totalLeads = pagination?.totalLeads || leads.length;
 
@@ -236,7 +249,10 @@ const LeadManagement = () => {
         startDate = new Date(`${customStartDate}T00:00:00`);
         endDate = new Date(`${customEndDate}T23:59:59`);
 
-        if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        if (
+          Number.isNaN(startDate.getTime()) ||
+          Number.isNaN(endDate.getTime())
+        ) {
           toast.error("Invalid custom date range.");
           return;
         }
@@ -295,7 +311,8 @@ const LeadManagement = () => {
       }
 
       allLeads.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
       const fields = [
@@ -319,10 +336,13 @@ const LeadManagement = () => {
         lead.phone ?? "",
         statusLabels[lead.status] || lead.status,
         lead.profession ?? "",
-        lead.source === "website_contact_form" ? "Contact Form" :
-        lead.source === "website_bookNow_form" ? "Book Now Form" :
-        lead.source === "other" ? "Other" :
-        lead.source || "",
+        lead.source === "website_contact_form"
+          ? "Contact Form"
+          : lead.source === "website_bookNow_form"
+          ? "Book Now Form"
+          : lead.source === "other"
+          ? "Other"
+          : lead.source || "",
         lead.message,
         lead.notes ?? "",
       ]);
@@ -334,9 +354,9 @@ const LeadManagement = () => {
       const url = window.URL.createObjectURL(blob);
 
       const formatForFile = (value: Date) => value.toISOString().slice(0, 10);
-      const fileName = `website-leads_${formatForFile(startDate)}_${formatForFile(
-        endDate
-      )}.csv`;
+      const fileName = `website-leads_${formatForFile(
+        startDate
+      )}_${formatForFile(endDate)}.csv`;
 
       const link = document.createElement("a");
       link.href = url;
@@ -369,9 +389,7 @@ const LeadManagement = () => {
     if (response.success && response.data) {
       const updatedLead = response.data;
       setLeads((currentLeads) =>
-        currentLeads.map((lead) =>
-          lead.id === leadId ? updatedLead : lead
-        )
+        currentLeads.map((lead) => (lead.id === leadId ? updatedLead : lead))
       );
       toast.success(
         response.message ||
@@ -390,7 +408,9 @@ const LeadManagement = () => {
       return `${leads.length} lead${leads.length === 1 ? "" : "s"}`;
     }
 
-    return `${pagination.totalLeads} lead${pagination.totalLeads === 1 ? "" : "s"}`;
+    return `${pagination.totalLeads} lead${
+      pagination.totalLeads === 1 ? "" : "s"
+    }`;
   }, [leads.length, pagination]);
 
   const formatDate = (date: string) => {
@@ -408,6 +428,28 @@ const LeadManagement = () => {
       console.error("Failed to format date", err);
       return date;
     }
+  };
+
+  const formatSourceLabel = (source?: string) => {
+    if (!source) return "—";
+    switch (source) {
+      case "website_contact_form":
+        return "Contact Form";
+      case "website_bookNow_form":
+        return "Book Now Form";
+      case "other":
+        return "Other";
+      default:
+        return source;
+    }
+  };
+
+  const handleLeadClick = (lead: Lead) => {
+    setSelectedLead(lead);
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedLead(null);
   };
 
   return (
@@ -489,7 +531,9 @@ const LeadManagement = () => {
           </select>
         </div>
 
-        {(statusFilter !== "all" || searchTerm.trim() || sortOption !== "createdAt:desc") && (
+        {(statusFilter !== "all" ||
+          searchTerm.trim() ||
+          sortOption !== "createdAt:desc") && (
           <button
             type="button"
             className="lead-management__clear"
@@ -554,13 +598,19 @@ const LeadManagement = () => {
                     )}
                   </td>
                   <td>
-                    <a href={`mailto:${lead.email}`} className="lead-management__link">
+                    <a
+                      href={`mailto:${lead.email}`}
+                      className="lead-management__link"
+                    >
                       {lead.email}
                     </a>
                   </td>
                   <td>
                     {lead.phone ? (
-                      <a href={`tel:${lead.phone}`} className="lead-management__link">
+                      <a
+                        href={`tel:${lead.phone}`}
+                        className="lead-management__link"
+                      >
                         {lead.phone}
                       </a>
                     ) : (
@@ -568,7 +618,9 @@ const LeadManagement = () => {
                     )}
                   </td>
                   <td>
-                    <span className={`lead-management__status lead-management__status--${lead.status}`}>
+                    <span
+                      className={`lead-management__status lead-management__status--${lead.status}`}
+                    >
                       {statusLabels[lead.status] || lead.status}
                     </span>
                   </td>
@@ -580,48 +632,74 @@ const LeadManagement = () => {
                     )}
                   </td>
                   <td>
-                    {lead.source === "website_contact_form" ? "Contact Form" :
-                     lead.source === "website_bookNow_form" ? "Book Now Form" :
-                     lead.source === "other" ? "Other" :
-                     lead.source || "—"}
+                    {lead.source === "website_contact_form"
+                      ? "Contact Form"
+                      : lead.source === "website_bookNow_form"
+                      ? "Book Now Form"
+                      : lead.source === "other"
+                      ? "Other"
+                      : lead.source || "—"}
                   </td>
                   <td>
-                    <span className="lead-management__message" title={lead.message}>
+                    <span
+                      className="lead-management__message"
+                      title={lead.message}
+                    >
                       {lead.message}
                     </span>
                   </td>
                   <td className="lead-management__actions">
-                    <div className="lead-management__menu" onClick={(event) => event.stopPropagation()}>
+                    <div className="lead-management__actions-group">
                       <button
                         type="button"
-                        className="lead-management__menu-button"
+                        className="lead-management__view-button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          setActiveMenu((current) =>
-                            current === lead.id ? null : lead.id
-                          );
+                          handleLeadClick(lead);
                         }}
-                        aria-label="Lead actions"
+                        aria-label="View lead details"
+                        title="View details"
                       >
-                        <RiMoreFill />
+                        <RiEyeLine />
                       </button>
-                      {activeMenu === lead.id && (
-                        <div className="lead-management__menu-dropdown">
-                          {statusOptions.map(({ value, label }) => (
-                            <button
-                              key={value}
-                              type="button"
-                              className="lead-management__menu-item"
-                              onClick={() => handleStatusChange(lead.id, value)}
-                              disabled={
-                                updatingStatusId === lead.id || lead.status === value
-                              }
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      <div
+                        className="lead-management__menu"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="lead-management__menu-button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setActiveMenu((current) =>
+                              current === lead.id ? null : lead.id
+                            );
+                          }}
+                          aria-label="Lead actions"
+                        >
+                          <RiMoreFill />
+                        </button>
+                        {activeMenu === lead.id && (
+                          <div className="lead-management__menu-dropdown">
+                            {statusOptions.map(({ value, label }) => (
+                              <button
+                                key={value}
+                                type="button"
+                                className="lead-management__menu-item"
+                                onClick={() =>
+                                  handleStatusChange(lead.id, value)
+                                }
+                                disabled={
+                                  updatingStatusId === lead.id ||
+                                  lead.status === value
+                                }
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -669,6 +747,172 @@ const LeadManagement = () => {
           <button type="button" onClick={handleRefresh} disabled={loading}>
             Refresh
           </button>
+        </div>
+      )}
+
+      {selectedLead && (
+        <div
+          className="lead-management__modal-backdrop"
+          role="presentation"
+          onClick={closeDetailsModal}
+        >
+          <div
+            className="lead-management__details-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lead-details-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="lead-management__modal-header">
+              <h2 id="lead-details-title">Lead Details</h2>
+              <button
+                type="button"
+                className="lead-management__modal-close"
+                onClick={closeDetailsModal}
+                aria-label="Close details dialog"
+              >
+                <RiCloseLine />
+              </button>
+            </div>
+            <div className="lead-management__details-body">
+              <div className="lead-management__detail-section">
+                <div className="lead-management__detail-header">
+                  <RiUserLine className="lead-management__detail-icon" />
+                  <h3>Contact Information</h3>
+                </div>
+                <div className="lead-management__detail-grid">
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      Full Name
+                    </span>
+                    <span className="lead-management__detail-value">
+                      {selectedLead.firstName} {selectedLead.lastName}
+                    </span>
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiMailLine className="lead-management__inline-icon" />
+                      Email
+                    </span>
+                    <a
+                      href={`mailto:${selectedLead.email}`}
+                      className="lead-management__detail-value lead-management__link"
+                    >
+                      {selectedLead.email}
+                    </a>
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiPhoneLine className="lead-management__inline-icon" />
+                      Phone
+                    </span>
+                    {selectedLead.phone ? (
+                      <a
+                        href={`tel:${selectedLead.phone}`}
+                        className="lead-management__detail-value lead-management__link"
+                      >
+                        {selectedLead.phone}
+                      </a>
+                    ) : (
+                      <span className="lead-management__detail-value lead-management__muted">
+                        Not provided
+                      </span>
+                    )}
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiBriefcaseLine className="lead-management__inline-icon" />
+                      Profession
+                    </span>
+                    <span className="lead-management__detail-value">
+                      {selectedLead.profession || (
+                        <span className="lead-management__muted">
+                          Not provided
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lead-management__detail-section">
+                <div className="lead-management__detail-header">
+                  <RiFileTextLine className="lead-management__detail-icon" />
+                  <h3>Lead Information</h3>
+                </div>
+                <div className="lead-management__detail-grid">
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      Status
+                    </span>
+                    <span
+                      className={`lead-management__status lead-management__status--${selectedLead.status}`}
+                    >
+                      {statusLabels[selectedLead.status] || selectedLead.status}
+                    </span>
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiGlobalLine className="lead-management__inline-icon" />
+                      Source
+                    </span>
+                    <span className="lead-management__detail-value">
+                      {formatSourceLabel(selectedLead.source)}
+                    </span>
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiCalendarLine className="lead-management__inline-icon" />
+                      Created
+                    </span>
+                    <span className="lead-management__detail-value">
+                      {formatDate(selectedLead.createdAt)}
+                    </span>
+                  </div>
+                  <div className="lead-management__detail-item">
+                    <span className="lead-management__detail-label">
+                      <RiCalendarLine className="lead-management__inline-icon" />
+                      Last Updated
+                    </span>
+                    <span className="lead-management__detail-value">
+                      {formatDate(selectedLead.updatedAt)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lead-management__detail-section">
+                <div className="lead-management__detail-header">
+                  <RiFileTextLine className="lead-management__detail-icon" />
+                  <h3>Message</h3>
+                </div>
+                <div className="lead-management__message-box">
+                  {selectedLead.message}
+                </div>
+              </div>
+
+              {selectedLead.notes && (
+                <div className="lead-management__detail-section">
+                  <div className="lead-management__detail-header">
+                    <RiStickyNoteLine className="lead-management__detail-icon" />
+                    <h3>Notes</h3>
+                  </div>
+                  <div className="lead-management__message-box">
+                    {selectedLead.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="lead-management__modal-actions">
+              <button
+                type="button"
+                className="lead-management__modal-secondary"
+                onClick={closeDetailsModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -730,7 +974,9 @@ const LeadManagement = () => {
                       type="date"
                       value={customStartDate}
                       max={maxDate}
-                      onChange={(event) => setCustomStartDate(event.target.value)}
+                      onChange={(event) =>
+                        setCustomStartDate(event.target.value)
+                      }
                       disabled={exportLoading}
                     />
                   </label>

@@ -17,9 +17,13 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
 }) => {
   if (!isOpen || !invoice) return null;
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (invoice) {
-      generateInvoicePDF(invoice);
+      try {
+        await generateInvoicePDF(invoice);
+      } catch (error) {
+        console.error("Failed to generate PDF:", error);
+      }
     }
   };
 

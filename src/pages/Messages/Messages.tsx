@@ -48,8 +48,14 @@ const Messages: React.FC<MessagePageProps> = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Get WebSocket connection from context
-  const { isConnected, sendMessage, sendTypingIndicator, lastMessage, lastMessageTimestamp } = useWebSocket();
-  
+  const {
+    isConnected,
+    sendMessage,
+    sendTypingIndicator,
+    lastMessage,
+    lastMessageTimestamp,
+  } = useWebSocket();
+
   // Add a debug state to track when lastMessage changes
   const [debugMessageCount, setDebugMessageCount] = useState(0);
 
@@ -66,12 +72,12 @@ const Messages: React.FC<MessagePageProps> = () => {
 
   // Debug effect to track lastMessage changes
   useEffect(() => {
-    console.log('🔍 [Messages] DEBUG - lastMessage changed:', {
+    console.log("🔍 [Messages] DEBUG - lastMessage changed:", {
       lastMessage,
       lastMessageTimestamp,
-      count: debugMessageCount + 1
+      count: debugMessageCount + 1,
     });
-    setDebugMessageCount(prev => prev + 1);
+    setDebugMessageCount((prev) => prev + 1);
   }, [lastMessage, lastMessageTimestamp]);
 
   // Fetch sessions on mount and when filter changes
@@ -81,100 +87,138 @@ const Messages: React.FC<MessagePageProps> = () => {
 
   // Listen for WebSocket messages to update sessions in real-time
   useEffect(() => {
-    console.log('🔍 [Messages] WebSocket effect triggered:', { 
-      hasMessage: !!lastMessage, 
-      messageType: lastMessage?.type, 
+    console.log("🔍 [Messages] WebSocket effect triggered:", {
+      hasMessage: !!lastMessage,
+      messageType: lastMessage?.type,
       timestamp: lastMessageTimestamp,
       isConnected,
-      lastMessage: lastMessage // Log the full message object for debugging
+      lastMessage: lastMessage, // Log the full message object for debugging
     });
-    
+
     if (lastMessage && lastMessageTimestamp > 0) {
-      console.log('🔍 [Messages] Processing WebSocket message:', lastMessage.type, lastMessage);
-      
+      console.log(
+        "🔍 [Messages] Processing WebSocket message:",
+        lastMessage.type,
+        lastMessage
+      );
+
       // Immediately call fetchSessions for any chat-related messages
-      if (['chat_request', 'chat_message', 'chat_accepted', 'chat_closed'].includes(lastMessage.type)) {
-        console.log('🚨 [Messages] CALLING FETCHSESSIONS FOR:', lastMessage.type);
+      if (
+        [
+          "chat_request",
+          "chat_message",
+          "chat_accepted",
+          "chat_closed",
+        ].includes(lastMessage.type)
+      ) {
+        console.log(
+          "🚨 [Messages] CALLING FETCHSESSIONS FOR:",
+          lastMessage.type
+        );
         fetchSessions();
       }
-      
+
       switch (lastMessage.type) {
-        case 'chat_request':
+        case "chat_request":
           // New chat session created - refresh sessions list immediately
-          console.log('🆕 New chat request received via WebSocket:', lastMessage);
-          
+          console.log(
+            "🆕 New chat request received via WebSocket:",
+            lastMessage
+          );
+
           // Play notification sound for new chat requests
           try {
             // Create a simple beep sound using Web Audio API
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioContext = new (window.AudioContext ||
+              (window as any).webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.value = 800; // High pitch for new chat
             gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + 0.5
+            );
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.5);
           } catch (error) {
-            console.log('Could not play notification sound:', error);
+            console.log("Could not play notification sound:", error);
             // Fallback vibration if available
             if (navigator.vibrate) {
               navigator.vibrate([200, 100, 200]);
             }
           }
           break;
-          
-        case 'chat_message':
+
+        case "chat_message":
           // New message received - refresh current session if it matches
-          if (selectedSessionId && lastMessage.sessionId === selectedSessionId) {
+          if (
+            selectedSessionId &&
+            lastMessage.sessionId === selectedSessionId
+          ) {
             dispatch(fetchChatSession({ sessionId: selectedSessionId }));
           }
           // Also refresh sessions list to update last activity
           fetchSessions();
-          
+
           // Play message sound (softer than new chat)
           try {
             // Create a softer sound for messages
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioContext = new (window.AudioContext ||
+              (window as any).webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-            
+
             oscillator.frequency.value = 400; // Lower pitch for messages
             gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-            
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + 0.2
+            );
+
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.2);
           } catch (error) {
-            console.log('Could not play message sound:', error);
+            console.log("Could not play message sound:", error);
           }
           break;
-          
-        case 'chat_accepted':
-        case 'chat_closed':
+
+        case "chat_accepted":
+        case "chat_closed":
           // Session status changed - refresh sessions list
-          console.log(`Chat ${lastMessage.type} received via WebSocket, refreshing sessions`);
+          console.log(
+            `Chat ${lastMessage.type} received via WebSocket, refreshing sessions`
+          );
           fetchSessions();
           break;
-          
+
         default:
           // Handle other message types if needed
           break;
       }
     }
-  }, [lastMessage, lastMessageTimestamp, selectedSessionId, dispatch, fetchSessions]);
+  }, [
+    lastMessage,
+    lastMessageTimestamp,
+    selectedSessionId,
+    dispatch,
+    fetchSessions,
+  ]);
 
   // Auto-refresh sessions when WebSocket connection is established
   useEffect(() => {
     if (isConnected) {
-      console.log('🔗 WebSocket connected, refreshing sessions to ensure we have latest data');
+      console.log(
+        "🔗 WebSocket connected, refreshing sessions to ensure we have latest data"
+      );
       // Add a small delay to ensure WebSocket is fully ready
       setTimeout(() => {
         fetchSessions();
@@ -185,7 +229,9 @@ const Messages: React.FC<MessagePageProps> = () => {
   // Force refresh sessions every 5 minutes as fallback (WebSocket should handle real-time updates)
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('Periodic refresh of sessions (fallback - WebSocket should handle real-time updates)');
+      console.log(
+        "Periodic refresh of sessions (fallback - WebSocket should handle real-time updates)"
+      );
       fetchSessions();
     }, 300000); // 5 minutes (300 seconds)
 

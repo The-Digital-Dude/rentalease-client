@@ -19,11 +19,25 @@ const GlobalChatNotifications: React.FC = () => {
     if (lastMessage && lastMessageTimestamp > 0) {
       // Handle new chat requests (for SuperAdmins and support staff)
       if (lastMessage.type === "chat_request") {
-        const sessionData = lastMessage.session || lastMessage.payload?.session || lastMessage;
-        const requestId = sessionData?.id || sessionData?.sessionId || `chat-request-${lastMessageTimestamp}`;
+        console.log("🔔 [GlobalChatNotifications] Processing chat_request:", lastMessage);
+        
+        // Try multiple possible structures for sessionData
+        const sessionData = 
+          lastMessage.sessionData || 
+          lastMessage.payload?.sessionData || 
+          lastMessage.payload ||
+          lastMessage;
+        
+        console.log("🔔 [GlobalChatNotifications] Extracted sessionData:", sessionData);
+        
+        const requestId = 
+          sessionData?.id || 
+          sessionData?.sessionId || 
+          `chat-request-${lastMessageTimestamp}`;
 
         // Check if we've already shown notification for this request
         if (notifiedMessagesRef.current.has(requestId)) {
+          console.log("🔔 [GlobalChatNotifications] Already notified for request:", requestId);
           return; // Skip duplicate notification
         }
 
@@ -33,6 +47,7 @@ const GlobalChatNotifications: React.FC = () => {
           sessionData.initiatedBy &&
           sessionData.initiatedBy.userId !== currentUser.id
         ) {
+          console.log("🔔 [GlobalChatNotifications] Showing toast for new chat request");
           const initiatorName = sessionData.initiatedBy.userName || "Someone";
           const subject = sessionData.subject || "Support Request";
 
@@ -50,16 +65,19 @@ const GlobalChatNotifications: React.FC = () => {
             console.warn("Failed to play notification sound:", error);
           });
 
-          // Show toast notification for new chat request
-          toast.success(`🔔 New chat request from ${initiatorName}: ${subject}`, {
-            duration: 8000,
-            position: "top-right",
+          // Show toast notification for new chat request at top-center
+          toast.success(`New chat request from ${initiatorName}: ${subject}`, {
+            duration: 5000,
+            position: "top-center",
+            icon: "💬",
             style: {
-              background: "#8b5cf6",
+              background: "#10b981",
               color: "#fff",
-              fontWeight: "500",
               fontSize: "14px",
-              padding: "12px 20px",
+              fontWeight: "500",
+              padding: "12px 16px",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
             },
           });
         }
@@ -67,11 +85,18 @@ const GlobalChatNotifications: React.FC = () => {
 
       // Handle chat messages
       if (lastMessage.type === "chat_message") {
+        // Try multiple possible structures for messageData
         const messageData =
-          lastMessage.message || lastMessage.payload?.message || lastMessage;
+          lastMessage.message || 
+          lastMessage.payload?.message || 
+          lastMessage.payload ||
+          lastMessage;
 
         // Get message ID for deduplication
-        const messageId = messageData?.id || messageData?.messageId || `${lastMessage.sessionId}-${lastMessageTimestamp}`;
+        const messageId = 
+          messageData?.id || 
+          messageData?.messageId || 
+          `${lastMessage.sessionId || messageData?.sessionId || 'unknown'}-${lastMessageTimestamp}`;
 
         // Check if we've already shown notification for this message
         if (notifiedMessagesRef.current.has(messageId)) {
@@ -85,12 +110,13 @@ const GlobalChatNotifications: React.FC = () => {
           messageData.sender.userId !== currentUser.id
         ) {
           const senderName = messageData.sender.userName || "Someone";
+          const sessionId = lastMessage.sessionId || messageData.sessionId;
 
           // Check if user is actively viewing this chat
           const isViewingThisChat =
             isChatOpen &&
             currentSession &&
-            (lastMessage.sessionId === currentSession.id ||
+            (sessionId === currentSession.id ||
              messageData.sessionId === currentSession.id);
 
           // Only play sound and show toast if NOT actively viewing the chat
@@ -109,16 +135,19 @@ const GlobalChatNotifications: React.FC = () => {
               console.warn("Failed to play notification sound:", error);
             });
 
-            // Show toast notification with sender name only
-            toast.success(`💬 New message from ${senderName}`, {
-              duration: 6000,
-              position: "top-right",
+            // Show toast notification with sender name only at top-center
+            toast.success(`New message from ${senderName}`, {
+              duration: 5000,
+              position: "top-center",
+              icon: "💬",
               style: {
                 background: "#10b981",
                 color: "#fff",
-                fontWeight: "500",
                 fontSize: "14px",
-                padding: "12px 20px",
+                fontWeight: "500",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
               },
             });
           }

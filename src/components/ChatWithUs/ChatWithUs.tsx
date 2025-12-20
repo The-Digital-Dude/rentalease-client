@@ -40,7 +40,7 @@ const ChatWithUs: React.FC = () => {
     const resumeSession = async () => {
       try {
         console.log("🔍 Looking for existing chat sessions...");
-        
+
         // First, try to get the user's latest active/waiting session
         const result = await dispatch(
           fetchChatSessions({
@@ -52,10 +52,13 @@ const ChatWithUs: React.FC = () => {
 
         if (result?.data?.sessions?.length > 0) {
           const latestSession = result.data.sessions[0];
-          
+
           // Only resume if it's not closed
-          if (latestSession.status !== 'closed') {
-            console.log("📍 Found existing session, loading it:", latestSession.id);
+          if (latestSession.status !== "closed") {
+            console.log(
+              "📍 Found existing session, loading it:",
+              latestSession.id
+            );
             await dispatch(fetchChatSession({ sessionId: latestSession.id }));
           } else {
             console.log("💤 Latest session is closed, no need to resume");
@@ -99,8 +102,11 @@ const ChatWithUs: React.FC = () => {
     initialMessage: string
   ) => {
     try {
-      console.log("🚀 Initiating new chat session...", { subject, initialMessage });
-      
+      console.log("🚀 Initiating new chat session...", {
+        subject,
+        initialMessage,
+      });
+
       const result = await dispatch(
         initiateChat({
           subject,
@@ -117,7 +123,9 @@ const ChatWithUs: React.FC = () => {
         setTimeout(async () => {
           try {
             console.log("📥 Fetching chat session details...");
-            await dispatch(fetchChatSession({ sessionId: result.data.sessionId }));
+            await dispatch(
+              fetchChatSession({ sessionId: result.data.sessionId })
+            );
             console.log("✅ Chat session loaded successfully");
           } catch (sessionError) {
             console.error("Error fetching chat session:", sessionError);

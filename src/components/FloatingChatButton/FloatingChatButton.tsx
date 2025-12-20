@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { RiMessage3Line, RiCloseLine, RiNotification3Line } from 'react-icons/ri';
-import './FloatingChatButton.scss';
+import React, { useState, useEffect } from "react";
+import {
+  RiMessage3Line,
+  RiCloseLine,
+  RiNotification3Line,
+} from "react-icons/ri";
+import "./FloatingChatButton.scss";
 
 interface FloatingChatButtonProps {
   isOpen: boolean;
@@ -15,7 +19,7 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
   hasUnreadMessages,
   unreadCount,
   onClick,
-  onClose
+  onClose,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldPulse, setShouldPulse] = useState(false);
@@ -46,7 +50,7 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
   };
 
   const formatUnreadCount = (count: number): string => {
-    if (count > 99) return '99+';
+    if (count > 99) return "99+";
     return count.toString();
   };
 
@@ -54,9 +58,9 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
     <div className="floating-chat-button">
       {/* Chat Button */}
       <button
-        className={`chat-button ${isOpen ? 'open' : ''} ${shouldPulse ? 'pulse' : ''} ${isAnimating ? 'animating' : ''}`}
+        className={`chat-button ${isOpen ? "open" : ""}`}
         onClick={handleClick}
-        aria-label={isOpen ? 'Close chat' : 'Open chat support'}
+        aria-label={isOpen ? "Close chat" : "Open chat support"}
         type="button"
       >
         {/* Button Content */}
@@ -71,20 +75,16 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
           </div>
 
           {/* Text (only show when closed) */}
-          {!isOpen && (
-            <span className="button-text">
-              Chat with us
-            </span>
-          )}
+          {!isOpen && <span className="button-text">Chat with us</span>}
 
           {/* Unread Badge */}
-          {hasUnreadMessages && unreadCount > 0 && (
+          {/* {hasUnreadMessages && unreadCount > 0 && (
             <div className="unread-badge">
               <span className="unread-count">
                 {formatUnreadCount(unreadCount)}
               </span>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Ripple Effect */}
@@ -92,20 +92,16 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
       </button>
 
       {/* Notification Indicator (shows when there are unread messages) */}
-      {hasUnreadMessages && !isOpen && (
+      {/* {hasUnreadMessages && !isOpen && (
         <div className="notification-indicator">
           <RiNotification3Line className="notification-icon" />
           <div className="notification-dot"></div>
         </div>
-      )}
+      )} */}
 
       {/* Background Overlay for Mobile */}
       {isOpen && (
-        <div 
-          className="mobile-overlay" 
-          onClick={onClose}
-          aria-hidden="true"
-        />
+        <div className="mobile-overlay" onClick={onClose} aria-hidden="true" />
       )}
     </div>
   );

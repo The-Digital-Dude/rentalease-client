@@ -30,7 +30,6 @@ const api: AxiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "10000"),
   headers: {
-    "Content-Type": "application/json",
     Accept: "application/json",
   },
 });

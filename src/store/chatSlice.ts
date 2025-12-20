@@ -21,6 +21,14 @@ export interface ChatMessage {
   };
   messageType: "text" | "image" | "file" | "system";
   createdAt: string;
+  attachment?: {
+    type: "image" | "document" | "video" | "audio";
+    filename: string;
+    originalName: string;
+    url: string;
+    size: number;
+    mimeType: string;
+  };
   metadata?: {
     deliveryStatus: "sent" | "delivered" | "failed";
     readBy?: Array<{
@@ -299,12 +307,16 @@ const chatSlice = createSlice({
       const { type, payload } = action.payload;
 
       switch (type) {
-        case "chat_request":
-          // Add new chat request to sessions if we're viewing waiting chats
-          if (payload.sessionData) {
+        case "chat_request": {
+          // Add new chat request to sessions
+          // Try multiple possible structures for sessionData
+          const sessionData = payload.sessionData || payload.session || payload;
+
+          if (sessionData && (sessionData.id || sessionData.sessionId)) {
             const newSession = {
-              ...payload.sessionData,
-              unreadMessageCount: 0,
+              ...sessionData,
+              id: sessionData.id || sessionData.sessionId,
+              unreadMessageCount: sessionData.unreadMessageCount || 0,
             };
 
             // Check if session already exists
@@ -312,12 +324,19 @@ const chatSlice = createSlice({
               (s) => s.id === newSession.id
             );
             if (existingIndex === -1) {
+              // Add to the beginning of the list
               state.sessions.unshift(newSession);
+              // Update pagination total count
+              state.sessionsPagination.totalCount += 1;
+            } else {
+              // Update existing session
+              state.sessions[existingIndex] = newSession;
             }
           }
           break;
+        }
 
-        case "chat_message":
+        case "chat_message": {
           // Add message to current session if it matches
           if (
             state.currentSession &&
@@ -330,6 +349,7 @@ const chatSlice = createSlice({
               content: payload.message.content,
               messageType: payload.message.messageType,
               createdAt: payload.message.createdAt,
+              attachment: payload.message.attachment,
               metadata: payload.message.metadata,
             };
 
@@ -358,8 +378,9 @@ const chatSlice = createSlice({
             }
           }
           break;
+        }
 
-        case "chat_accepted":
+        case "chat_accepted": {
           // Update session status if it's the current session
           if (
             state.currentSession &&
@@ -389,8 +410,9 @@ const chatSlice = createSlice({
               new Date().toISOString();
           }
           break;
+        }
 
-        case "chat_closed":
+        case "chat_closed": {
           // Update session status
           if (
             state.currentSession &&
@@ -410,6 +432,7 @@ const chatSlice = createSlice({
               new Date().toISOString();
           }
           break;
+        }
 
         case "typing_start":
           if (
@@ -509,11 +532,23 @@ const chatSlice = createSlice({
         state.sessions = action.payload.data.sessions;
         state.sessionsPagination = action.payload.data.pagination;
 
-        // Update unread counts
-        action.payload.data.sessions.forEach((session: ChatSession) => {
-          if (session.unreadMessageCount && session.unreadMessageCount > 0) {
-            state.sessionUnreadCounts[session.id] = session.unreadMessageCount;
+        // Clear existing unread counts for sessions that are being fetched
+        // This ensures we don't have stale counts from sessions that are no longer in the list
+        const fetchedSessionIds = new Set(
+          action.payload.data.sessions.map((s: ChatSession) => s.id)
+        );
+
+        // Remove counts for sessions that are no longer in the fetched list
+        Object.keys(state.sessionUnreadCounts).forEach((sessionId) => {
+          if (!fetchedSessionIds.has(sessionId)) {
+            delete state.sessionUnreadCounts[sessionId];
           }
+        });
+
+        // Update unread counts for all fetched sessions (including 0 counts)
+        action.payload.data.sessions.forEach((session: ChatSession) => {
+          const unreadCount = session.unreadMessageCount || 0;
+          state.sessionUnreadCounts[session.id] = unreadCount;
         });
 
         // Recalculate total unread count

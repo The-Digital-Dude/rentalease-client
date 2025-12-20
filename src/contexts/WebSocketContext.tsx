@@ -163,10 +163,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
             case "chat_request":
               console.log("📨 Chat request received via WebSocket:", message);
+              // Ensure the message structure is correct for Redux
               dispatch(
                 handleWebSocketMessage({
                   type: message.type,
-                  payload: message,
+                  payload: {
+                    ...message,
+                    // Support multiple possible structures
+                    sessionData: message.sessionData || message.session || message,
+                  },
                 })
               );
               break;

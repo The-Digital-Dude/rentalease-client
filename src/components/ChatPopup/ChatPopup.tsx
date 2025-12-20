@@ -14,8 +14,7 @@ import {
   RiCloseCircleLine,
   RiDownloadLine,
 } from "react-icons/ri";
-import { useAppDispatch } from "../../store/hooks";
-import { sendChatAttachment } from "../../store/chatSlice";
+import chatService from "../../services/chatService";
 import toast from "react-hot-toast";
 import "./ChatPopup.scss";
 
@@ -106,7 +105,6 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
   onAcceptChat,
   onCloseChat,
 }) => {
-  const dispatch = useAppDispatch();
   const [message, setMessage] = useState("");
   const [subject, setSubject] = useState("");
   const [initialMessage, setInitialMessage] = useState("");
@@ -237,13 +235,12 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
 
     setIsUploadingFile(true);
     try {
-      await dispatch(
-        sendChatAttachment({
-          sessionId: session.id,
-          file: selectedFile,
-          text: message.trim() || undefined,
-        })
-      ).unwrap();
+      // Call chatService directly - no Redux needed for file uploads
+      await chatService.sendAttachment(
+        session.id,
+        selectedFile,
+        message.trim() || undefined
+      );
 
       // Clear after successful upload
       setSelectedFile(null);
@@ -252,7 +249,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
       toast.success("File sent successfully");
     } catch (error: any) {
       console.error("Error uploading file:", error);
-      toast.error(error?.message || "Failed to send file");
+      toast.error(error?.response?.data?.message || error?.message || "Failed to send file");
     } finally {
       setIsUploadingFile(false);
     }
@@ -452,7 +449,7 @@ const ChatPopup: React.FC<ChatPopupProps> = ({
                             </div>
                           ) : (
                             <>
-                              {msg.attachment && (
+                              {msg.attachment?.url && (
                                 <div className="message-attachment">
                                   {msg.attachment.type === "image" ? (
                                     <div className="attachment-image">

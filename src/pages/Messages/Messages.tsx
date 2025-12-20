@@ -11,6 +11,8 @@ import {
   RiCustomerService2Line,
   RiLoader4Line,
   RiRefreshLine,
+  RiFileTextLine,
+  RiDownloadLine,
 } from "react-icons/ri";
 import { type RootState, type AppDispatch } from "../../store";
 import {
@@ -119,41 +121,16 @@ const Messages: React.FC<MessagePageProps> = () => {
       }
 
       switch (lastMessage.type) {
-        case "chat_request":
+        case "chat_request": {
           // New chat session created - refresh sessions list immediately
           console.log(
             "🆕 New chat request received via WebSocket:",
             lastMessage
           );
-
-          // Play notification sound for new chat requests
-          try {
-            // Create a simple beep sound using Web Audio API
-            const audioContext = new (window.AudioContext ||
-              (window as any).webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.value = 800; // High pitch for new chat
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
-              0.01,
-              audioContext.currentTime + 0.5
-            );
-
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-          } catch (error) {
-            console.log("Could not play notification sound:", error);
-            // Fallback vibration if available
-            if (navigator.vibrate) {
-              navigator.vibrate([200, 100, 200]);
-            }
-          }
+          // Toast notification is handled globally by GlobalChatNotifications
+          // Just refresh the sessions list here
           break;
+        }
 
         case "chat_message":
           // New message received - refresh current session if it matches
@@ -315,6 +292,12 @@ const Messages: React.FC<MessagePageProps> = () => {
     return date.toLocaleDateString();
   };
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
   // Filter sessions based on search query
   const filteredSessions = sessions.filter((session) => {
     const matchesSearch =
@@ -339,7 +322,7 @@ const Messages: React.FC<MessagePageProps> = () => {
             <h1>
               <RiMessage3Line /> Chat Support
             </h1>
-            <p>Manage and respond to customer chat requests</p>
+            {/* <p>Manage and respond to customer chat requests</p> */}
           </div>
 
           <div className="header-actions">
@@ -537,7 +520,62 @@ const Messages: React.FC<MessagePageProps> = () => {
                         </span>
                       </div>
                       <div className="message-content">
-                        {message.content.text}
+                        {message.messageType === "system" ? (
+                          <div className="system-message">
+                            <RiTimeLine className="system-icon" />
+                            <span>{message.content.text}</span>
+                          </div>
+                        ) : (
+                          <>
+                            {message.attachment?.url && (
+                              <div className="message-attachment">
+                                {message.attachment.type === "image" ? (
+                                  <div className="attachment-image">
+                                    <img
+                                      src={message.attachment.url}
+                                      alt={message.attachment.originalName}
+                                      loading="lazy"
+                                    />
+                                    <a
+                                      href={message.attachment.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="download-overlay"
+                                      title="Open in new tab"
+                                    >
+                                      <RiDownloadLine />
+                                    </a>
+                                  </div>
+                                ) : (
+                                  <a
+                                    href={message.attachment.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="attachment-file"
+                                  >
+                                    <RiFileTextLine className="file-icon" />
+                                    <div className="file-details">
+                                      <span className="file-name">
+                                        {message.attachment.originalName}
+                                      </span>
+                                      <span className="file-size">
+                                        {formatFileSize(
+                                          message.attachment.size
+                                        )}
+                                      </span>
+                                    </div>
+                                    <RiDownloadLine className="download-icon" />
+                                  </a>
+                                )}
+                              </div>
+                            )}
+                            {message.content?.text && (
+                              <div className="text-message">
+                                <p>{message.content.text}</p>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}

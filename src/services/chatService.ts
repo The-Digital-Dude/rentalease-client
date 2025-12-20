@@ -103,7 +103,7 @@ const chatService = {
   // Initiate a new chat session
   initiateChat: async (params: InitiateChatParams) => {
     try {
-      const response = await api.post('/v1/chat/initiate', params);
+      const response = await api.post('/chat/initiate', params);
       return response.data;
     } catch (error) {
       console.error('Error initiating chat:', error);
@@ -118,8 +118,8 @@ const chatService = {
       if (status) params.append('status', status);
       params.append('page', page.toString());
       params.append('limit', limit.toString());
-      
-      const response = await api.get(`/v1/chat/sessions?${params.toString()}`);
+
+      const response = await api.get(`/chat/sessions?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching chat sessions:', error);
@@ -133,8 +133,8 @@ const chatService = {
       const params = new URLSearchParams();
       params.append('limit', limit.toString());
       params.append('offset', offset.toString());
-      
-      const response = await api.get(`/v1/chat/session/${sessionId}?${params.toString()}`);
+
+      const response = await api.get(`/chat/session/${sessionId}?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching chat session:', error);
@@ -145,7 +145,7 @@ const chatService = {
   // Send a message in a chat session
   sendMessage: async (params: SendMessageParams) => {
     try {
-      const response = await api.post('/v1/chat/message', params);
+      const response = await api.post('/chat/message', params);
       return response.data;
     } catch (error) {
       console.error('Error sending message:', error);
@@ -156,7 +156,7 @@ const chatService = {
   // Accept a chat session (for support agents)
   acceptSession: async (sessionId: string) => {
     try {
-      const response = await api.put(`/v1/chat/session/${sessionId}/accept`);
+      const response = await api.put(`/chat/session/${sessionId}/accept`);
       return response.data;
     } catch (error) {
       console.error('Error accepting chat session:', error);
@@ -167,7 +167,7 @@ const chatService = {
   // Close a chat session
   closeSession: async (sessionId: string, reason = 'resolved') => {
     try {
-      const response = await api.put(`/v1/chat/session/${sessionId}/close`, { reason });
+      const response = await api.put(`/chat/session/${sessionId}/close`, { reason });
       return response.data;
     } catch (error) {
       console.error('Error closing chat session:', error);
@@ -178,7 +178,7 @@ const chatService = {
   // Get chat statistics (SuperUser only)
   getStats: async () => {
     try {
-      const response = await api.get('/v1/chat/stats');
+      const response = await api.get('/chat/stats');
       return response.data;
     } catch (error) {
       console.error('Error fetching chat statistics:', error);
@@ -213,6 +213,15 @@ const chatService = {
   // Send attachment
   sendAttachment: async (sessionId: string, file: File, text?: string) => {
     try {
+      console.log('📎 sendAttachment called with:', {
+        sessionId,
+        file,
+        fileName: file?.name,
+        fileSize: file?.size,
+        fileType: file?.type,
+        text
+      });
+
       const formData = new FormData();
       formData.append('sessionId', sessionId);
       formData.append('attachment', file);
@@ -220,12 +229,20 @@ const chatService = {
         formData.append('text', text);
       }
 
-      // Let the browser set Content-Type header automatically with boundary
-      const response = await api.post('/v1/chat/message/attachment', formData);
+      // Log FormData contents
+      console.log('📦 FormData entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
 
+      // Axios will automatically set Content-Type with boundary for FormData
+      const response = await api.post('/chat/message/attachment', formData);
+
+      console.log('✅ Attachment upload response:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Error sending attachment:', error);
+      console.error('❌ Error sending attachment:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     }
   }

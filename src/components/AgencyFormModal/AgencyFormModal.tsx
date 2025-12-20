@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Modal from "../Modal";
-import { VALID_REGIONS } from "../../constants";
+import { VALID_REGIONS, COMPLIANCE_TYPES } from "../../constants";
 import "./AgencyFormModal.scss";
 
 interface Agency {
   id: string;
   name: string;
-  abn: number;
+  abn: string;
   contactPerson: string;
   contactEmail: string;
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "Active" | "Inactive" | "Pending" | "Suspended";
+  complianceSubscriptions?: string[];
+  status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
+  subscriptionAmount?: number;
 }
 
 interface AgencyFormData {
@@ -24,7 +26,8 @@ interface AgencyFormData {
   contactPhone: string;
   region: string;
   complianceLevel: string;
-  status: "Active" | "Inactive" | "Pending" | "Suspended";
+  complianceSubscriptions: string[];
+  status: "active" | "inactive" | "pending" | "suspended";
   password?: string;
   subscriptionAmount?: number | string;
 }
@@ -34,7 +37,6 @@ interface AgencyFormModalProps {
   onClose: () => void;
   onSubmit: (formData: AgencyFormData) => void;
   editingAgency?: Agency | null;
-  complianceLevels: string[];
   regions: readonly string[];
   isSubmitting?: boolean;
 }
@@ -47,9 +49,10 @@ const initialFormData: AgencyFormData = {
   contactPhone: "",
   region: "",
   complianceLevel: "",
-  status: "Active",
+  complianceSubscriptions: [],
+  status: "active",
   password: "",
-  subscriptionAmount: 99,
+  subscriptionAmount: "",
 };
 
 const AgencyFormModal = ({
@@ -57,11 +60,13 @@ const AgencyFormModal = ({
   onClose,
   onSubmit,
   editingAgency,
-  complianceLevels,
   regions,
   isSubmitting = false,
 }: AgencyFormModalProps) => {
   const [formData, setFormData] = useState<AgencyFormData>(initialFormData);
+  const [isComplianceDropdownOpen, setIsComplianceDropdownOpen] =
+    useState(false);
+  const complianceDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (editingAgency) {
@@ -73,12 +78,34 @@ const AgencyFormModal = ({
         contactPhone: editingAgency.contactPhone,
         region: editingAgency.region,
         complianceLevel: editingAgency.complianceLevel,
+        complianceSubscriptions: editingAgency.complianceSubscriptions || [],
         status: editingAgency.status,
+        subscriptionAmount: editingAgency.subscriptionAmount || "",
       });
     } else {
       setFormData(initialFormData);
     }
   }, [editingAgency, isOpen]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        complianceDropdownRef.current &&
+        !complianceDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsComplianceDropdownOpen(false);
+      }
+    };
+
+    if (isComplianceDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isComplianceDropdownOpen]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -103,6 +130,26 @@ const AgencyFormModal = ({
   // Prevent scroll wheel from changing number inputs
   const handleNumberInputWheel = (e: React.WheelEvent<HTMLInputElement>) => {
     e.currentTarget.blur();
+  };
+
+  // Handle compliance checkbox toggle
+  const handleComplianceToggle = (type: string) => {
+    setFormData((prev) => {
+      const current = prev.complianceSubscriptions || [];
+      const isSelected = current.includes(type);
+
+      if (isSelected) {
+        return {
+          ...prev,
+          complianceSubscriptions: current.filter((t) => t !== type),
+        };
+      } else {
+        return {
+          ...prev,
+          complianceSubscriptions: [...current, type],
+        };
+      }
+    });
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -210,24 +257,47 @@ const AgencyFormModal = ({
               ))}
             </select>
           </div>
-          {/* <div className="form-group">
-            <label htmlFor="complianceLevel">Compliance Level</label>
-            <select
-              id="complianceLevel"
-              name="complianceLevel"
-              value={formData.complianceLevel}
-              onChange={handleInputChange}
-              disabled={isSubmitting}
-              required
-            >
-              <option value="">Select Compliance Level</option>
-              {complianceLevels.map((level) => (
-                <option key={level} value={level}>
-                  {level}
-                </option>
-              ))}
-            </select>
-          </div> */}
+          <div className="form-group">
+            <label htmlFor="complianceSubscriptions">
+              Compliance Subscriptions
+            </label>
+            <div className="custom-multi-select" ref={complianceDropdownRef}>
+              <div
+                className={`select-display ${
+                  isComplianceDropdownOpen ? "open" : ""
+                } ${isSubmitting ? "disabled" : ""}`}
+                onClick={() =>
+                  !isSubmitting &&
+                  setIsComplianceDropdownOpen(!isComplianceDropdownOpen)
+                }
+              >
+                <span className="selected-text">
+                  {formData.complianceSubscriptions &&
+                  formData.complianceSubscriptions.length > 0
+                    ? formData.complianceSubscriptions.join(", ")
+                    : "Select compliance types..."}
+                </span>
+                <span className="dropdown-arrow">▼</span>
+              </div>
+              {isComplianceDropdownOpen && !isSubmitting && (
+                <div className="dropdown-menu">
+                  {COMPLIANCE_TYPES.map((type) => (
+                    <label key={type} className="dropdown-item">
+                      <input
+                        type="checkbox"
+                        checked={
+                          formData.complianceSubscriptions?.includes(type) ||
+                          false
+                        }
+                        onChange={() => handleComplianceToggle(type)}
+                      />
+                      <span>{type}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           <div className="form-group">
             <label htmlFor="status">Status</label>
             <select
@@ -238,44 +308,42 @@ const AgencyFormModal = ({
               disabled={isSubmitting}
               required
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
-              <option value="Suspended">Suspended</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
-          {/* Subscription amount field only for new agencies */}
-          {!editingAgency && (
-            <div className="form-group">
-              <label htmlFor="subscriptionAmount">
-                Subscription Amount (AUD)
-              </label>
-              <input
-                type="number"
-                id="subscriptionAmount"
-                name="subscriptionAmount"
-                value={formData.subscriptionAmount || ""}
-                onChange={handleInputChange}
-                onWheel={handleNumberInputWheel}
-                placeholder="99"
-                min="1"
-                max="100000"
-                step="1"
-                disabled={isSubmitting}
-                required
-              />
-              <small
-                style={{
-                  color: "#757575",
-                  fontSize: "12px",
-                  marginTop: "4px",
-                  display: "block",
-                }}
-              >
-                Amount between $1 and $100,000 AUD per month
-              </small>
-            </div>
-          )}
+          {/* Subscription amount field */}
+          <div className="form-group">
+            <label htmlFor="subscriptionAmount">
+              Subscription Amount (AUD) {!editingAgency && "*"}
+            </label>
+            <input
+              type="number"
+              id="subscriptionAmount"
+              name="subscriptionAmount"
+              value={formData.subscriptionAmount || ""}
+              onChange={handleInputChange}
+              onWheel={handleNumberInputWheel}
+              placeholder="99"
+              min="1"
+              max="100000"
+              step="1"
+              disabled={isSubmitting}
+              required={!editingAgency}
+            />
+            <small
+              style={{
+                color: "#757575",
+                fontSize: "12px",
+                marginTop: "4px",
+                display: "block",
+              }}
+            >
+              Amount between $1 and $100,000 AUD per month
+            </small>
+          </div>
           {/* Password field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">

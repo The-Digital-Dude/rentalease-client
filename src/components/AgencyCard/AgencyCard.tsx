@@ -198,6 +198,26 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             <span>AUD ${agency.subscriptionAmount}</span>
           </div>
         </div>
+        <div className="detail-group compliance-group">
+          <div className="detail-item compliance-item">
+            <span className="label">
+              <RiShieldCheckLine className="label-icon" /> Compliance
+              Subscriptions
+            </span>
+            <div className="compliance-badges">
+              {agency.complianceSubscriptions &&
+              agency.complianceSubscriptions.length > 0 ? (
+                agency.complianceSubscriptions.map((type) => (
+                  <span key={type} className="compliance-badge">
+                    {type}
+                  </span>
+                ))
+              ) : (
+                <span className="no-compliance">No compliance types</span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="agency-footer">

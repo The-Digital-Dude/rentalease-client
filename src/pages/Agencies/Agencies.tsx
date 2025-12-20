@@ -9,21 +9,15 @@ import {
 import EmailContactModal from "../../components/EmailContactModal";
 import { agencyService } from "../../services";
 import type { Agency } from "../../services/agencyService";
-import { VALID_REGIONS } from "../../constants";
+import { VALID_REGIONS, COMPLIANCE_TYPES } from "../../constants";
 import { useAppSelector } from "../../store";
 import "./Agencies.scss";
-
-const complianceLevels = [
-  "Basic Package",
-  "Standard Package",
-  "Premium Package",
-  "Full Package",
-];
 
 const Agencies = () => {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedCompliance, setSelectedCompliance] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +58,6 @@ const Agencies = () => {
       if (response.success) {
         // Ensure we always have an array
         setAgencies(Array.isArray(response.data) ? response.data : []);
-        console.log(response.data);
       } else {
         toast.error(response.message || "Failed to fetch agencies");
         setAgencies([]); // Set empty array on error
@@ -88,21 +81,32 @@ const Agencies = () => {
         .includes(searchTerm.toLowerCase());
       const matchesStatus =
         selectedStatus === "all" || agency.status === selectedStatus;
-      return matchesSearch && matchesStatus;
+
+      // For compliance, handle multiple subscriptions
+      let matchesCompliance = true;
+      if (selectedCompliance !== "all") {
+        matchesCompliance =
+          Array.isArray(agency.complianceSubscriptions) &&
+          agency.complianceSubscriptions.length > 0 &&
+          agency.complianceSubscriptions.includes(selectedCompliance);
+      }
+
+      return matchesSearch && matchesStatus && matchesCompliance;
     }
   );
 
   const handleFormSubmit = async (formData: {
     name: string;
-    abn: string;
+    abn: number | string;
     contactPerson: string;
     contactEmail: string;
     contactPhone: string;
     region: string;
     complianceLevel: string;
+    complianceSubscriptions: string[];
     status: "active" | "inactive" | "pending" | "suspended";
     password?: string;
-    subscriptionAmount?: number;
+    subscriptionAmount?: number | string;
   }) => {
     try {
       setSubmitLoading(true);
@@ -113,14 +117,18 @@ const Agencies = () => {
         // Update existing agency (exclude password)
         const updateData = {
           name: formData.name,
-          abn: formData.abn,
+          abn: String(formData.abn),
           contactPerson: formData.contactPerson,
           contactEmail: formData.contactEmail,
           contactPhone: formData.contactPhone,
           region: formData.region,
           complianceLevel: formData.complianceLevel,
+          complianceSubscriptions: formData.complianceSubscriptions,
           status: formData.status,
           outstandingAmount: editingAgency.outstandingAmount, // Keep for now to satisfy interface
+          subscriptionAmount: formData.subscriptionAmount
+            ? Number(formData.subscriptionAmount)
+            : undefined,
         };
 
         const response = await agencyService.updateAgency(
@@ -145,8 +153,8 @@ const Agencies = () => {
 
         if (
           !formData.subscriptionAmount ||
-          formData.subscriptionAmount < 1 ||
-          formData.subscriptionAmount > 100000
+          Number(formData.subscriptionAmount) < 1 ||
+          Number(formData.subscriptionAmount) > 100000
         ) {
           toast.error("Subscription amount must be between $1 and $100,000");
           return;
@@ -154,16 +162,17 @@ const Agencies = () => {
 
         const newAgencyData = {
           name: formData.name,
-          abn: formData.abn,
+          abn: String(formData.abn),
           contactPerson: formData.contactPerson,
           contactEmail: formData.contactEmail,
           contactPhone: formData.contactPhone,
           region: formData.region,
           complianceLevel: formData.complianceLevel,
+          complianceSubscriptions: formData.complianceSubscriptions,
           status: formData.status,
           outstandingAmount: 0, // Keep for now to satisfy interface
           password: formData.password,
-          subscriptionAmount: formData.subscriptionAmount,
+          subscriptionAmount: Number(formData.subscriptionAmount),
         };
 
         const response = await agencyService.createAgency(newAgencyData);
@@ -258,7 +267,11 @@ const Agencies = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
+  const handleOnSendEmail = async (
+    subject: string,
+    html: string,
+    attachments?: File[]
+  ) => {
     if (!emailingAgency) return;
 
     setEmailLoading(true);
@@ -373,6 +386,20 @@ const Agencies = () => {
             <option value="suspended">Suspended</option>
           </select>
         </div>
+        <div className="filter-box">
+          <RiFilterLine />
+          <select
+            value={selectedCompliance}
+            onChange={(e) => setSelectedCompliance(e.target.value)}
+          >
+            <option value="all">All Compliance Types</option>
+            {COMPLIANCE_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="agencies-list">
@@ -410,7 +437,9 @@ const Agencies = () => {
               color: "#6b7280",
             }}
           >
-            {searchTerm || selectedStatus !== "all"
+            {searchTerm ||
+            selectedStatus !== "all" ||
+            selectedCompliance !== "all"
               ? "No agencies found matching your criteria."
               : "No agencies available. Add one to get started."}
           </div>
@@ -433,7 +462,6 @@ const Agencies = () => {
         onClose={handleCloseModal}
         onSubmit={handleFormSubmit}
         editingAgency={editingAgency}
-        complianceLevels={complianceLevels}
         regions={VALID_REGIONS}
         isSubmitting={submitLoading}
       />

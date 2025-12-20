@@ -27,6 +27,7 @@ export interface Agency {
   contactPhone: string;
   region: string;
   complianceLevel: string;
+  complianceSubscriptions?: string[];
   status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
   subscriptionAmount?: number;
@@ -43,6 +44,7 @@ export interface ServerAgency {
   phone: string;
   region: string;
   compliance: string;
+  complianceSubscriptions?: string[];
   status: string;
   outstandingAmount: number;
   totalProperties: number;
@@ -50,6 +52,7 @@ export interface ServerAgency {
   joinedDate?: string;
   createdAt?: string;
   lastUpdated?: string;
+  subscriptionAmount?: number;
   subscription?: {
     id: string;
     planType: string;
@@ -237,6 +240,7 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   contactPhone: serverData.phone,
   region: serverData.region,
   complianceLevel: serverData.compliance,
+  complianceSubscriptions: serverData.complianceSubscriptions || [],
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
   subscriptionAmount: serverData.subscriptionAmount,
@@ -309,7 +313,7 @@ export const agencyService = {
         email: agency.contactEmail,
         phone: agency.contactPhone,
         region: agency.region,
-        compliance: agency.complianceLevel,
+        complianceSubscriptions: agency.complianceSubscriptions,
         password: agency.password, // Required for new agencies
         subscriptionAmount: agency.subscriptionAmount, // Required for new agencies
       };
@@ -358,16 +362,33 @@ export const agencyService = {
       if (agency.region) serverData.region = agency.region;
       if (agency.complianceLevel)
         serverData.compliance = agency.complianceLevel;
+      if (agency.complianceSubscriptions !== undefined)
+        serverData.complianceSubscriptions = agency.complianceSubscriptions;
       if (agency.status)
         serverData.status =
           agency.status.charAt(0).toUpperCase() + agency.status.slice(1);
       if (agency.outstandingAmount !== undefined)
         serverData.outstandingAmount = agency.outstandingAmount;
+      if (agency.subscriptionAmount !== undefined)
+        serverData.subscriptionAmount = agency.subscriptionAmount;
+
+      console.log("📤 Sending to API - serverData:", {
+        complianceSubscriptions: serverData.complianceSubscriptions,
+        fullServerData: serverData,
+      });
 
       const response = await api.patch(`/v1/agency/auth/${id}`, serverData);
 
+      console.log("📥 Received from API:", {
+        complianceSubscriptions: response.data.data?.agency?.complianceSubscriptions,
+        fullResponse: response.data.data?.agency,
+      });
+
       if (response.data.status === "success" && response.data.data?.agency) {
         const mappedData = mapServerToClient(response.data.data.agency);
+        console.log("🔄 Mapped data:", {
+          complianceSubscriptions: mappedData.complianceSubscriptions,
+        });
         return {
           success: true,
           data: [mappedData],

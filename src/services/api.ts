@@ -19,7 +19,9 @@ const getBaseURL = (): string => {
     case "development":
     default:
       return (
-        import.meta.env.VITE_API_BASE_URL_DEV || "https://rental-ease-server-112dd081b2eb.herokuapp.com/api"
+        import.meta.env.VITE_API_BASE_URL_DEV ||
+        "https://rental-ease-server-112dd081b2eb.herokuapp.com/api"
+        // import.meta.env.VITE_API_BASE_URL_DEV || "http://localhost:4000/api"
       );
   }
 };
@@ -177,44 +179,45 @@ export const contactsAPI = {
     data: { subject: string; html: string; attachments?: File[] }
   ) => {
     let response;
-    
+
     // If there are attachments, use FormData
     if (data.attachments && data.attachments.length > 0) {
       const formData = new FormData();
-      formData.append('subject', data.subject);
-      formData.append('html', data.html);
-      
+      formData.append("subject", data.subject);
+      formData.append("html", data.html);
+
       // Add attachments
       data.attachments.forEach((file) => {
-        formData.append('attachments', file);
+        formData.append("attachments", file);
       });
 
       response = await api.post(`/v1/contacts/${id}/send-email`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
     } else {
       // No attachments, use JSON
       response = await api.post(`/v1/contacts/${id}/send-email`, data);
     }
-    
-    console.log('📧 Email API Response:', response.data);
-    
+
+    console.log("📧 Email API Response:", response.data);
+
     // Handle both response formats: { success: true } or { status: "success" }
-    const isSuccess = response.data?.success === true || 
-                     response.data?.status === 'success' ||
-                     (response.status >= 200 && response.status < 300);
-    
-    console.log('✅ Email success status:', isSuccess);
-    
+    const isSuccess =
+      response.data?.success === true ||
+      response.data?.status === "success" ||
+      (response.status >= 200 && response.status < 300);
+
+    console.log("✅ Email success status:", isSuccess);
+
     return {
       ...response,
       data: {
         ...response.data,
         success: isSuccess,
-        message: response.data?.message || 'Email sent successfully',
-      }
+        message: response.data?.message || "Email sent successfully",
+      },
     };
   },
 };

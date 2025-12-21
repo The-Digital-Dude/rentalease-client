@@ -184,6 +184,7 @@
     }
 
     .header-info {
+      max-width: fit-content;
       h3 {
         font-size: 1.5rem;
         font-weight: 700;
@@ -232,6 +233,7 @@
       display: flex;
       gap: 1rem;
       flex: 1;
+      margin-bottom: 0 !important;
 
       @media (max-width: 768px) {
         flex-direction: column;
@@ -482,6 +484,16 @@
       z-index: 10;
     }
 
+    &.archived {
+      opacity: 0.7;
+      background: #f9fafb;
+      border-color: #d1d5db;
+      .dark-mode & {
+        background: var(--sidebar-active);
+        border-color: var(--color-border-primary);
+      }
+    }
+
     // Dark mode styles
     .dark-mode & {
       background: var(--sidebar-active);
@@ -587,6 +599,30 @@
           border-radius: 0.25rem;
           text-align: center;
           white-space: nowrap;
+        }
+
+        .archived-badge {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #6b7280;
+          background: #e5e7eb;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          text-align: center;
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          text-transform: uppercase;
+
+          svg {
+            font-size: 0.875rem;
+          }
+
+          .dark-mode & {
+            background: #374151;
+            color: #9ca3af;
+          }
         }
       }
     }
@@ -1373,10 +1409,10 @@
       color: #dc2626;
     }
 
-    .delete-btn {
+    .delete-btn,
+    .restore-btn {
       background: none;
       border: none;
-      color: #dc2626;
       padding: 0.5rem 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -1387,6 +1423,10 @@
       text-align: left;
       font-size: 0.875rem;
       border-radius: 0.375rem;
+    }
+
+    .delete-btn {
+      color: #dc2626;
 
       &:hover {
         background: #fecaca;
@@ -1400,6 +1440,28 @@
 
       svg {
         font-size: 1rem;
+      }
+    }
+
+    .restore-btn {
+      color: #16a34a;
+
+      &:hover {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      svg {
+        font-size: 1rem;
+      }
+
+      // Dark mode styles
+      .dark-mode & {
+        color: #86efac;
+
+        &:hover {
+          background: #14532d;
+        }
       }
     }
   }

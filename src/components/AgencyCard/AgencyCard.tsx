@@ -7,6 +7,8 @@ import {
   RiVipCrown2Line,
   RiShieldCheckLine,
   RiMailLine,
+  RiRestartLine,
+  RiArchiveLine,
 } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import type { Agency } from "../../services/agencyService";
@@ -16,6 +18,7 @@ interface AgencyCardProps {
   agency: Agency;
   onEdit: (agency: Agency) => void;
   onDelete: (id: string) => void;
+  onRestore?: (id: string) => void;
   onResendCredentials: (id: string) => void;
   onSendEmail?: (agency: Agency) => void;
 }
@@ -24,6 +27,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
   agency,
   onEdit,
   onDelete,
+  onRestore,
   onResendCredentials,
   onSendEmail,
 }) => {
@@ -31,7 +35,9 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
 
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
   const [showCredentialsConfirm, setShowCredentialsConfirm] = useState(false);
+  const isArchived = agency.isArchived || false;
 
   // Format subscription status for display
   const formatStatus = (status: string) => {
@@ -75,6 +81,24 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
     setShowCredentialsConfirm(false);
   };
 
+  const handleRestoreClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowRestoreConfirm(true);
+  };
+
+  const handleConfirmRestore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRestore) {
+      onRestore(agency.id);
+    }
+    setShowRestoreConfirm(false);
+  };
+
+  const handleCancelRestore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowRestoreConfirm(false);
+  };
+
   const handleViewProfile = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigate(`/agencies/${agency.id}`);
@@ -82,53 +106,97 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
 
   const handleSendEmail = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSendEmail(agency);
+    if (onSendEmail) {
+      onSendEmail(agency);
+    }
   };
 
   return (
-    <div className="agency-card">
+    <div className={`agency-card ${isArchived ? "archived" : ""}`}>
       <div className="agency-header">
-        <h3>{agency.name}</h3>
+        <h3>
+          {agency.name}
+          {isArchived && (
+            <span className="archived-badge" title="Archived">
+              <RiArchiveLine /> Archived
+            </span>
+          )}
+        </h3>
         <div className="agency-actions">
           <span className={`status-badge ${agency.status}`}>
             {agency.status}
           </span>
-          <button
-            className="view-btn"
-            onClick={handleViewProfile}
-            title="View Agency Profile"
-          >
-            <RiEyeLine />
-          </button>
-          <button
-            className="credentials-btn"
-            onClick={handleResendCredentialsClick}
-            title="Send Credentials Email"
-          >
-            <RiMailSendLine />
-          </button>
-          <button
-            className="delete-btn"
-            onClick={handleDeleteClick}
-            title="Delete Agency"
-          >
-            <RiDeleteBin6Line />
-          </button>
+          {!isArchived && (
+            <>
+              <button
+                className="view-btn"
+                onClick={handleViewProfile}
+                title="View Agency Profile"
+              >
+                <RiEyeLine />
+              </button>
+              <button
+                className="credentials-btn"
+                onClick={handleResendCredentialsClick}
+                title="Send Credentials Email"
+              >
+                <RiMailSendLine />
+              </button>
+              <button
+                className="delete-btn"
+                onClick={handleDeleteClick}
+                title="Archive Agency"
+              >
+                <RiDeleteBin6Line />
+              </button>
+            </>
+          )}
+          {isArchived && onRestore && (
+            <button
+              className="restore-btn"
+              onClick={handleRestoreClick}
+              title="Restore Agency"
+            >
+              <RiRestartLine />
+            </button>
+          )}
         </div>
       </div>
 
       {showDeleteConfirm && (
         <div className="delete-confirmation">
           <p>
-            Are you sure you want to delete <strong>{agency.name}</strong>?
+            Are you sure you want to archive <strong>{agency.name}</strong>?
+          </p>
+          <p style={{ fontSize: "0.9em", color: "#666", marginTop: "0.5em" }}>
+            The agency will be archived and can be restored later.
           </p>
           <div className="confirmation-actions">
             <button className="btn-danger btn-sm" onClick={handleConfirmDelete}>
-              Yes, Delete
+              Yes, Archive
             </button>
             <button
               className="btn-secondary btn-sm"
               onClick={handleCancelDelete}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showRestoreConfirm && (
+        <div className="restore-confirmation">
+          <p>
+            Are you sure you want to restore <strong>{agency.name}</strong>?
+          </p>
+          <div className="confirmation-actions">
+            <button className="btn-primary btn-sm" onClick={handleConfirmRestore}>
+              Yes, Restore
+            </button>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={handleCancelRestore}
             >
               Cancel
             </button>

@@ -257,7 +257,7 @@ const AgencyFormModal = ({
               ))}
             </select>
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="complianceSubscriptions">
               Compliance Subscriptions
             </label>
@@ -297,7 +297,7 @@ const AgencyFormModal = ({
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
           <div className="form-group">
             <label htmlFor="status">Status</label>
             <select
@@ -315,7 +315,7 @@ const AgencyFormModal = ({
             </select>
           </div>
           {/* Subscription amount field */}
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="subscriptionAmount">
               Subscription Amount (AUD) {!editingAgency && "*"}
             </label>
@@ -343,7 +343,7 @@ const AgencyFormModal = ({
             >
               Amount between $1 and $100,000 AUD per month
             </small>
-          </div>
+          </div> */}
           {/* Password field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">

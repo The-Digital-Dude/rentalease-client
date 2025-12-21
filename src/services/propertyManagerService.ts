@@ -67,6 +67,8 @@ export interface PropertyManagerFilters {
   agencyId?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  includeArchived?: boolean;
+  onlyArchived?: boolean;
 }
 
 export interface CreatePropertyManagerData {
@@ -129,6 +131,8 @@ export interface RawPropertyManager {
   updatedAt: string;
   lastLogin?: string;
   lastActive?: string;
+  isArchived?: boolean;
+  archivedAt?: string | null;
 }
 
 export interface PropertyManagerApiResponse {
@@ -182,6 +186,8 @@ class PropertyManagerService {
       if (filters?.agencyId) params.append("agencyId", filters.agencyId);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
       if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+      if (filters?.includeArchived) params.append("includeArchived", "true");
+      if (filters?.onlyArchived) params.append("onlyArchived", "true");
 
       const response: AxiosResponse<any> = await api.get(
         `/v1/property-managers?${params.toString()}`
@@ -210,6 +216,8 @@ class PropertyManagerService {
             updatedAt: pm.updatedAt,
             lastLogin: pm.lastLogin,
             lastActive: pm.lastActive,
+            isArchived: pm.isArchived || false,
+            archivedAt: pm.archivedAt || null,
           }));
 
         return {
@@ -264,6 +272,8 @@ class PropertyManagerService {
           updatedAt: pm.updatedAt,
           lastLogin: pm.lastLogin,
           lastActive: pm.lastActive,
+          isArchived: pm.isArchived || false,
+          archivedAt: pm.archivedAt || null,
         };
 
         return {
@@ -389,7 +399,7 @@ class PropertyManagerService {
     }
   }
 
-  // Delete PropertyManager
+  // Delete PropertyManager (archives it)
   async deletePropertyManager(id: string): Promise<PropertyManagerApiResponse> {
     try {
       const response: AxiosResponse<PropertyManagerApiResponse> =
@@ -398,7 +408,23 @@ class PropertyManagerService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "Failed to delete PropertyManager"
+        error.response?.data?.message || "Failed to archive PropertyManager"
+      );
+    }
+  }
+
+  // Restore archived PropertyManager
+  async restorePropertyManager(
+    id: string
+  ): Promise<PropertyManagerApiResponse> {
+    try {
+      const response: AxiosResponse<PropertyManagerApiResponse> =
+        await api.post(`/v1/property-managers/${id}/restore`);
+
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || "Failed to restore PropertyManager"
       );
     }
   }

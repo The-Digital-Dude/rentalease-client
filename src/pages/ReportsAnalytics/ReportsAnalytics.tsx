@@ -161,13 +161,13 @@ const ReportsAnalytics = () => {
                   {agencyAnalytics.overview.activeRate.toFixed(1)}%
                 </div>
               </div>
-              <div className="kpi-card">
+              {/* <div className="kpi-card">
                 <div className="kpi-value">
                   $
                   {agencyAnalytics.revenue.averageSubscription.toLocaleString()}
                 </div>
                 <div className="kpi-label">Avg Subscription</div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -202,13 +202,13 @@ const ReportsAnalytics = () => {
                   {agencyAnalytics.overview.suspendedAgencies} Suspended
                 </div> */}
               </div>
-              <div className="kpi-card">
+              {/* <div className="kpi-card">
                 <div className="kpi-value">
                   $
                   {agencyAnalytics.revenue.totalMonthlyRevenue.toLocaleString()}
                 </div>
                 <div className="kpi-label">Monthly Payments</div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -230,19 +230,19 @@ const ReportsAnalytics = () => {
                   Avg: {agencyAnalytics.properties.avgPropertiesPerAgency.toFixed(1)} per agency
                 </div> */}
               </div>
-              <div className="kpi-card">
+              {/* <div className="kpi-card">
                 <div className="kpi-value">
                   $
                   {agencyAnalytics.revenue.projectedAnnualRevenue.toLocaleString()}
                 </div>
                 <div className="kpi-label">Projected Payment</div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
 
         {/* Top Performers */}
-        {agencyAnalytics.topPerformers.bySubscription.length > 0 && (
+        {/* {agencyAnalytics.topPerformers.bySubscription.length > 0 && (
           <div className="top-performers-section">
             <h5>Top Performing Agencies (By Subscription)</h5>
             <div className="performers-grid">
@@ -278,7 +278,7 @@ const ReportsAnalytics = () => {
                 ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Regional Distribution */}
         {agencyAnalytics.distribution.byRegion.length > 0 && (
@@ -304,7 +304,7 @@ const ReportsAnalytics = () => {
                         <span>Active:</span>
                         <span>{region.activeAgencies}</span>
                       </div>
-                      <div className="metric-row">
+                      {/* <div className="metric-row">
                         <span>Total Subscription:</span>
                         <span>
                           ${region.totalSubscription.toLocaleString()}
@@ -313,7 +313,7 @@ const ReportsAnalytics = () => {
                       <div className="metric-row">
                         <span>Avg Subscription:</span>
                         <span>${region.avgSubscription.toFixed(2)}</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 ))}

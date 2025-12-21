@@ -21,6 +21,8 @@ import {
   RiUserSettingsLine,
   RiMoreLine,
   RiMailLine,
+  RiRestartLine,
+  RiArchiveLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import {
@@ -61,6 +63,9 @@ const PropertyManagerManagementPage = () => {
   const [activeTab, setActiveTab] = useState("directory");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
+  const [archiveFilter, setArchiveFilter] = useState<
+    "active" | "archived" | "all"
+  >("active");
   const [selectedAgencyId, setSelectedAgencyId] = useState("");
   const [agencies, setAgencies] = useState<any[]>([]);
   const [propertyManagers, setPropertyManagers] = useState<PropertyManager[]>(
@@ -132,10 +137,21 @@ const PropertyManagerManagementPage = () => {
   const canSeeAllPropertyManagers =
     userType === "super_user" || userType === "team_member";
   const canEditPropertyManagers =
-    userType === "agency" || userType === "super_user" || userType === "team_member";
+    userType === "agency" ||
+    userType === "super_user" ||
+    userType === "team_member";
 
-  // Debounced search
-  const [searchDebounce, setSearchDebounce] = useState<number | null>(null);
+  // Debounced search term - separate from the immediate searchTerm state
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Fetch agencies for super users and team members
   useEffect(() => {
@@ -144,10 +160,10 @@ const PropertyManagerManagementPage = () => {
         try {
           const response = await agencyService.getAllAgencies();
           if (response.success && response.data) {
-            console.log('Loaded agencies:', response.data);
+            console.log("Loaded agencies:", response.data);
             setAgencies(response.data);
           } else {
-            console.log('Failed to load agencies:', response);
+            console.log("Failed to load agencies:", response);
           }
         } catch (error) {
           console.error("Failed to fetch agencies:", error);
@@ -157,29 +173,11 @@ const PropertyManagerManagementPage = () => {
     fetchAgencies();
   }, [canSeeAllPropertyManagers]);
 
-  // Handle search with debounce
-  const handleSearch = useCallback(
-    (value: string) => {
-      setSearchTerm(value);
-
-      if (searchDebounce) {
-        clearTimeout(searchDebounce);
-      }
-
-      const newDebounce = setTimeout(() => {
-        setCurrentPage(1);
-        fetchPropertyManagers({
-          search: value,
-          page: 1,
-          limit: pagination.itemsPerPage,
-          ...(selectedAgencyId && { agencyId: selectedAgencyId }),
-        });
-      }, 500);
-
-      setSearchDebounce(newDebounce);
-    },
-    [searchDebounce, pagination.itemsPerPage]
-  );
+  // Handle search input
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page on search
+  };
 
   // Fetch PropertyManagers
   const fetchPropertyManagers = async (filters?: PropertyManagerFilters) => {
@@ -187,12 +185,22 @@ const PropertyManagerManagementPage = () => {
     setError(null);
 
     try {
-      const response = await propertyManagerService.getPropertyManagers({
-        page: currentPage,
-        limit: pagination.itemsPerPage,
+      const includeArchived = archiveFilter === "all";
+      const onlyArchived = archiveFilter === "archived";
+
+      // Build filters object - spread passed filters first, then override with archive settings to ensure they're always correct
+      const requestFilters: PropertyManagerFilters = {
         ...filters,
-        ...(selectedAgencyId && { agencyId: selectedAgencyId }),
-      });
+        page: filters?.page ?? currentPage,
+        limit: filters?.limit ?? pagination.itemsPerPage,
+        // Archive filter settings must always come last to ensure they override anything in filters
+        includeArchived,
+        onlyArchived,
+      };
+
+      const response = await propertyManagerService.getPropertyManagers(
+        requestFilters
+      );
 
       if (response.success && response.data.propertyManagers) {
         setPropertyManagers(response.data.propertyManagers);
@@ -595,30 +603,65 @@ const PropertyManagerManagementPage = () => {
     }
   };
 
-  // Handle PropertyManager deletion
-  const handleDeletePropertyManager = async (propertyManager: PropertyManager) => {
+  // Handle PropertyManager deletion (archives it)
+  const handleDeletePropertyManager = async (
+    propertyManager: PropertyManager
+  ) => {
     // Show confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${propertyManager.fullName}?\n\n` +
-      `This action cannot be undone. The property manager will be permanently removed from the system.` +
-      (propertyManager.assignedPropertiesCount > 0
-        ? `\n\nNote: This property manager has ${propertyManager.assignedPropertiesCount} assigned properties and cannot be deleted until all assignments are removed.`
-        : "")
+      `Are you sure you want to archive ${propertyManager.fullName}?\n\n` +
+        `The property manager will be archived and can be restored later.`
     );
 
     if (!confirmed) return;
 
     try {
-      const response = await propertyManagerService.deletePropertyManager(propertyManager.id);
+      const response = await propertyManagerService.deletePropertyManager(
+        propertyManager.id
+      );
 
       if (response.success) {
-        toast.success(`✅ ${propertyManager.fullName} has been deleted successfully`);
+        toast.success(
+          `✅ ${propertyManager.fullName} has been archived successfully`
+        );
         fetchPropertyManagers(); // Refresh the list
       } else {
-        throw new Error(response.message || "Failed to delete property manager");
+        throw new Error(
+          response.message || "Failed to archive property manager"
+        );
       }
     } catch (err: any) {
-      toast.error(`❌ Failed to delete property manager: ${err.message}`);
+      toast.error(`❌ Failed to archive property manager: ${err.message}`);
+    }
+  };
+
+  // Handle PropertyManager restore
+  const handleRestorePropertyManager = async (
+    propertyManager: PropertyManager
+  ) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to restore ${propertyManager.fullName}?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await propertyManagerService.restorePropertyManager(
+        propertyManager.id
+      );
+
+      if (response.success) {
+        toast.success(
+          `✅ ${propertyManager.fullName} has been restored successfully`
+        );
+        fetchPropertyManagers(); // Refresh the list
+      } else {
+        throw new Error(
+          response.message || "Failed to restore property manager"
+        );
+      }
+    } catch (err: any) {
+      toast.error(`❌ Failed to restore property manager: ${err.message}`);
     }
   };
 
@@ -640,7 +683,11 @@ const PropertyManagerManagementPage = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
+  const handleOnSendEmail = async (
+    subject: string,
+    html: string,
+    attachments?: File[]
+  ) => {
     if (!emailingPropertyManager) return;
 
     setEmailLoading(true);
@@ -706,19 +753,15 @@ const PropertyManagerManagementPage = () => {
     }
   };
 
-  // Initial data fetch
+  // Fetch property managers when filters change
   useEffect(() => {
-    fetchPropertyManagers();
-  }, [currentPage, selectedAgencyId]);
+    const filters: PropertyManagerFilters = {
+      page: currentPage,
+      limit: pagination.itemsPerPage,
+    };
 
-  // Filter change handler
-  useEffect(() => {
+    // Apply status/availability filter
     if (filterBy !== "all") {
-      const filters: PropertyManagerFilters = {
-        page: 1,
-        limit: pagination.itemsPerPage,
-      };
-
       if (
         filterBy === "active" ||
         filterBy === "inactive" ||
@@ -729,13 +772,28 @@ const PropertyManagerManagementPage = () => {
       } else {
         filters.availabilityStatus = filterBy;
       }
-
-      setCurrentPage(1);
-      fetchPropertyManagers(filters);
-    } else {
-      fetchPropertyManagers();
     }
-  }, [filterBy]);
+
+    // Apply search filter if exists (use debounced value)
+    if (debouncedSearchTerm) {
+      filters.search = debouncedSearchTerm;
+    }
+
+    // Apply agency filter if exists
+    if (selectedAgencyId) {
+      filters.agencyId = selectedAgencyId;
+    }
+
+    fetchPropertyManagers(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentPage,
+    selectedAgencyId,
+    filterBy,
+    archiveFilter,
+    debouncedSearchTerm,
+    pagination.itemsPerPage,
+  ]);
 
   // Tab configuration
   const tabs = canEditPropertyManagers
@@ -794,6 +852,8 @@ const PropertyManagerManagementPage = () => {
               onChange={(e) => {
                 setFilterBy(e.target.value);
                 setCurrentPage(1);
+                // Clear existing data immediately to prevent showing stale data
+                setPropertyManagers([]);
               }}
             >
               <option value="all">All PropertyManagers</option>
@@ -833,6 +893,26 @@ const PropertyManagerManagementPage = () => {
               </select>
             </div>
           )}
+          <div className="filter-select">
+            <RiFilterLine className="filter-icon" />
+            <select
+              value={archiveFilter}
+              onChange={(e) => {
+                const newFilter = e.target.value as
+                  | "active"
+                  | "archived"
+                  | "all";
+                // Clear existing data immediately to prevent showing stale data
+                setPropertyManagers([]);
+                setArchiveFilter(newFilter);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="active">Active Only</option>
+              <option value="archived">Archived Only</option>
+              <option value="all">All (Including Archived)</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -872,12 +952,17 @@ const PropertyManagerManagementPage = () => {
       {!loading && !error && propertyManagers.length > 0 && (
         <div className="property-managers-grid">
           {propertyManagers.map((propertyManager) => (
-            <div key={propertyManager.id} className="property-manager-card">
+            <div
+              key={propertyManager.id}
+              className={`property-manager-card ${
+                propertyManager.isArchived ? "archived" : ""
+              }`}
+            >
               <div className="card-header">
                 <div
                   className="avatar clickable"
                   onClick={() => handleNavigateToProfile(propertyManager.id)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   <RiUserSettingsLine />
                 </div>
@@ -885,7 +970,7 @@ const PropertyManagerManagementPage = () => {
                   <h4
                     className="clickable"
                     onClick={() => handleNavigateToProfile(propertyManager.id)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
                     {propertyManager.fullName}
                   </h4>
@@ -900,6 +985,11 @@ const PropertyManagerManagementPage = () => {
                     )}
                 </div>
                 <div className="status-badges">
+                  {propertyManager.isArchived && (
+                    <span className="archived-badge" title="Archived">
+                      <RiArchiveLine /> Archived
+                    </span>
+                  )}
                   <span
                     className="status-badge"
                     style={{
@@ -1027,21 +1117,31 @@ const PropertyManagerManagementPage = () => {
                       </div>
                       <div className="dropdown-section danger-section">
                         <h5>Actions</h5>
-                        <button
-                          className="delete-btn"
-                          onClick={() => {
-                            handleDeletePropertyManager(propertyManager);
-                            setOpenDropdown(null);
-                          }}
-                          title={
-                            propertyManager.assignedPropertiesCount > 0
-                              ? "Cannot delete property manager with active assignments"
-                              : "Delete property manager"
-                          }
-                        >
-                          <RiDeleteBinLine />
-                          Delete Property Manager
-                        </button>
+                        {propertyManager.isArchived ? (
+                          <button
+                            className="restore-btn"
+                            onClick={() => {
+                              handleRestorePropertyManager(propertyManager);
+                              setOpenDropdown(null);
+                            }}
+                            title="Restore property manager"
+                          >
+                            <RiRestartLine />
+                            Restore Property Manager
+                          </button>
+                        ) : (
+                          <button
+                            className="delete-btn"
+                            onClick={() => {
+                              handleDeletePropertyManager(propertyManager);
+                              setOpenDropdown(null);
+                            }}
+                            title="Archive property manager"
+                          >
+                            <RiArchiveLine />
+                            Archive Property Manager
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1504,11 +1604,11 @@ const PropertyManagerManagementPage = () => {
         })}
       </div>
 
-      <div className="tab-content">
-        {activeTab === "directory" && renderDirectory()}
-        {activeTab === "calendar" && renderCalendar()}
-        {activeTab === "add" && renderAddEditForm()}
-      </div>
+      {/* <div className="tab-content"> */}
+      {activeTab === "directory" && renderDirectory()}
+      {activeTab === "calendar" && renderCalendar()}
+      {activeTab === "add" && renderAddEditForm()}
+      {/* </div> */}
 
       {/* Modals */}
       {showViewModal && renderViewModal()}

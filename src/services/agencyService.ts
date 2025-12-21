@@ -32,6 +32,8 @@ export interface Agency {
   outstandingAmount: number;
   subscriptionAmount?: number;
   subscription?: AgencySubscription;
+  isArchived?: boolean;
+  archivedAt?: string | null;
 }
 
 // Server response format for agency
@@ -53,6 +55,8 @@ export interface ServerAgency {
   createdAt?: string;
   lastUpdated?: string;
   subscriptionAmount?: number;
+  isArchived?: boolean;
+  archivedAt?: string | null;
   subscription?: {
     id: string;
     planType: string;
@@ -244,6 +248,8 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
   subscriptionAmount: serverData.subscriptionAmount,
+  isArchived: serverData.isArchived || false,
+  archivedAt: serverData.archivedAt || null,
   subscription: serverData.subscription
     ? {
         id: serverData.subscription.id,
@@ -269,10 +275,24 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
 
 export const agencyService = {
   // Get all agencies
-  getAllAgencies: async (): Promise<AgencyResponse> => {
+  getAllAgencies: async (options?: {
+    includeArchived?: boolean;
+    onlyArchived?: boolean;
+    limit?: number;
+  }): Promise<AgencyResponse> => {
     try {
+      const params = new URLSearchParams();
+      if (options?.includeArchived) {
+        params.append("includeArchived", "true");
+      }
+      if (options?.onlyArchived) {
+        params.append("onlyArchived", "true");
+      }
+      params.append("limit", (options?.limit || 100).toString());
+      
+      const queryString = params.toString();
       const response = await api.get<ServerResponse>(
-        "/v1/agency/auth/all?limit=100"
+        `/v1/agency/auth/all${queryString ? `?${queryString}` : ""}`
       );
 
       if (response.data.status === "success" && response.data.data.agencies) {
@@ -410,7 +430,7 @@ export const agencyService = {
     }
   },
 
-  // Delete agency
+  // Delete agency (archives it)
   deleteAgency: async (
     id: string
   ): Promise<{ success: boolean; message?: string }> => {
@@ -418,11 +438,30 @@ export const agencyService = {
       await api.delete(`/v1/agency/auth/${id}`);
       return {
         success: true,
+        message: "Agency archived successfully",
       };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to delete agency",
+        message: error.response?.data?.message || "Failed to archive agency",
+      };
+    }
+  },
+
+  // Restore archived agency
+  restoreAgency: async (
+    id: string
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await api.post(`/v1/agency/auth/${id}/restore`);
+      return {
+        success: true,
+        message: response.data?.message || "Agency restored successfully",
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to restore agency",
       };
     }
   },

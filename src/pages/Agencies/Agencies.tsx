@@ -18,6 +18,9 @@ const Agencies = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedCompliance, setSelectedCompliance] = useState<string>("all");
+  const [archiveFilter, setArchiveFilter] = useState<
+    "active" | "archived" | "all"
+  >("active");
   const [showForm, setShowForm] = useState(false);
   const [editingAgency, setEditingAgency] = useState<Agency | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,13 @@ const Agencies = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await agencyService.getAllAgencies();
+      const includeArchived = archiveFilter === "all";
+      const onlyArchived = archiveFilter === "archived";
+      const response = await agencyService.getAllAgencies({
+        includeArchived,
+        onlyArchived,
+        limit: 1000,
+      });
 
       if (response.success) {
         // Ensure we always have an array
@@ -72,7 +81,7 @@ const Agencies = () => {
 
   useEffect(() => {
     fetchAgencies();
-  }, []);
+  }, [archiveFilter]);
 
   const filteredAgencies = (Array.isArray(agencies) ? agencies : []).filter(
     (agency) => {
@@ -126,9 +135,10 @@ const Agencies = () => {
           complianceSubscriptions: formData.complianceSubscriptions,
           status: formData.status,
           outstandingAmount: editingAgency.outstandingAmount, // Keep for now to satisfy interface
-          subscriptionAmount: formData.subscriptionAmount
-            ? Number(formData.subscriptionAmount)
-            : undefined,
+          // subscriptionAmount: formData.subscriptionAmount
+          //   ? Number(formData.subscriptionAmount)
+          //   : undefined,
+          subscriptionAmount: 1,
         };
 
         const response = await agencyService.updateAgency(
@@ -151,14 +161,14 @@ const Agencies = () => {
           return;
         }
 
-        if (
-          !formData.subscriptionAmount ||
-          Number(formData.subscriptionAmount) < 1 ||
-          Number(formData.subscriptionAmount) > 100000
-        ) {
-          toast.error("Subscription amount must be between $1 and $100,000");
-          return;
-        }
+        // if (
+        //   !formData.subscriptionAmount ||
+        //   Number(formData.subscriptionAmount) < 1 ||
+        //   Number(formData.subscriptionAmount) > 100000
+        // ) {
+        //   toast.error("Subscription amount must be between $1 and $100,000");
+        //   return;
+        // }
 
         const newAgencyData = {
           name: formData.name,
@@ -172,7 +182,8 @@ const Agencies = () => {
           status: formData.status,
           outstandingAmount: 0, // Keep for now to satisfy interface
           password: formData.password,
-          subscriptionAmount: Number(formData.subscriptionAmount),
+          // subscriptionAmount: Number(formData.subscriptionAmount),
+          subscriptionAmount: 1,
         };
 
         const response = await agencyService.createAgency(newAgencyData);
@@ -211,15 +222,33 @@ const Agencies = () => {
       const response = await agencyService.deleteAgency(id);
 
       if (response.success) {
-        setAgencies((prevAgencies) =>
-          prevAgencies.filter((agency) => agency.id !== id)
-        );
-        toast.success("Agency deleted successfully!");
+        // Refresh the list to show updated archive status
+        await fetchAgencies();
+        toast.success("Agency archived successfully!");
       } else {
-        toast.error(response.message || "Failed to delete agency");
+        toast.error(response.message || "Failed to archive agency");
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to delete agency");
+      toast.error(error.message || "Failed to archive agency");
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      setError("");
+      setSuccessMessage("");
+
+      const response = await agencyService.restoreAgency(id);
+
+      if (response.success) {
+        // Refresh the list
+        await fetchAgencies();
+        toast.success("Agency restored successfully!");
+      } else {
+        toast.error(response.message || "Failed to restore agency");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to restore agency");
     }
   };
 
@@ -376,6 +405,22 @@ const Agencies = () => {
         <div className="filter-box">
           <RiFilterLine />
           <select
+            value={archiveFilter}
+            onChange={(e) => {
+              const newFilter = e.target.value as "active" | "archived" | "all";
+              // Clear existing data immediately to prevent showing stale data
+              setAgencies([]);
+              setArchiveFilter(newFilter);
+            }}
+          >
+            <option value="active">Active Only</option>
+            <option value="archived">Archived Only</option>
+            <option value="all">All (Including Archived)</option>
+          </select>
+        </div>
+        <div className="filter-box">
+          <RiFilterLine />
+          <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
@@ -450,6 +495,7 @@ const Agencies = () => {
               agency={agency}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onRestore={handleRestore}
               onResendCredentials={handleResendCredentials}
               onSendEmail={canSendEmail ? handleSendEmail : undefined}
             />

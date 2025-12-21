@@ -191,7 +191,10 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             Are you sure you want to restore <strong>{agency.name}</strong>?
           </p>
           <div className="confirmation-actions">
-            <button className="btn-primary btn-sm" onClick={handleConfirmRestore}>
+            <button
+              className="btn-primary btn-sm"
+              onClick={handleConfirmRestore}
+            >
               Yes, Restore
             </button>
             <button
@@ -251,22 +254,22 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             <span className="label">Email</span>
             <span>{agency.contactEmail}</span>
           </div>
+        </div>
+        <div className="detail-group">
           <div className="detail-item">
             <span className="label">Phone</span>
             <span>{agency.contactPhone}</span>
           </div>
-        </div>
-        <div className="detail-group">
           <div className="detail-item">
             <span className="label">Region</span>
             <span>{agency.region}</span>
           </div>
-          <div className="detail-item">
+          {/* <div className="detail-item">
             <span className="label">Subscription Amount</span>
             <span>AUD ${agency.subscriptionAmount}</span>
-          </div>
+          </div> */}
         </div>
-        <div className="detail-group compliance-group">
+        {/* <div className="detail-group compliance-group">
           <div className="detail-item compliance-item">
             <span className="label">
               <RiShieldCheckLine className="label-icon" /> Compliance
@@ -285,7 +288,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
               )}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="agency-footer">

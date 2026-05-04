@@ -192,13 +192,23 @@ const ContactsCommunication = () => {
     setEmailSuccess(null);
   };
 
-  const handleSendEmail = async (subject: string, html: string, attachments?: File[]) => {
+  const handleSendEmail = async (
+    subject: string,
+    html: string,
+    cc?: string[],
+    attachments?: File[]
+  ) => {
     if (!emailContact) return;
     setEmailLoading(true);
     setEmailError(null);
     setEmailSuccess(null);
     try {
-      const response = await contactsAPI.sendEmailToContact(emailContact.id, { subject, html, attachments });
+      const response = await contactsAPI.sendEmailToContact(emailContact.id, {
+        subject,
+        html,
+        cc,
+        attachments,
+      });
       
       // Check if email was sent successfully
       if (response?.data?.success) {

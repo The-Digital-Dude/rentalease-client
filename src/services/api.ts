@@ -174,7 +174,7 @@ export const contactsAPI = {
   // Send custom email to a contact
   sendEmailToContact: async (
     id: string,
-    data: { subject: string; html: string; attachments?: File[] }
+    data: { subject: string; html: string; cc?: string[]; attachments?: File[] }
   ) => {
     let response;
 
@@ -183,6 +183,7 @@ export const contactsAPI = {
       const formData = new FormData();
       formData.append("subject", data.subject);
       formData.append("html", data.html);
+      formData.append("cc", JSON.stringify(data.cc || []));
 
       // Add attachments
       data.attachments.forEach((file) => {
@@ -196,7 +197,10 @@ export const contactsAPI = {
       });
     } else {
       // No attachments, use JSON
-      response = await api.post(`/v1/contacts/${id}/send-email`, data);
+      response = await api.post(`/v1/contacts/${id}/send-email`, {
+        ...data,
+        cc: data.cc || [],
+      });
     }
 
     console.log("📧 Email API Response:", response.data);

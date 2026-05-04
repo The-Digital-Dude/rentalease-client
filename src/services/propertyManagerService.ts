@@ -503,7 +503,7 @@ class PropertyManagerService {
   // Send email to PropertyManager
   async sendEmailToPropertyManager(
     email: string,
-    data: { subject: string; html: string; attachments?: File[] }
+    data: { subject: string; html: string; cc?: string[]; attachments?: File[] }
   ): Promise<any> {
     try {
       let response;
@@ -514,6 +514,7 @@ class PropertyManagerService {
         formData.append('to', email);
         formData.append('subject', data.subject);
         formData.append('html', data.html);
+        formData.append('cc', JSON.stringify(data.cc || []));
         
         // Add attachments
         data.attachments.forEach((file) => {
@@ -531,6 +532,7 @@ class PropertyManagerService {
           `/v1/emails/send-general`,
           {
             to: email,
+            cc: data.cc || [],
             subject: data.subject,
             html: data.html
           }

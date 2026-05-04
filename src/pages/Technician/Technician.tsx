@@ -527,7 +527,12 @@ const TechnicianPage = () => {
   };
 
   // Handle actual email sending
-  const handleOnSendEmail = async (subject: string, html: string, attachments?: File[]) => {
+  const handleOnSendEmail = async (
+    subject: string,
+    html: string,
+    cc?: string[],
+    attachments?: File[]
+  ) => {
     if (!emailingTechnician) return;
 
     setEmailLoading(true);
@@ -538,6 +543,7 @@ const TechnicianPage = () => {
       const response = await technicianService.sendEmailToTechnician(emailingTechnician.email, {
         subject,
         html,
+        cc,
         attachments,
       });
       

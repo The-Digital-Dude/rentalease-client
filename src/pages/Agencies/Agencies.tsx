@@ -299,6 +299,7 @@ const Agencies = () => {
   const handleOnSendEmail = async (
     subject: string,
     html: string,
+    cc?: string[],
     attachments?: File[]
   ) => {
     if (!emailingAgency) return;
@@ -310,7 +311,7 @@ const Agencies = () => {
     try {
       const response = await agencyService.sendEmailToAgency(
         emailingAgency.contactEmail,
-        { subject, html, attachments }
+        { subject, html, cc, attachments }
       );
 
       if (response.success) {

@@ -14,7 +14,12 @@ import "react-quill/dist/quill.snow.css";
 interface EmailContactModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (subject: string, html: string, attachments?: File[]) => void;
+  onSend: (
+    subject: string,
+    html: string,
+    cc?: string[],
+    attachments?: File[]
+  ) => void;
   to: string;
   contactName?: string;
   loading?: boolean;
@@ -33,6 +38,7 @@ const EmailContactModal = ({
   success = null,
 }: EmailContactModalProps) => {
   const [subject, setSubject] = useState("");
+  const [cc, setCc] = useState("");
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState<string>("");
@@ -46,11 +52,21 @@ const EmailContactModal = ({
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !body.trim()) return;
-    onSend(subject, body, attachments.length > 0 ? attachments : undefined);
+    const ccRecipients = cc
+      .split(",")
+      .map((email) => email.trim())
+      .filter(Boolean);
+    onSend(
+      subject,
+      body,
+      ccRecipients,
+      attachments.length > 0 ? attachments : undefined
+    );
   };
 
   const handleClose = () => {
     setSubject("");
+    setCc("");
     setBody("");
     setAttachments([]);
     setAttachmentError("");
@@ -205,6 +221,16 @@ const EmailContactModal = ({
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             required
+            disabled={loading}
+          />
+        </div>
+        <div className="form-group">
+          <label>CC</label>
+          <input
+            type="text"
+            value={cc}
+            onChange={(e) => setCc(e.target.value)}
+            placeholder="cc@example.com, second@example.com"
             disabled={loading}
           />
         </div>

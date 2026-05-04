@@ -264,7 +264,7 @@ class TechnicianService {
    */
   async sendEmailToTechnician(
     email: string,
-    data: { subject: string; html: string; attachments?: File[] }
+    data: { subject: string; html: string; cc?: string[]; attachments?: File[] }
   ): Promise<any> {
     try {
       let response;
@@ -275,6 +275,7 @@ class TechnicianService {
         formData.append('to', email);
         formData.append('subject', data.subject);
         formData.append('html', data.html);
+        formData.append('cc', JSON.stringify(data.cc || []));
         
         // Add attachments
         data.attachments.forEach((file) => {
@@ -290,6 +291,7 @@ class TechnicianService {
         // No attachments, use JSON
         response = await api.post(`/v1/emails/send-general`, {
           to: email,
+          cc: data.cc || [],
           subject: data.subject,
           html: data.html,
         });

@@ -287,6 +287,7 @@ const PropertyProfile: React.FC = () => {
   const handleSendEmail = async (
     subject: string,
     html: string,
+    cc?: string[],
     attachments?: File[]
   ) => {
     if (!emailRecipient) return;
@@ -298,7 +299,7 @@ const PropertyProfile: React.FC = () => {
     try {
       const response = await agencyService.sendEmailToAgency(
         emailRecipient.email,
-        { subject, html, attachments }
+        { subject, html, cc, attachments }
       );
 
       if (response.success) {

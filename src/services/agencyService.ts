@@ -623,7 +623,7 @@ export const agencyService = {
   // Send email to Agency
   sendEmailToAgency: async (
     email: string,
-    data: { subject: string; html: string; attachments?: File[] }
+    data: { subject: string; html: string; cc?: string[]; attachments?: File[] }
   ): Promise<ApiResponse<any>> => {
     try {
       let response;
@@ -634,6 +634,7 @@ export const agencyService = {
         formData.append('to', email);
         formData.append('subject', data.subject);
         formData.append('html', data.html);
+        formData.append('cc', JSON.stringify(data.cc || []));
         
         // Add attachments
         data.attachments.forEach((file) => {
@@ -649,6 +650,7 @@ export const agencyService = {
         // No attachments, use JSON
         response = await api.post(`/v1/emails/send-general`, {
           to: email,
+          cc: data.cc || [],
           subject: data.subject,
           html: data.html,
         });

@@ -686,6 +686,7 @@ const PropertyManagerManagementPage = () => {
   const handleOnSendEmail = async (
     subject: string,
     html: string,
+    cc?: string[],
     attachments?: File[]
   ) => {
     if (!emailingPropertyManager) return;
@@ -697,7 +698,7 @@ const PropertyManagerManagementPage = () => {
     try {
       const response = await propertyManagerService.sendEmailToPropertyManager(
         emailingPropertyManager.email,
-        { subject, html, attachments }
+        { subject, html, cc, attachments }
       );
 
       // Check if email was sent successfully

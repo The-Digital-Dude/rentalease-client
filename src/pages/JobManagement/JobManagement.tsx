@@ -105,7 +105,12 @@ const JobManagement = () => {
 
       // Fetch technicians and properties (not jobs - that's handled separately)
       const [techResponse, propertiesResponse] = await Promise.all([
-        technicianService.getTechnicians(),
+        technicianService.getTechnicians({
+          status: "Active",
+          limit: 100,
+          sortBy: "firstName",
+          sortOrder: "asc",
+        }),
         propertyService.getProperties({ limit: 100 }),
       ]);
 

@@ -127,6 +127,14 @@ const App = () => {
             </PublicLayout>
           }
         />
+        <Route
+          path="/booking/:bookingToken"
+          element={
+            <PublicLayout>
+              <InspectionBooking />
+            </PublicLayout>
+          }
+        />
 
         {/* Protected Routes - Require Authentication */}
         <Route

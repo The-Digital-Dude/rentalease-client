@@ -48,18 +48,29 @@ interface InspectionBookingData {
   complianceType: string;
 }
 
+interface TenantAvailableSlot {
+  date: string;
+  time: string;
+  displayTime: string;
+  available: boolean;
+}
+
 interface BookingFormData {
   selectedDate: string;
   selectedShift: "morning" | "afternoon";
 }
 
 const InspectionBooking: React.FC = () => {
-  const { propertyId, complienceType } = useParams<{
+  const { propertyId, complienceType, bookingToken } = useParams<{
     propertyId: string;
     complienceType: string;
+    bookingToken: string;
   }>();
   const navigate = useNavigate();
   const [jobData, setJobData] = useState<InspectionBookingData | null>(null);
+  const [tenantAvailableSlots, setTenantAvailableSlots] = useState<
+    TenantAvailableSlot[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -87,8 +98,9 @@ const InspectionBooking: React.FC = () => {
     console.log("InspectionBooking mounted with params:", {
       propertyId,
       complienceType,
+      bookingToken,
     });
-  }, [propertyId, complienceType]);
+  }, [propertyId, complienceType, bookingToken]);
 
   useEffect(() => {
     // Listen for dark mode changes
@@ -109,9 +121,58 @@ const InspectionBooking: React.FC = () => {
   }, []);
 
   const [searchParams] = useSearchParams();
+  const isTenantTokenBooking = Boolean(bookingToken);
 
   useEffect(() => {
     const fetchComplianceData = async () => {
+      if (bookingToken) {
+        try {
+          setLoading(true);
+          const response = await fetch(
+            `${getFrontendLink()}/v1/tenant/available-slots/${bookingToken}`
+          );
+          const data = await response.json();
+
+          if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "Failed to load booking details");
+          }
+
+          const availableSlots = (data.data?.availableSlots || []).filter(
+            (slot: TenantAvailableSlot) => slot.available
+          );
+          setTenantAvailableSlots(availableSlots);
+
+          setJobData({
+            complianceData: {
+              propertyAddress: data.data?.propertyAddress || "N/A",
+              isActive: true,
+              compliance: {},
+              summary: {
+                totalCompliance: 0,
+                dueSoon: 0,
+                overdue: 0,
+                compliant: 0,
+                complianceScore: 0,
+              },
+            },
+            dueDate:
+              availableSlots[0]?.date || new Date().toISOString().split("T")[0],
+            complianceType: data.data?.complianceType || "inspection",
+          });
+        } catch (err) {
+          console.error("Error fetching tenant booking details:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load booking details"
+          );
+        } finally {
+          setLoading(false);
+        }
+
+        return;
+      }
+
       if (!propertyId) {
         setError("Property ID is required");
         setLoading(false);
@@ -167,7 +228,7 @@ const InspectionBooking: React.FC = () => {
     };
 
     fetchComplianceData();
-  }, [propertyId, complienceType, searchParams]);
+  }, [propertyId, complienceType, bookingToken, searchParams]);
 
   const getAvailableDates = (dueDate: string) => {
     const due = new Date(dueDate);
@@ -205,7 +266,17 @@ const InspectionBooking: React.FC = () => {
 
   const handleDateChange = (date: string) => {
     console.log("Date selected:", date);
-    setFormData((prev) => ({ ...prev, selectedDate: date }));
+    const firstAvailableSlot = tenantAvailableSlots.find(
+      (slot) => slot.date === date && slot.available
+    );
+    const nextShift =
+      firstAvailableSlot?.time === "13:00" ? "afternoon" : "morning";
+
+    setFormData((prev) => ({
+      ...prev,
+      selectedDate: date,
+      selectedShift: isTenantTokenBooking ? nextShift : prev.selectedShift,
+    }));
   };
 
   const handleShiftChange = (shift: "morning" | "afternoon") => {
@@ -230,6 +301,62 @@ const InspectionBooking: React.FC = () => {
 
       // Get token from URL parameters
       const token = searchParams.get("token");
+      const complianceType = jobData?.complianceType || complienceType || "";
+
+      if (bookingToken) {
+        const selectedSlot = tenantAvailableSlots.find(
+          (slot) =>
+            slot.date === formData.selectedDate &&
+            slot.time ===
+              (formData.selectedShift === "morning" ? "09:00" : "13:00")
+        );
+
+        const selectedTime =
+          selectedSlot?.time ||
+          (formData.selectedShift === "morning" ? "09:00" : "13:00");
+
+        const response = await fetch(
+          `${getFrontendLink()}/v1/tenant/book-appointment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              bookingToken,
+              selectedDate: formData.selectedDate,
+              selectedTime,
+              complianceType,
+            }),
+          }
+        );
+
+        const responseData = await response.json();
+
+        if (!response.ok || responseData.status !== "success") {
+          throw new Error(responseData.message || "Failed to book inspection");
+        }
+
+        setBookingSuccess(true);
+        setBookedJobDetails({
+          jobId: responseData.data?.jobId || "N/A",
+          jobType: getDisplayComplianceType(complianceType),
+          scheduledDate: formData.selectedDate,
+          scheduledShift: formData.selectedShift,
+          propertyAddress:
+            responseData.data?.propertyAddress ||
+            jobData?.complianceData?.propertyAddress ||
+            "N/A",
+        });
+
+        setToast({
+          message: "Inspection booked successfully!",
+          type: "success",
+          isVisible: true,
+        });
+
+        return;
+      }
 
       // Prepare the request body for the API call
       const requestBody = {
@@ -265,7 +392,7 @@ const InspectionBooking: React.FC = () => {
       setBookingSuccess(true);
       setBookedJobDetails({
         jobId: responseData.data?.job?.job_id || 'N/A',
-        jobType: getDisplayComplianceType(complienceType),
+        jobType: getDisplayComplianceType(complienceType || ""),
         scheduledDate: formData.selectedDate,
         scheduledShift: formData.selectedShift,
         propertyAddress: jobData?.complianceData?.propertyAddress || 'N/A'
@@ -294,7 +421,7 @@ const InspectionBooking: React.FC = () => {
   };
 
   // Helper function to get display name for compliance type
-  const getDisplayComplianceType = (complianceType: string) => {
+  const getDisplayComplianceType = (complianceType: string = "") => {
     switch (complianceType) {
       case "gasCompliance":
         return "Gas Compliance";
@@ -303,7 +430,16 @@ const InspectionBooking: React.FC = () => {
       case "smokeAlarms":
         return "Smoke Alarms";
       case "minimumSafetyStandard":
+      case "Minimum Safety Standard":
         return "Minimum Safety Standard";
+      case "Gas":
+        return "Gas Compliance";
+      case "Electrical":
+      case "Electrical Safety":
+        return "Electrical Safety";
+      case "Smoke":
+      case "Smoke Alarm":
+        return "Smoke Alarms";
       default:
         return "Compliance Inspection";
     }
@@ -313,15 +449,21 @@ const InspectionBooking: React.FC = () => {
   const formatComplianceType = (complianceType: string): string => {
     switch (complianceType) {
       case "smokeAlarms":
+      case "Smoke":
+      case "Smoke Alarm":
         return "Smoke Alarms";
       case "electricalSafety":
+      case "Electrical":
+      case "Electrical Safety":
         return "Electrical Safety";
       case "gasCompliance":
+      case "Gas":
         return "Gas Compliance";
       case "minimumSafetyStandard":
+      case "Minimum Safety Standard":
         return "Minimum Safety Standard";
       default:
-        return complianceType;
+        return complianceType || "Compliance Inspection";
     }
   };
 
@@ -372,7 +514,20 @@ const InspectionBooking: React.FC = () => {
     );
   }
 
-  const availableDates = getAvailableDates(jobData.dueDate);
+  const availableDates = isTenantTokenBooking
+    ? Array.from(new Set(tenantAvailableSlots.map((slot) => slot.date)))
+    : getAvailableDates(jobData.dueDate);
+  const selectedDateSlots = tenantAvailableSlots.filter(
+    (slot) => slot.date === formData.selectedDate
+  );
+  const isShiftAvailable = (shift: "morning" | "afternoon") => {
+    if (!isTenantTokenBooking || !formData.selectedDate) {
+      return true;
+    }
+
+    const time = shift === "morning" ? "09:00" : "13:00";
+    return selectedDateSlots.some((slot) => slot.time === time && slot.available);
+  };
 
   // Show success confirmation screen if booking was successful
   if (bookingSuccess && bookedJobDetails) {
@@ -471,6 +626,7 @@ const InspectionBooking: React.FC = () => {
           <Toast
             message={toast.message}
             type={toast.type}
+            isVisible={toast.isVisible}
             onClose={() => setToast({ ...toast, isVisible: false })}
           />
         )}
@@ -515,12 +671,14 @@ const InspectionBooking: React.FC = () => {
             </div>
             <div className="detail-item">
               <strong>Compliance Type:</strong>{" "}
-              {formatComplianceType(complienceType || "")}
+              {formatComplianceType(jobData.complianceType || complienceType || "")}
             </div>
 
-            <div className="detail-item">
-              <strong>Due Date:</strong> {formatDateForDisplay(jobData.dueDate)}
-            </div>
+            {!isTenantTokenBooking && (
+              <div className="detail-item">
+                <strong>Due Date:</strong> {formatDateForDisplay(jobData.dueDate)}
+              </div>
+            )}
           </div>
         </div>
 
@@ -531,9 +689,10 @@ const InspectionBooking: React.FC = () => {
               Select Date
             </h3>
             <p className="date-info">
-              Available dates from due date to 2 days after (including
-              weekends).
-              {jobData.dueDate && (
+              {isTenantTokenBooking
+                ? "Available inspection dates for this property."
+                : "Available dates from due date to 2 days after (including weekends)."}
+              {!isTenantTokenBooking && jobData.dueDate && (
                 <span className="due-date-info">
                   Due date: {formatDateForDisplay(jobData.dueDate)}
                 </span>
@@ -597,6 +756,7 @@ const InspectionBooking: React.FC = () => {
                   formData.selectedShift === "morning" ? "selected" : ""
                 }`}
                 onClick={() => handleShiftChange("morning")}
+                disabled={!isShiftAvailable("morning")}
               >
                 <div className="shift-icon">🌅</div>
                 <div className="shift-details">
@@ -614,6 +774,7 @@ const InspectionBooking: React.FC = () => {
                   formData.selectedShift === "afternoon" ? "selected" : ""
                 }`}
                 onClick={() => handleShiftChange("afternoon")}
+                disabled={!isShiftAvailable("afternoon")}
               >
                 <div className="shift-icon">🌆</div>
                 <div className="shift-details">
@@ -645,7 +806,11 @@ const InspectionBooking: React.FC = () => {
             <button
               type="submit"
               className="btn-primary"
-              disabled={!formData.selectedDate || submitting}
+              disabled={
+                !formData.selectedDate ||
+                !isShiftAvailable(formData.selectedShift) ||
+                submitting
+              }
             >
               {submitting ? "Booking..." : "Book Inspection"}
             </button>

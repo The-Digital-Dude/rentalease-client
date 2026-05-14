@@ -65,7 +65,7 @@ const TeamMemberLogin = () => {
 
     try {
       const response = await authService.loginTeamMember({
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
       });
 

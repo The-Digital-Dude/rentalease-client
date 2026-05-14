@@ -6,6 +6,8 @@ import type {
   AxiosError,
 } from "axios";
 
+const DEFAULT_API_BASE_URL = "https://rentalease-cloud-server.onrender.com/api";
+
 // Get base URL from environment variables
 const getBaseURL = (): string => {
   const env =
@@ -13,15 +15,10 @@ const getBaseURL = (): string => {
 
   switch (env) {
     case "production":
-      return (
-        import.meta.env.VITE_API_BASE_URL_PROD || "https://api.rentalease.com"
-      );
+      return import.meta.env.VITE_API_BASE_URL_PROD || DEFAULT_API_BASE_URL;
     case "development":
     default:
-      return (
-        import.meta.env.VITE_API_BASE_URL_DEV ||
-        "https://rental-ease-server-112dd081b2eb.herokuapp.com/api"
-      );
+      return import.meta.env.VITE_API_BASE_URL_DEV || DEFAULT_API_BASE_URL;
   }
 };
 

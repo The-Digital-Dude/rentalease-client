@@ -17,7 +17,7 @@ import {
   RiStarLine,
   RiCheckboxCircleLine,
 } from "react-icons/ri";
-import { formatDateTime } from "../../utils";
+import { formatDateOnly } from "../../utils";
 import "./JobProfileTabs.scss";
 
 interface JobProfileTabsProps {
@@ -104,16 +104,25 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                       <RiCalendarLine />
                       <div>
                         <label>Due Date</label>
-                        <span>{formatDateTime(job.dueDate)}</span>
+                        <span>{formatDateOnly(job.dueDate)}</span>
                       </div>
                     </div>
                     <div className="detail-item">
                       <RiTimeLine />
                       <div>
                         <label>Created</label>
-                        <span>{formatDateTime(job.createdAt)}</span>
+                        <span>{formatDateOnly(job.createdAt)}</span>
                       </div>
                     </div>
+                    {job.completedAt && (
+                      <div className="detail-item">
+                        <RiCheckboxCircleLine />
+                        <div>
+                          <label>Completed</label>
+                          <span>{formatDateOnly(job.completedAt)}</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="detail-item">
                       <RiMapPinLine />
                       <div>
@@ -183,12 +192,18 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                   </div>
                   <div className="spec-item">
                     <label>Due Date</label>
-                    <span>{formatDateTime(job.dueDate)}</span>
+                    <span>{formatDateOnly(job.dueDate)}</span>
                   </div>
                   <div className="spec-item">
                     <label>Created Date</label>
-                    <span>{formatDateTime(job.createdAt)}</span>
+                    <span>{formatDateOnly(job.createdAt)}</span>
                   </div>
+                  {job.completedAt && (
+                    <div className="spec-item">
+                      <label>Completed Date</label>
+                      <span>{formatDateOnly(job.completedAt)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

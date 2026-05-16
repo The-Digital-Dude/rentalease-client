@@ -260,7 +260,11 @@ const JobCompletionModal: React.FC<JobCompletionModalProps> = ({
             </label>
             <div className="toggle-label">
               <h4>Include Invoice</h4>
-              <p>Add additional charges for materials or services</p>
+              <p>
+                Compliance jobs now create a draft invoice automatically from
+                agency pricing. Use this only for extra manual charges when
+                needed.
+              </p>
             </div>
           </div>
         </div>

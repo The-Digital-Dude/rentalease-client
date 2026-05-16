@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { RiCloseLine } from "react-icons/ri";
+import Button from "../Button/Button";
 import "./Modal.scss";
 
 interface ModalProps {
@@ -34,9 +35,16 @@ const Modal = ({
           <div className="modal-header">
             {title && <h3>{title}</h3>}
             {showCloseButton && (
-              <button className="close-btn" onClick={onClose}>
+              <Button
+                variant="ghost"
+                size="sm"
+                iconOnly
+                className="close-btn"
+                onClick={onClose}
+                aria-label="Close modal"
+              >
                 <RiCloseLine />
-              </button>
+              </Button>
             )}
           </div>
         )}

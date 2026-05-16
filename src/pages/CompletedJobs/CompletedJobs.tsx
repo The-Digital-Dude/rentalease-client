@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
   RiSearchLine,
-  RiFilterLine,
   RiRefreshLine,
   RiEyeLine,
   RiCalendarLine,
@@ -21,14 +20,27 @@ import {
   RiArrowLeftLine,
   RiArrowRightLine,
   RiDownloadLine,
-  RiMoreLine,
   RiLoaderLine,
   RiErrorWarningLine,
   RiInformationLine,
   RiAwardLine,
+  RiMailSendLine,
+  RiFileTextLine,
+  RiArrowRightSLine,
+  RiEditLine,
+  RiCheckboxCircleLine,
 } from "react-icons/ri";
+import toast from "react-hot-toast";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import Modal from "../../components/Modal";
+import Button from "../../components/Button/Button";
+import invoiceService, { type Invoice } from "../../services/invoiceService";
+import emailService from "../../services/emailService";
+import ReactQuill from "react-quill";
+import CompletedJobInvoicePreview from "../../components/CompletedJobInvoicePreview/CompletedJobInvoicePreview";
+import { generateCompletedJobInvoicePDF } from "../../utils/completedJobInvoicePdfGenerator";
+import "react-quill/dist/quill.snow.css";
 import "./CompletedJobs.scss";
 
 // Types for job data
@@ -68,7 +80,36 @@ interface CompletedJob {
     _id: string;
     name: string;
   };
+  reportFile?: string | null;
+  hasInvoice?: boolean;
+  invoice?: string | { id?: string; invoiceNumber?: string; totalCost?: number; status?: string } | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+const createManualInvoiceDraft = (job: CompletedJob): Invoice => ({
+  id: "",
+  invoiceNumber: "Draft",
+  jobId: job.id,
+  technicianId: "",
+  agencyId: "",
+  description: `${job.jobType} for completed job ${job.job_id}`,
+  items: [
+    {
+      id: "manual-item-1",
+      name: job.jobType,
+      quantity: 1,
+      rate: 0,
+      amount: 0,
+    },
+  ],
+  subtotal: 0,
+  tax: 0,
+  totalCost: 0,
+  status: "Draft",
+  notes: "",
+  createdAt: new Date().toISOString(),
+});
 
 interface PaginationInfo {
   currentPage: number;
@@ -76,6 +117,28 @@ interface PaginationInfo {
   totalItems: number;
   itemsPerPage: number;
 }
+
+interface EmailComposerState {
+  to: string;
+  cc: string;
+  bcc: string;
+  subject: string;
+  bodyHtml: string;
+}
+
+const buildCompletedJobReviewData = (job: CompletedJob) => ({
+  propertyAddress: job.property.address.fullAddress,
+  jobType: job.jobType,
+  jobNumber: job.job_id,
+  agencyName: job.agency?.name || "",
+  reportFile: job.reportFile || null,
+  hasReport: Boolean(job.reportFile),
+  recipients: {
+    to: [],
+    cc: [],
+    bcc: [],
+  },
+});
 
 const CompletedJobs = () => {
   const navigate = useNavigate();
@@ -94,12 +157,44 @@ const CompletedJobs = () => {
     totalItems: 0,
     itemsPerPage: 12,
   });
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<CompletedJob | null>(null);
+  const [invoiceDraft, setInvoiceDraft] = useState<Invoice | null>(null);
+  const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
+  const [manualInvoiceMode, setManualInvoiceMode] = useState(false);
+  const [reviewStep, setReviewStep] = useState<"review" | "compose">("review");
+  const [invoiceEditorOpen, setInvoiceEditorOpen] = useState(false);
+  const [invoicePreviewOpen, setInvoicePreviewOpen] = useState(false);
+  const [emailComposer, setEmailComposer] = useState<EmailComposerState>({
+    to: "",
+    cc: "",
+    bcc: "",
+    subject: "",
+    bodyHtml: "",
+  });
+  const [emailValidationError, setEmailValidationError] = useState<string | null>(
+    null
+  );
+  const [invoiceWorkflowNotice, setInvoiceWorkflowNotice] = useState<string | null>(
+    null
+  );
+  const [reviewData, setReviewData] = useState<
+    NonNullable<
+      Awaited<ReturnType<typeof invoiceService.getInvoiceByJobId>>["data"]["reviewData"]
+    > | null
+  >(null);
 
   // Safe date formatter to avoid invalid date
   const formatDateSafely = (value?: string) => {
     if (!value) return "-";
     const d = new Date(value);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+    return isNaN(d.getTime())
+      ? "-"
+      : d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
   };
 
   // Refs for debouncing and latest search value
@@ -117,6 +212,45 @@ const CompletedJobs = () => {
       undefined
     );
   };
+
+  const sortCompletedJobs = (jobList: CompletedJob[]) =>
+    [...jobList].sort((left, right) => {
+      const leftTime = left.completedAt ? new Date(left.completedAt).getTime() : 0;
+      const rightTime = right.completedAt
+        ? new Date(right.completedAt).getTime()
+        : 0;
+
+      if (rightTime !== leftTime) {
+        return rightTime - leftTime;
+      }
+
+      const leftUpdatedTime = left.updatedAt
+        ? new Date(left.updatedAt).getTime()
+        : 0;
+      const rightUpdatedTime = right.updatedAt
+        ? new Date(right.updatedAt).getTime()
+        : 0;
+
+      if (rightUpdatedTime !== leftUpdatedTime) {
+        return rightUpdatedTime - leftUpdatedTime;
+      }
+
+      const leftCreatedTime = left.createdAt
+        ? new Date(left.createdAt).getTime()
+        : 0;
+      const rightCreatedTime = right.createdAt
+        ? new Date(right.createdAt).getTime()
+        : 0;
+
+      if (rightCreatedTime !== leftCreatedTime) {
+        return rightCreatedTime - leftCreatedTime;
+      }
+
+      return right.job_id.localeCompare(left.job_id, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
 
   // Fetch completed jobs data
   const fetchCompletedJobs = useCallback(
@@ -138,7 +272,8 @@ const CompletedJobs = () => {
           status: "Completed",
           page: page.toString(),
           limit: pagination.itemsPerPage.toString(),
-          sort: sortBy,
+          sortBy,
+          sortOrder: sortBy === "completedAt" ? "desc" : "asc",
         });
 
         const searchToUse =
@@ -178,7 +313,7 @@ const CompletedJobs = () => {
               };
             }) || [];
 
-          setJobs(completedJobs);
+          setJobs(sortCompletedJobs(completedJobs));
           setPagination({
             currentPage: result.data.pagination?.currentPage || 1,
             totalPages: result.data.pagination?.totalPages || 1,
@@ -289,7 +424,375 @@ const CompletedJobs = () => {
     navigate(`/jobs/${jobId}`);
   };
 
-  const getStatusColor = (status: string) => {
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
+    }).format(amount || 0);
+
+  const resetInvoiceWorkflow = () => {
+    setInvoiceModalOpen(false);
+    setSelectedJob(null);
+    setInvoiceDraft(null);
+    setManualInvoiceMode(false);
+    setReviewStep("review");
+    setInvoiceEditorOpen(false);
+    setInvoicePreviewOpen(false);
+    setReviewData(null);
+    setEmailValidationError(null);
+    setInvoiceWorkflowNotice(null);
+    setEmailComposer({
+      to: "",
+      cc: "",
+      bcc: "",
+      subject: "",
+      bodyHtml: "",
+    });
+  };
+
+  const handleDownloadInvoice = async () => {
+    if (!invoiceDraft || !selectedJob) {
+      return;
+    }
+
+    try {
+      await generateCompletedJobInvoicePDF({
+        invoice: invoiceDraft,
+        jobNumber: reviewData?.jobNumber || selectedJob.job_id,
+        jobType: reviewData?.jobType || selectedJob.jobType,
+        propertyAddress:
+          reviewData?.propertyAddress || selectedJob.property.address.fullAddress,
+        agencyName: reviewData?.agencyName || selectedJob.agency?.name || "",
+        hasReport: reviewData?.hasReport || false,
+      });
+    } catch (error) {
+      console.error("Failed to download invoice PDF:", error);
+      toast.error("Failed to download invoice PDF");
+    }
+  };
+
+  const buildDefaultEmailBody = (
+    job: CompletedJob,
+    invoice: Invoice,
+    reportFile: string | null
+  ) => `
+    <p>Hello,</p>
+    <p>Please review the completed job documents for <strong>${job.property.address.fullAddress}</strong>.</p>
+    <p>The draft invoice <strong>${invoice.invoiceNumber}</strong> for <strong>${formatCurrency(
+      invoice.totalCost
+    )}</strong> is ready.</p>
+    <p>${
+      reportFile
+        ? `The inspection report is available here: <a href="${reportFile}">Open report</a>.`
+        : "The inspection report is currently missing."
+    }</p>
+    <p>Regards,<br />Rentalease</p>
+  `;
+
+  const initializeEmailComposer = (
+    job: CompletedJob,
+    invoice: Invoice,
+    nextReviewData:
+      | NonNullable<
+          Awaited<
+            ReturnType<typeof invoiceService.getInvoiceByJobId>
+          >["data"]["reviewData"]
+        >
+      | null
+  ) => {
+    const to = nextReviewData?.recipients?.to || [];
+    const cc = nextReviewData?.recipients?.cc || [];
+    const bcc = nextReviewData?.recipients?.bcc || [];
+    const propertyLabel =
+      nextReviewData?.propertyAddress || job.property.address.fullAddress;
+    const jobNumber = nextReviewData?.jobNumber || job.job_id;
+
+    setEmailComposer({
+      to: emailService.formatEmailAddresses(to),
+      cc: emailService.formatEmailAddresses(cc),
+      bcc: emailService.formatEmailAddresses(bcc),
+      subject: `Completed Job Documents - ${job.jobType} - ${propertyLabel} (${jobNumber})`,
+      bodyHtml: buildDefaultEmailBody(
+        job,
+        invoice,
+        nextReviewData?.reportFile || job.reportFile || null
+      ),
+    });
+    setEmailValidationError(null);
+  };
+
+  const loadInvoiceReview = async (job: CompletedJob) => {
+    const response = await invoiceService.getInvoiceByJobId(job.id);
+    const previousReviewData = reviewData;
+    const fallbackReportFile =
+      response.data.reviewData?.reportFile ||
+      previousReviewData?.reportFile ||
+      job.reportFile ||
+      null;
+    const mergedReviewData = {
+      propertyAddress:
+        response.data.reviewData?.propertyAddress ||
+        previousReviewData?.propertyAddress ||
+        job.property.address.fullAddress,
+      jobType:
+        response.data.reviewData?.jobType ||
+        previousReviewData?.jobType ||
+        job.jobType,
+      jobNumber:
+        response.data.reviewData?.jobNumber ||
+        previousReviewData?.jobNumber ||
+        job.job_id,
+      agencyName:
+        response.data.reviewData?.agencyName ||
+        previousReviewData?.agencyName ||
+        job.agency?.name ||
+        "",
+      reportFile: fallbackReportFile,
+      hasReport: Boolean(fallbackReportFile),
+      recipients: {
+        to:
+          response.data.reviewData?.recipients?.to ||
+          previousReviewData?.recipients?.to ||
+          [],
+        cc:
+          response.data.reviewData?.recipients?.cc ||
+          previousReviewData?.recipients?.cc ||
+          [],
+        bcc:
+          response.data.reviewData?.recipients?.bcc ||
+          previousReviewData?.recipients?.bcc ||
+          [],
+      },
+    };
+    setSelectedJob(job);
+    setInvoiceDraft(response.data.invoice);
+    setReviewData(mergedReviewData);
+    setManualInvoiceMode(false);
+    initializeEmailComposer(job, response.data.invoice, mergedReviewData);
+    return response;
+  };
+
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof (error as { message?: unknown }).message === "string"
+    ) {
+      return (error as { message: string }).message;
+    }
+
+    return fallback;
+  };
+
+  const jobHasInvoiceAccess = (job: CompletedJob) => {
+    if (job.hasInvoice) return true;
+
+    if (typeof job.invoice === "string") {
+      return Boolean(job.invoice);
+    }
+
+    if (job.invoice && typeof job.invoice === "object") {
+      return Boolean(job.invoice.id || job.invoice.invoiceNumber);
+    }
+
+    return false;
+  };
+
+  const handleOpenInvoice = async (job: CompletedJob) => {
+    try {
+      setInvoiceActionLoading(true);
+      setInvoiceWorkflowNotice(null);
+      await loadInvoiceReview(job);
+      setReviewStep("review");
+      setInvoiceEditorOpen(false);
+      setInvoiceModalOpen(true);
+    } catch (error: any) {
+      const message = getErrorMessage(error, "Failed to load invoice");
+      if (
+        message.toLowerCase().includes("failed to fetch invoice for job") ||
+        message.toLowerCase().includes("no invoice")
+      ) {
+        handleOpenManualInvoice(
+          job,
+          "No linked invoice could be loaded for this completed job. You can create one manually and send it to custom recipients."
+        );
+      }
+      toast.error(message);
+    } finally {
+      setInvoiceActionLoading(false);
+    }
+  };
+
+  const updateInvoiceItem = (
+    itemIndex: number,
+    field: "name" | "quantity" | "rate",
+    value: string
+  ) => {
+    if (!invoiceDraft) return;
+    const nextItems = invoiceDraft.items.map((item, index) => {
+      if (index !== itemIndex) return item;
+      const updated = {
+        ...item,
+        [field]: field === "name" ? value : Number(value),
+      };
+      updated.amount = Number(updated.quantity) * Number(updated.rate);
+      return updated;
+    });
+    const subtotal = nextItems.reduce((sum, item) => sum + item.amount, 0);
+    setInvoiceDraft({
+      ...invoiceDraft,
+      items: nextItems,
+      subtotal,
+      totalCost: subtotal + Number(invoiceDraft.tax || 0),
+    });
+  };
+
+  const handleSaveInvoice = async () => {
+    if (!invoiceDraft || !selectedJob) return;
+    try {
+      setInvoiceActionLoading(true);
+      const payload = {
+        description: invoiceDraft.description,
+        items: invoiceDraft.items.map((item) => ({
+          name: item.name,
+          quantity: Number(item.quantity),
+          rate: Number(item.rate),
+          amount: Number(item.amount),
+        })),
+        tax: Number(invoiceDraft.tax || 0),
+        notes: invoiceDraft.notes || "",
+      };
+      const response = manualInvoiceMode
+        ? await invoiceService.createInvoice({
+            jobId: selectedJob.id,
+            ...payload,
+          })
+        : await invoiceService.updateInvoice(invoiceDraft.id, payload);
+      setInvoiceDraft(response.data.invoice);
+      await loadInvoiceReview(selectedJob);
+      setInvoiceEditorOpen(false);
+      setReviewStep("review");
+      toast.success(
+        manualInvoiceMode ? "Draft invoice created" : "Invoice updated"
+      );
+      fetchCompletedJobs(pagination.currentPage, true);
+    } catch (error: any) {
+      toast.error(
+        error.message ||
+          (manualInvoiceMode
+            ? "Failed to create invoice"
+            : "Failed to update invoice")
+      );
+    } finally {
+      setInvoiceActionLoading(false);
+    }
+  };
+
+  const handleSendDocuments = async () => {
+    if (!invoiceDraft || !selectedJob) return;
+
+    const toRecipients = emailService.parseEmailAddresses(emailComposer.to);
+    const ccRecipients = emailService.parseEmailAddresses(emailComposer.cc);
+    const bccRecipients = emailService.parseEmailAddresses(emailComposer.bcc);
+
+    if (!toRecipients.length) {
+      setEmailValidationError("At least one valid To recipient is required.");
+      return;
+    }
+
+    const invalidRecipient = [...toRecipients, ...ccRecipients, ...bccRecipients].find(
+      (recipient) => !emailService.isValidEmail(recipient.email)
+    );
+    if (invalidRecipient) {
+      setEmailValidationError(`Invalid email address: ${invalidRecipient.email}`);
+      return;
+    }
+
+    if (!emailComposer.subject.trim()) {
+      setEmailValidationError("Email subject is required.");
+      return;
+    }
+
+    if (!emailComposer.bodyHtml.trim()) {
+      setEmailValidationError("Email body is required.");
+      return;
+    }
+
+    if (!reviewData?.hasReport) {
+      setEmailValidationError(
+        "Inspection report is required before sending completed job documents."
+      );
+      return;
+    }
+
+    try {
+      setInvoiceActionLoading(true);
+      setEmailValidationError(null);
+      const response = await invoiceService.sendInvoice(invoiceDraft.id, {
+        to: toRecipients,
+        cc: ccRecipients,
+        bcc: bccRecipients,
+        subject: emailComposer.subject.trim(),
+        bodyHtml: emailComposer.bodyHtml,
+        bodyText: emailService.stripHtml(emailComposer.bodyHtml),
+      });
+      setInvoiceDraft(response.data.invoice);
+      toast.success("Documents sent");
+      fetchCompletedJobs(pagination.currentPage, true);
+      await loadInvoiceReview(selectedJob);
+    } catch (error: any) {
+      const message = error.message || "Failed to send documents";
+      setEmailValidationError(message);
+      toast.error(message);
+    } finally {
+      setInvoiceActionLoading(false);
+    }
+  };
+
+  const handleGenerateInvoice = async (job: CompletedJob) => {
+    try {
+      setInvoiceActionLoading(true);
+      setInvoiceWorkflowNotice(null);
+      await invoiceService.generateDraftForJob(job.id);
+      await loadInvoiceReview(job);
+      setReviewStep("review");
+      setInvoiceEditorOpen(false);
+      setInvoiceModalOpen(true);
+      toast.success("Draft invoice generated");
+      fetchCompletedJobs(pagination.currentPage, true);
+    } catch (error: any) {
+      const message = getErrorMessage(
+        error,
+        "Failed to generate draft invoice"
+      );
+      handleOpenManualInvoice(
+        job,
+        `${
+          message.endsWith(".") ? message.slice(0, -1) : message
+        }. You can still assign pricing manually and send the invoice to custom recipients.`
+      );
+      toast.error(message);
+    } finally {
+      setInvoiceActionLoading(false);
+    }
+  };
+
+  const handleOpenManualInvoice = (job: CompletedJob, notice?: string) => {
+    const nextDraft = createManualInvoiceDraft(job);
+    const nextReviewData = buildCompletedJobReviewData(job);
+    setSelectedJob(job);
+    setInvoiceDraft(nextDraft);
+    setManualInvoiceMode(true);
+    setReviewData(nextReviewData);
+    setInvoiceWorkflowNotice(notice || null);
+    initializeEmailComposer(job, nextDraft, nextReviewData);
+    setReviewStep("review");
+    setInvoiceEditorOpen(true);
+    setInvoiceModalOpen(true);
+  };
+
+  const getStatusColor = () => {
     return "success"; // All jobs are completed
   };
 
@@ -415,7 +918,9 @@ const CompletedJobs = () => {
           </div>
           <div className="due-date">
             <RiCalendarLine />
-            <span>Was due: {new Date(job.dueDate).toLocaleDateString()}</span>
+            <span>
+              Was due: {formatDateSafely(job.dueDate)}
+            </span>
           </div>
         </div>
 
@@ -446,14 +951,70 @@ const CompletedJobs = () => {
       </div>
 
       <div className="job-actions">
-        <button
-          className="btn btn-secondary"
+        <Button
+          variant="secondary"
+          size="sm"
+          leftIcon={<RiEyeLine />}
           onClick={() => handleViewJob(job.id)}
         >
-          <RiEyeLine />
           View Details
-        </button>
+        </Button>
+        {jobHasInvoiceAccess(job) && (
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<RiInformationLine />}
+            onClick={() => handleOpenInvoice(job)}
+            disabled={invoiceActionLoading}
+          >
+            Invoice & Send
+          </Button>
+        )}
+        {!jobHasInvoiceAccess(job) && (
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<RiInformationLine />}
+              onClick={() => handleGenerateInvoice(job)}
+              disabled={invoiceActionLoading}
+            >
+              Generate Draft
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<RiInformationLine />}
+              onClick={() => handleOpenManualInvoice(job)}
+              disabled={invoiceActionLoading}
+            >
+              Manual Invoice
+            </Button>
+          </>
+        )}
+        {job.reportFile && (
+          <Button
+            href={job.reportFile}
+            variant="secondary"
+            size="sm"
+            leftIcon={<RiDownloadLine />}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View Report
+          </Button>
+        )}
       </div>
+      {!jobHasInvoiceAccess(job) && (
+        <div className="job-meta">
+          <span className="meta-item">
+            <RiInformationLine />
+            No invoice is linked to this completed job yet. Generate a draft or
+            create one manually, then send it to agency contacts or custom
+            recipients from here.
+          </span>
+        </div>
+      )}
     </div>
   );
 
@@ -475,10 +1036,13 @@ const CompletedJobs = () => {
           <RiErrorWarningLine className="error-icon" />
           <h3>Error Loading Completed Jobs</h3>
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleRefresh}>
-            <RiRefreshLine />
+          <Button
+            variant="primary"
+            leftIcon={<RiRefreshLine />}
+            onClick={handleRefresh}
+          >
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -531,14 +1095,14 @@ const CompletedJobs = () => {
           </div>
         </div>
         <div className="header-actions">
-          <button
-            className="btn btn-secondary"
+          <Button
+            variant="secondary"
+            leftIcon={<RiRefreshLine className={refreshing ? "spinning" : ""} />}
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RiRefreshLine className={refreshing ? "spinning" : ""} />
             {refreshing ? "Refreshing..." : "Refresh"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -620,8 +1184,8 @@ const CompletedJobs = () => {
                 : "No jobs have been completed yet."}
             </p>
             {(searchTerm || filterPriority || filterRating) && (
-              <button
-                className="btn btn-secondary"
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setSearchTerm("");
                   setFilterPriority("");
@@ -630,7 +1194,7 @@ const CompletedJobs = () => {
                 }}
               >
                 Clear Filters
-              </button>
+              </Button>
             )}
           </div>
         ) : (
@@ -639,14 +1203,14 @@ const CompletedJobs = () => {
 
             {pagination.totalPages > 1 && (
               <div className="pagination">
-                <button
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
+                  leftIcon={<RiArrowLeftLine />}
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
                   disabled={pagination.currentPage === 1}
                 >
-                  <RiArrowLeftLine />
                   Previous
-                </button>
+                </Button>
 
                 <div className="page-info">
                   <span>
@@ -655,19 +1219,543 @@ const CompletedJobs = () => {
                   <span>({pagination.totalItems} total completed jobs)</span>
                 </div>
 
-                <button
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
+                  rightIcon={<RiArrowRightLine />}
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
                   disabled={pagination.currentPage === pagination.totalPages}
                 >
                   Next
-                  <RiArrowRightLine />
-                </button>
+                </Button>
               </div>
             )}
           </>
         )}
       </div>
+      <Modal
+        isOpen={invoiceModalOpen}
+        onClose={resetInvoiceWorkflow}
+        title="Review & Send Documents"
+        size="large"
+      >
+        {invoiceDraft && (
+          <div className="completed-job-documents-modal">
+            {invoiceWorkflowNotice && (
+              <div className="workflow-notice">
+                <RiInformationLine />
+                <p>{invoiceWorkflowNotice}</p>
+              </div>
+            )}
+            <div className="workflow-steps">
+              <button
+                type="button"
+                className={`workflow-step ${reviewStep === "review" ? "active" : ""}`}
+                onClick={() => setReviewStep("review")}
+              >
+                <span className="step-index">1</span>
+                <span>Review Documents</span>
+              </button>
+              <button
+                type="button"
+                className={`workflow-step ${reviewStep === "compose" ? "active" : ""}`}
+                onClick={() => {
+                  if (!manualInvoiceMode) {
+                    setReviewStep("compose");
+                  }
+                }}
+                disabled={manualInvoiceMode}
+              >
+                <span className="step-index">2</span>
+                <span>Compose & Send</span>
+              </button>
+            </div>
+
+            <div className="review-header-card">
+              <div>
+                <p className="eyebrow">Completed Job</p>
+                <h4>
+                  {selectedJob?.jobType} <span>#{selectedJob?.job_id}</span>
+                </h4>
+                <p>{selectedJob?.property.address.fullAddress}</p>
+              </div>
+              <div className="status-stack">
+                <span className={`invoice-status invoice-${invoiceDraft.status.toLowerCase()}`}>
+                  {invoiceDraft.status}
+                </span>
+                <strong>{formatCurrency(invoiceDraft.totalCost)}</strong>
+              </div>
+            </div>
+
+            {reviewStep === "review" && (
+              <div className="review-step-layout">
+                <div className="invoice-preview-panel">
+                  <div className="panel-header">
+                    <div>
+                      <p className="eyebrow">Invoice Preview</p>
+                      <h4>{invoiceDraft.invoiceNumber}</h4>
+                    </div>
+                    <div className="panel-actions">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        leftIcon={<RiDownloadLine />}
+                        onClick={handleDownloadInvoice}
+                      >
+                        Download Invoice
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        leftIcon={<RiEyeLine />}
+                        onClick={() => setInvoicePreviewOpen(true)}
+                      >
+                        Open Full Preview
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        leftIcon={<RiEditLine />}
+                        onClick={() => setInvoiceEditorOpen((current) => !current)}
+                        disabled={
+                          invoiceActionLoading ||
+                          (!manualInvoiceMode &&
+                            (invoiceDraft.status === "Sent" ||
+                              invoiceDraft.status === "Paid"))
+                        }
+                      >
+                        {invoiceEditorOpen ? "Close Editor" : "Edit Invoice"}
+                      </Button>
+                    </div>
+                  </div>
+                  <CompletedJobInvoicePreview
+                    invoice={invoiceDraft}
+                    job={selectedJob}
+                    reviewData={reviewData}
+                    compact
+                  />
+                </div>
+
+                <div className="document-readiness-panel">
+                  <div className="panel-header">
+                    <div>
+                      <p className="eyebrow">Document Readiness</p>
+                      <h4>Check everything before sending</h4>
+                    </div>
+                  </div>
+
+                  <div className={`readiness-card ${reviewData?.hasReport ? "ready" : "warning"}`}>
+                    <div>
+                      <strong>Inspection Report</strong>
+                      <p>
+                        {reviewData?.hasReport
+                          ? "The completed report is ready to be included in the email."
+                          : "The completed report is missing. Sending is blocked until it exists."}
+                      </p>
+                    </div>
+                    {reviewData?.reportFile ? (
+                      <Button
+                        href={reviewData.reportFile}
+                        variant="secondary"
+                        size="sm"
+                        leftIcon={<RiFileTextLine />}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View Report
+                      </Button>
+                    ) : (
+                      <span className="document-tag missing">Missing</span>
+                    )}
+                  </div>
+
+                  <div className="readiness-card ready">
+                    <div>
+                      <strong>Invoice Review</strong>
+                      <p>
+                        {manualInvoiceMode
+                          ? "Create the draft invoice before moving to the email step."
+                          : "Invoice draft is ready for admin review and sending."}
+                      </p>
+                    </div>
+                    <span className="document-tag">
+                      {manualInvoiceMode ? "Draft not created" : "Ready"}
+                    </span>
+                  </div>
+
+                  <div className="recipients-preview">
+                    <p className="eyebrow">Default Recipients</p>
+                    {reviewData?.recipients.to?.length ? (
+                      reviewData.recipients.to.map((recipient) => (
+                        <div key={recipient.email} className="recipient-pill">
+                          <RiMailSendLine />
+                          <span>
+                            {recipient.name
+                              ? `${recipient.name} <${recipient.email}>`
+                              : recipient.email}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="empty-copy">
+                        Recipients will be reviewed in the compose step.
+                      </p>
+                    )}
+                  </div>
+
+                  {invoiceEditorOpen && (
+                    <div className="invoice-editor">
+                      <label>
+                        <span>Description</span>
+                        <textarea
+                          value={invoiceDraft.description}
+                          onChange={(e) =>
+                            setInvoiceDraft({
+                              ...invoiceDraft,
+                              description: e.target.value,
+                            })
+                          }
+                          rows={3}
+                        />
+                      </label>
+                      <div className="editor-items">
+                        <div className="editor-item-label-row">
+                          <span>Item Name</span>
+                          <span>Quantity</span>
+                          <span>Rate</span>
+                          <span>Amount</span>
+                        </div>
+                        {invoiceDraft.items.map((item, index) => (
+                          <div
+                            key={item._id || item.id || index}
+                            className="editor-item-row"
+                          >
+                            <label className="editor-field editor-field-name">
+                              <span className="mobile-field-label">
+                                Item Name
+                              </span>
+                              <input
+                                aria-label={`Invoice item ${index + 1} name`}
+                                value={item.name}
+                                onChange={(e) =>
+                                  updateInvoiceItem(index, "name", e.target.value)
+                                }
+                                placeholder="Service or item name"
+                              />
+                            </label>
+                            <label className="editor-field">
+                              <span className="mobile-field-label">
+                                Quantity
+                              </span>
+                              <input
+                                aria-label={`Invoice item ${index + 1} quantity`}
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  updateInvoiceItem(
+                                    index,
+                                    "quantity",
+                                    e.target.value
+                                  )
+                                }
+                                min="0"
+                                step="1"
+                                placeholder="Qty"
+                              />
+                            </label>
+                            <label className="editor-field">
+                              <span className="mobile-field-label">Rate</span>
+                              <input
+                                aria-label={`Invoice item ${index + 1} rate`}
+                                type="number"
+                                value={item.rate}
+                                onChange={(e) =>
+                                  updateInvoiceItem(index, "rate", e.target.value)
+                                }
+                                min="0"
+                                step="0.01"
+                                placeholder="Rate"
+                              />
+                            </label>
+                            <label className="editor-field">
+                              <span className="mobile-field-label">Amount</span>
+                              <input
+                                aria-label={`Invoice item ${index + 1} amount`}
+                                type="number"
+                                value={item.amount}
+                                readOnly
+                                tabIndex={-1}
+                                placeholder="Amount"
+                              />
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      <label>
+                        <span>Tax</span>
+                        <input
+                          type="number"
+                          value={invoiceDraft.tax}
+                          onChange={(e) => {
+                            const tax = Number(e.target.value || 0);
+                            const subtotal = invoiceDraft.items.reduce(
+                              (sum, item) => sum + item.amount,
+                              0
+                            );
+                            setInvoiceDraft({
+                              ...invoiceDraft,
+                              tax,
+                              subtotal,
+                              totalCost: subtotal + tax,
+                            });
+                          }}
+                          min="0"
+                          step="0.01"
+                        />
+                      </label>
+                      <label>
+                        <span>Notes</span>
+                        <textarea
+                          value={invoiceDraft.notes || ""}
+                          onChange={(e) =>
+                            setInvoiceDraft({
+                              ...invoiceDraft,
+                              notes: e.target.value,
+                            })
+                          }
+                          rows={3}
+                        />
+                      </label>
+                      <div className="editor-actions">
+                        <Button
+                          variant="secondary"
+                          onClick={handleSaveInvoice}
+                          disabled={
+                            invoiceActionLoading ||
+                            (!manualInvoiceMode &&
+                              (invoiceDraft.status === "Sent" ||
+                                invoiceDraft.status === "Paid"))
+                          }
+                        >
+                          {manualInvoiceMode
+                            ? "Create Draft Invoice"
+                            : "Save Invoice"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="review-actions">
+                    <Button
+                      variant="primary"
+                      rightIcon={<RiArrowRightSLine />}
+                      onClick={() => setReviewStep("compose")}
+                      disabled={
+                        invoiceActionLoading ||
+                        manualInvoiceMode ||
+                        !invoiceDraft.id ||
+                        invoiceDraft.status === "Sent" ||
+                        invoiceDraft.status === "Paid"
+                      }
+                    >
+                      Continue to Compose
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {reviewStep === "compose" && (
+              <div className="compose-step-layout">
+                <div className="compose-panel">
+                  <div className="panel-header">
+                    <div>
+                      <p className="eyebrow">Compose Email</p>
+                      <h4>Review recipients, subject, body, and attachments</h4>
+                    </div>
+                  </div>
+
+                  <div className="compose-grid">
+                    <label>
+                      <span>To *</span>
+                      <input
+                        type="text"
+                        value={emailComposer.to}
+                        onChange={(e) =>
+                          setEmailComposer((current) => ({
+                            ...current,
+                            to: e.target.value,
+                          }))
+                        }
+                        placeholder="Agency and property managers"
+                      />
+                    </label>
+                    <label>
+                      <span>CC</span>
+                      <input
+                        type="text"
+                        value={emailComposer.cc}
+                        onChange={(e) =>
+                          setEmailComposer((current) => ({
+                            ...current,
+                            cc: e.target.value,
+                          }))
+                        }
+                        placeholder="cc@example.com, second@example.com"
+                      />
+                    </label>
+                    <label>
+                      <span>BCC</span>
+                      <input
+                        type="text"
+                        value={emailComposer.bcc}
+                        onChange={(e) =>
+                          setEmailComposer((current) => ({
+                            ...current,
+                            bcc: e.target.value,
+                          }))
+                        }
+                        placeholder="Optional blind copies"
+                      />
+                    </label>
+                    <label>
+                      <span>Subject *</span>
+                      <input
+                        type="text"
+                        value={emailComposer.subject}
+                        onChange={(e) =>
+                          setEmailComposer((current) => ({
+                            ...current,
+                            subject: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                    <div className="editor-group">
+                      <span>Body *</span>
+                      <ReactQuill
+                        value={emailComposer.bodyHtml}
+                        onChange={(value) =>
+                          setEmailComposer((current) => ({
+                            ...current,
+                            bodyHtml: value,
+                          }))
+                        }
+                        theme="snow"
+                      />
+                    </div>
+                  </div>
+                  {emailValidationError && (
+                    <div className="validation-banner">{emailValidationError}</div>
+                  )}
+                </div>
+
+                <div className="send-preview-panel">
+                  <div className="panel-header">
+                    <div>
+                      <p className="eyebrow">Send Review</p>
+                      <h4>What will be sent</h4>
+                    </div>
+                  </div>
+
+                  <div className="send-preview-block">
+                    <span>Recipients</span>
+                    <p>{emailComposer.to || "No recipients yet"}</p>
+                    {emailComposer.cc && <p>CC: {emailComposer.cc}</p>}
+                    {emailComposer.bcc && <p>BCC: {emailComposer.bcc}</p>}
+                  </div>
+
+                  <div className="send-preview-block">
+                    <span>Subject</span>
+                    <p>{emailComposer.subject || "No subject"}</p>
+                  </div>
+
+                  <div className="send-preview-block">
+                    <span>Document Checklist</span>
+                    <div className="checklist-row">
+                      <RiCheckboxCircleLine className="ready" />
+                      <p>
+                        Invoice {invoiceDraft.invoiceNumber} for{" "}
+                        {formatCurrency(invoiceDraft.totalCost)}
+                      </p>
+                    </div>
+                    <div className="checklist-row">
+                      <RiCheckboxCircleLine
+                        className={reviewData?.hasReport ? "ready" : "missing"}
+                      />
+                      <p>
+                        {reviewData?.hasReport
+                          ? "Inspection report link is included."
+                          : "Inspection report is missing."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="send-preview-block">
+                    <span>Email Preview</span>
+                    <div
+                      className="email-preview-html"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          emailComposer.bodyHtml ||
+                          "<p class='empty'>No email body yet.</p>",
+                      }}
+                    />
+                  </div>
+
+                  <div className="compose-actions">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setReviewStep("review")}
+                      disabled={invoiceActionLoading}
+                    >
+                      Back to Review
+                    </Button>
+                    <Button
+                      variant="primary"
+                      leftIcon={<RiMailSendLine />}
+                      onClick={handleSendDocuments}
+                      disabled={
+                        invoiceActionLoading ||
+                        invoiceDraft.status === "Sent" ||
+                        invoiceDraft.status === "Paid" ||
+                        !reviewData?.hasReport
+                      }
+                    >
+                      Send Documents
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+      <Modal
+        isOpen={invoicePreviewOpen}
+        onClose={() => setInvoicePreviewOpen(false)}
+        title="Generated Invoice Preview"
+        size="large"
+      >
+        {invoiceDraft && selectedJob && (
+          <div className="invoice-preview-modal-content">
+            <div className="invoice-preview-modal-actions">
+              <Button
+                variant="secondary"
+                size="sm"
+                leftIcon={<RiDownloadLine />}
+                onClick={handleDownloadInvoice}
+              >
+                Download Invoice
+              </Button>
+            </div>
+            <CompletedJobInvoicePreview
+              invoice={invoiceDraft}
+              job={selectedJob}
+              reviewData={reviewData}
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

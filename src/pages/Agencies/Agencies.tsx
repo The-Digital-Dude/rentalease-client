@@ -9,7 +9,12 @@ import {
 import EmailContactModal from "../../components/EmailContactModal";
 import { agencyService } from "../../services";
 import type { Agency } from "../../services/agencyService";
-import { VALID_REGIONS, COMPLIANCE_TYPES } from "../../constants";
+import {
+  VALID_REGIONS,
+  COMPLIANCE_TYPES,
+  getComplianceTypeLabel,
+  normalizeComplianceType,
+} from "../../constants";
 import { useAppSelector } from "../../store";
 import "./Agencies.scss";
 
@@ -113,6 +118,10 @@ const Agencies = () => {
     region: string;
     complianceLevel: string;
     complianceSubscriptions: string[];
+    servicePricing?: Array<{
+      serviceType: string;
+      price: number;
+    }>;
     status: "active" | "inactive" | "pending" | "suspended";
     password?: string;
     subscriptionAmount?: number | string;
@@ -121,6 +130,22 @@ const Agencies = () => {
       setSubmitLoading(true);
       setError("");
       setSuccessMessage("");
+
+      const normalizedComplianceSubscriptions = (
+        formData.complianceSubscriptions || []
+      ).map((serviceType) => normalizeComplianceType(serviceType));
+      const normalizedServicePricing = (formData.servicePricing || []).map(
+        (item) => ({
+          ...item,
+          serviceType: normalizeComplianceType(item.serviceType),
+          price: Number(item.price),
+        })
+      );
+      const normalizedSubscriptionAmount =
+        normalizedServicePricing.reduce((sum, item) => sum + item.price, 0) ||
+        (formData.subscriptionAmount
+          ? Number(formData.subscriptionAmount)
+          : undefined);
 
       if (editingAgency) {
         // Update existing agency (exclude password)
@@ -132,13 +157,11 @@ const Agencies = () => {
           contactPhone: formData.contactPhone,
           region: formData.region,
           complianceLevel: formData.complianceLevel,
-          complianceSubscriptions: formData.complianceSubscriptions,
+          complianceSubscriptions: normalizedComplianceSubscriptions,
+          servicePricing: normalizedServicePricing,
           status: formData.status,
           outstandingAmount: editingAgency.outstandingAmount, // Keep for now to satisfy interface
-          // subscriptionAmount: formData.subscriptionAmount
-          //   ? Number(formData.subscriptionAmount)
-          //   : undefined,
-          subscriptionAmount: 1,
+          subscriptionAmount: normalizedSubscriptionAmount,
         };
 
         const response = await agencyService.updateAgency(
@@ -178,12 +201,12 @@ const Agencies = () => {
           contactPhone: formData.contactPhone,
           region: formData.region,
           complianceLevel: formData.complianceLevel,
-          complianceSubscriptions: formData.complianceSubscriptions,
+          complianceSubscriptions: normalizedComplianceSubscriptions,
+          servicePricing: normalizedServicePricing,
           status: formData.status,
           outstandingAmount: 0, // Keep for now to satisfy interface
           password: formData.password,
-          // subscriptionAmount: Number(formData.subscriptionAmount),
-          subscriptionAmount: 1,
+          subscriptionAmount: normalizedSubscriptionAmount,
         };
 
         const response = await agencyService.createAgency(newAgencyData);
@@ -441,7 +464,7 @@ const Agencies = () => {
             <option value="all">All Compliance Types</option>
             {COMPLIANCE_TYPES.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {getComplianceTypeLabel(type)}
               </option>
             ))}
           </select>

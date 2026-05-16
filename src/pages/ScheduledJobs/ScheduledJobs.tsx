@@ -24,6 +24,7 @@ import {
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import Button from "../../components/Button/Button";
 import "./ScheduledJobs.scss";
 
 // Types for job data
@@ -400,20 +401,14 @@ const ScheduledJobs = () => {
       </div>
 
       <div className="job-actions">
-        <button
-          className="btn btn-primary"
-          onClick={() => handleStartJob(job.id)}
-        >
+        <Button variant="primary" onClick={() => handleStartJob(job.id)}>
           <RiPlayLine />
           Start Job
-        </button>
-        <button
-          className="btn btn-secondary"
-          onClick={() => handleViewJob(job.id)}
-        >
+        </Button>
+        <Button variant="secondary" onClick={() => handleViewJob(job.id)}>
           <RiEyeLine />
           View Details
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -436,10 +431,10 @@ const ScheduledJobs = () => {
           <RiErrorWarningLine className="error-icon" />
           <h3>Error Loading Scheduled Jobs</h3>
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleRefresh}>
+          <Button variant="primary" onClick={handleRefresh}>
             <RiRefreshLine />
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -465,14 +460,14 @@ const ScheduledJobs = () => {
           </div>
         </div>
         <div className="header-actions">
-          <button
-            className="btn btn-secondary"
+          <Button
+            variant="secondary"
             onClick={handleRefresh}
             disabled={refreshing}
           >
             <RiRefreshLine className={refreshing ? "spinning" : ""} />
             {refreshing ? "Refreshing..." : "Refresh"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -560,10 +555,10 @@ const ScheduledJobs = () => {
               filterDateRange.startDate ||
               filterDateRange.endDate) && (
               <div className="filter-group">
-                <button className="btn btn-secondary" onClick={clearAllFilters}>
+                <Button variant="secondary" onClick={clearAllFilters}>
                   <RiCloseLine />
                   Clear Filters
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -589,10 +584,10 @@ const ScheduledJobs = () => {
               filterJobType ||
               filterDateRange.startDate ||
               filterDateRange.endDate) && (
-              <button className="btn btn-secondary" onClick={clearAllFilters}>
+              <Button variant="secondary" onClick={clearAllFilters}>
                 <RiCloseLine />
                 Clear Filters
-              </button>
+              </Button>
             )}
           </div>
         ) : (
@@ -601,14 +596,14 @@ const ScheduledJobs = () => {
 
             {pagination.totalPages > 1 && (
               <div className="pagination">
-                <button
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
                   disabled={pagination.currentPage === 1}
                 >
                   <RiArrowLeftLine />
                   Previous
-                </button>
+                </Button>
 
                 <div className="page-info">
                   <span>
@@ -617,14 +612,14 @@ const ScheduledJobs = () => {
                   <span>({pagination.totalItems} total jobs)</span>
                 </div>
 
-                <button
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
                   disabled={pagination.currentPage === pagination.totalPages}
                 >
                   Next
                   <RiArrowRightLine />
-                </button>
+                </Button>
               </div>
             )}
           </>

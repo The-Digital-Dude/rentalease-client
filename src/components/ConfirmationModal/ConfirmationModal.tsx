@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Modal from "../Modal";
+import Button from "../Button/Button";
 import "./ConfirmationModal.scss";
 
 interface ConfirmationModalProps {
@@ -38,16 +39,16 @@ const ConfirmationModal = ({
         </div>
 
         <div className="confirmation-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={`btn-${confirmButtonType}`}
+            variant={confirmButtonType === "danger" ? "danger" : "primary"}
             onClick={handleConfirm}
           >
             {confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

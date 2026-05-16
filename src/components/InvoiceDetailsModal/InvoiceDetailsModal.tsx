@@ -159,6 +159,41 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
     return "";
   };
 
+  const getAgencyContactName = () => {
+    if (!invoice) return "";
+
+    if (invoice.agencyId && typeof invoice.agencyId === "object") {
+      return (
+        invoice.agencyId.contactPerson || invoice.agencyId.companyName || ""
+      );
+    }
+
+    if (invoice.agency && typeof invoice.agency === "object") {
+      return (
+        invoice.agency.contactPerson ||
+        invoice.agency.companyName ||
+        invoice.agency.agencyName ||
+        ""
+      );
+    }
+
+    return "";
+  };
+
+  const getAgencyEmail = () => {
+    if (!invoice) return "";
+
+    if (invoice.agencyId && typeof invoice.agencyId === "object") {
+      return invoice.agencyId.email || "";
+    }
+
+    if (invoice.agency && typeof invoice.agency === "object") {
+      return invoice.agency.email || "";
+    }
+
+    return "";
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending":
@@ -212,16 +247,28 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                 <span className="label">Property Address:</span>
                 <span className="value">{getPropertyAddress()}</span>
               </div>
-              {getPropertyManagerName() && (
+              {(getPropertyManagerName() || getAgencyContactName()) && (
                 <div className="detail-item">
-                  <span className="label">Property Manager:</span>
-                  <span className="value">{getPropertyManagerName()}</span>
+                  <span className="label">
+                    {getPropertyManagerName()
+                      ? "Property Manager:"
+                      : "Agency Contact:"}
+                  </span>
+                  <span className="value">
+                    {getPropertyManagerName() || getAgencyContactName()}
+                  </span>
                 </div>
               )}
               {getPropertyManagerEmail() && (
                 <div className="detail-item">
                   <span className="label">Manager Email:</span>
                   <span className="value">{getPropertyManagerEmail()}</span>
+                </div>
+              )}
+              {!getPropertyManagerEmail() && getAgencyEmail() && (
+                <div className="detail-item">
+                  <span className="label">Agency Email:</span>
+                  <span className="value">{getAgencyEmail()}</span>
                 </div>
               )}
             </div>

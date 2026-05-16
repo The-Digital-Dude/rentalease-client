@@ -12,6 +12,8 @@ import {
   RiCheckLine,
   RiRefreshLine,
   RiAlertLine,
+  RiEditLine,
+  RiFileList3Line,
   RiMoneyDollarCircleLine,
   RiTimeLine,
   RiArrowUpLine as RiTrendingUpLine,
@@ -28,6 +30,7 @@ import {
   RiHomeSmileLine,
   RiHandHeartLine,
   RiDownloadLine,
+  RiPriceTag3Line,
 } from "react-icons/ri";
 import {
   BarChart,
@@ -50,62 +53,10 @@ import {
 import { useAppSelector } from "../../store";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
-import dashboardService from "../../services/dashboardService";
-
-interface DashboardData {
-  overview: {
-    totalAgencies: number;
-    totalProperties: number;
-    totalTechnicians: number;
-    totalPropertyManagers: number;
-    totalTeamMembers: number;
-    totalJobs: number;
-    activeJobs: number;
-    completedJobs: number;
-    pendingJobs: number;
-    overdueJobs: number;
-  };
-  jobStatusDistribution: Array<{
-    status: string;
-    count: number;
-    percentage: string;
-  }>;
-  recentActivity: {
-    newAgencies: number;
-    newProperties: number;
-    newTechnicians: number;
-    newJobs: number;
-    completedJobsWeek: number;
-  };
-  paymentStats: {
-    totalPayments: number;
-    totalAmount: number;
-    pendingAmount: number;
-    paidAmount: number;
-    pendingCount: number;
-    paidCount: number;
-  };
-  monthlyTrends: Array<{
-    month: string;
-    totalJobs: number;
-    completedJobs: number;
-  }>;
-  topTechnicians: Array<{
-    name: string;
-    completedJobs: number;
-  }>;
-  recentJobs: Array<{
-    id: string;
-    job_id: string;
-    jobType: string;
-    status: string;
-    dueDate: string;
-    createdAt: string;
-    technicianName: string;
-    propertyAddress: string;
-  }>;
-  lastUpdated: string;
-}
+import Button from "../../components/Button/Button";
+import dashboardService, {
+  type DashboardStats as DashboardData,
+} from "../../services/dashboardService";
 
 const SuperUserDashboard = () => {
   const userState = useAppSelector((state) => state.user);
@@ -128,7 +79,6 @@ const SuperUserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
   const [jobSearchTerm, setJobSearchTerm] = useState("");
   const [jobStatusFilter, setJobStatusFilter] = useState("all");
   const [selectedChartData, setSelectedChartData] = useState<any>(null);
@@ -146,6 +96,9 @@ const SuperUserDashboard = () => {
   >("monthly");
   const [filteredChartData, setFilteredChartData] = useState<any>(null);
   const [loadingFilteredData, setLoadingFilteredData] = useState(false);
+  const [chartValidationError, setChartValidationError] = useState<
+    string | null
+  >(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -167,6 +120,28 @@ const SuperUserDashboard = () => {
   };
 
   const fetchFilteredData = async () => {
+    const hasOneDateOnly =
+      (chartDateRange.startDate && !chartDateRange.endDate) ||
+      (!chartDateRange.startDate && chartDateRange.endDate);
+
+    if (hasOneDateOnly) {
+      setChartValidationError("Select both a start date and an end date.");
+      setFilteredChartData(null);
+      return;
+    }
+
+    if (
+      chartDateRange.startDate &&
+      chartDateRange.endDate &&
+      new Date(chartDateRange.startDate) > new Date(chartDateRange.endDate)
+    ) {
+      setChartValidationError("Start date cannot be later than end date.");
+      setFilteredChartData(null);
+      return;
+    }
+
+    setChartValidationError(null);
+
     if (
       !chartDateRange.startDate &&
       !chartDateRange.endDate &&
@@ -235,7 +210,8 @@ const SuperUserDashboard = () => {
         navigate("/jobs");
         break;
       case "payments":
-        navigate("/technicianPayments");
+      case "invoices":
+        navigate("/invoice-management");
         break;
       case "teamMembers":
         navigate("/teamMembers");
@@ -256,7 +232,7 @@ const SuperUserDashboard = () => {
   const handleChartExport = () => {
     const dataToExport = filteredChartData ? chartData.trends : monthlyTrends;
     const headers = filteredChartData
-      ? "Period,Total Jobs,Completed Jobs,Pending Jobs,In Progress Jobs,Overdue Jobs\n"
+      ? "Period,Total Jobs,Completed Jobs,Pending Jobs,Active Jobs,Overdue Jobs\n"
       : "Month,Total Jobs,Completed Jobs\n";
 
     const csvRows = filteredChartData
@@ -264,7 +240,7 @@ const SuperUserDashboard = () => {
           (row: any) =>
             `${row.month},${row.totalJobs},${row.completedJobs},${
               row.pendingJobs || 0
-            },${row.inProgressJobs || 0},${row.overdueJobs || 0}`
+            },${row.activeJobs || 0},${row.overdueJobs || 0}`
         )
       : dataToExport.map(
           (row: any) => `${row.month},${row.totalJobs},${row.completedJobs}`
@@ -298,14 +274,37 @@ const SuperUserDashboard = () => {
     switch (status.toLowerCase()) {
       case "completed":
         return isDarkMode ? "#34d399" : "#10b981";
-      case "in progress":
+      case "scheduled":
+      case "pending quotation":
+      case "quotation sent":
         return isDarkMode ? "#fbbf24" : "#f59e0b";
       case "pending":
         return isDarkMode ? "#60a5fa" : "#3b82f6";
       case "overdue":
         return isDarkMode ? "#f87171" : "#ef4444";
+      case "cancelled":
+        return isDarkMode ? "#94a3b8" : "#6b7280";
       default:
         return isDarkMode ? "#94a3b8" : "#6b7280";
+    }
+  };
+
+  const formatChartSeriesName = (name: string) => {
+    switch (name) {
+      case "totalJobs":
+        return "Total Jobs";
+      case "completedJobs":
+        return "Completed Jobs";
+      case "activeJobs":
+        return "Active Jobs";
+      case "pendingJobs":
+        return "Pending Jobs";
+      case "overdueJobs":
+        return "Overdue Jobs";
+      case "completionTrend":
+        return "Completion Trend";
+      default:
+        return name;
     }
   };
 
@@ -338,13 +337,14 @@ const SuperUserDashboard = () => {
           <RiErrorWarningLine className={styles.errorIcon} />
           <h3>Error Loading Dashboard</h3>
           <p>{error}</p>
-          <button
+          <Button
+            variant="primary"
             className={`${styles.btn} ${styles.btnPrimary}`}
             onClick={handleRefresh}
           >
             <RiRefreshLine />
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -356,11 +356,36 @@ const SuperUserDashboard = () => {
     overview,
     jobStatusDistribution,
     recentActivity,
-    paymentStats,
     monthlyTrends,
     topTechnicians,
     recentJobs,
   } = dashboardData;
+
+  const invoiceStats = dashboardData.invoiceStats || {
+    totalInvoices: 0,
+    totalAmount: 0,
+    draftAmount: 0,
+    draftCount: 0,
+    pendingAmount: 0,
+    pendingCount: 0,
+    paidAmount: 0,
+    paidCount: 0,
+    rejectedAmount: 0,
+    rejectedCount: 0,
+    completedJobInvoices: 0,
+    propertyManagerInvoices: 0,
+  };
+
+  const pricingSummary = dashboardData.pricingSummary || {
+    totalConfiguredMonthlyRevenue: 0,
+    averageAgencyPricing: 0,
+    totalConfiguredServiceEntries: 0,
+    serviceTypesInUse: 0,
+    averageServicePrice: 0,
+    topServices: [],
+  };
+
+  const topPricingServices = pricingSummary.topServices.slice(0, 4);
 
   // Filter recent jobs based on search and status
   const filteredRecentJobs = recentJobs.filter((job) => {
@@ -388,14 +413,18 @@ const SuperUserDashboard = () => {
           totalJobs: trend.totalJobs,
           completedJobs: trend.completedJobs,
           pendingJobs: trend.pendingJobs,
-          inProgressJobs: trend.inProgressJobs,
+          activeJobs: trend.activeJobs,
           overdueJobs: trend.overdueJobs,
         })),
-        statusDistribution: filteredChartData.statusDistribution,
+        statusDistribution: filteredChartData.statusDistribution.filter(
+          (item: any) => item.count > 0
+        ),
       }
     : {
         trends: monthlyTrends,
-        statusDistribution: jobStatusDistribution,
+        statusDistribution: jobStatusDistribution.filter(
+          (item: any) => item.count > 0
+        ),
       };
 
   // Get date range options (last 6 months by default)
@@ -425,14 +454,15 @@ const SuperUserDashboard = () => {
             </div>
           </div>
           <div className={styles.headerActions}>
-            <button
+            <Button
+              variant="secondary"
               className={`${styles.btn} ${styles.btnSecondary}`}
               onClick={handleRefresh}
               disabled={refreshing}
             >
               <RiRefreshLine className={refreshing ? styles.spinning : ""} />
               {refreshing ? "Refreshing..." : "Refresh"}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -451,6 +481,42 @@ const SuperUserDashboard = () => {
               <div className={`${styles.statTrend} ${styles.positive}`}>
                 <RiTrendingUpLine />
                 <span>+{recentActivity.newAgencies} this week</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`${styles.statCard} ${styles.pricing} ${styles.clickable}`}
+            onClick={() => handleStatCardClick("agencies")}
+          >
+            <div className={styles.statIcon}>
+              <RiPriceTag3Line />
+            </div>
+            <div className={styles.statContent}>
+              <h3>
+                {formatCurrency(pricingSummary.totalConfiguredMonthlyRevenue)}
+              </h3>
+              <p>Configured Monthly Revenue</p>
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
+                <RiInformationLine />
+                <span>From agency service setup</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`${styles.statCard} ${styles.pricingAlt} ${styles.clickable}`}
+            onClick={() => handleStatCardClick("agencies")}
+          >
+            <div className={styles.statIcon}>
+              <RiBarChartLine />
+            </div>
+            <div className={styles.statContent}>
+              <h3>{formatCurrency(pricingSummary.averageAgencyPricing)}</h3>
+              <p>Avg Agency Pricing</p>
+              <div className={`${styles.statTrend} ${styles.neutral}`}>
+                <RiBuildingLine />
+                <span>{pricingSummary.serviceTypesInUse} service types in use</span>
               </div>
             </div>
           </div>
@@ -559,17 +625,17 @@ const SuperUserDashboard = () => {
 
           <div
             className={`${styles.statCard} ${styles.earnings} ${styles.clickable}`}
-            onClick={() => handleStatCardClick("payments")}
+            onClick={() => handleStatCardClick("invoices")}
           >
             <div className={styles.statIcon}>
               <RiMoneyDollarCircleLine />
             </div>
             <div className={styles.statContent}>
-              <h3>{formatCurrency(paymentStats.totalAmount)}</h3>
-              <p>Total Payments</p>
+              <h3>{formatCurrency(invoiceStats.totalAmount)}</h3>
+              <p>Total Invoiced</p>
               <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiMoneyDollarCircleLine />
-                <span>{paymentStats.totalPayments} payments</span>
+                <span>{invoiceStats.totalInvoices} invoices</span>
               </div>
             </div>
           </div>
@@ -618,14 +684,17 @@ const SuperUserDashboard = () => {
             <div className={styles.chartHeader}>
               <h3>Monthly Job Trends</h3>
               <div className={styles.chartActions}>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  iconOnly
                   className={styles.chartExportBtn}
                   onClick={handleChartExport}
                   title="Export Data"
-                  type="button"
+                  aria-label="Export Data"
                 >
                   <RiDownloadLine />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -717,13 +786,15 @@ const SuperUserDashboard = () => {
                   <option value="all">All Statuses</option>
                   <option value="completed">Completed Only</option>
                   <option value="pending">Pending Only</option>
-                  <option value="in_progress">In Progress Only</option>
+                  <option value="active">Active Jobs Only</option>
                   <option value="overdue">Overdue Only</option>
                 </select>
               </div>
 
               <div className={styles.filterActions}>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   className={styles.resetFiltersBtn}
                   onClick={() => {
                     setChartDateRange({ startDate: "", endDate: "" });
@@ -731,16 +802,23 @@ const SuperUserDashboard = () => {
                     setChartStatusFilter("all");
                     setChartViewType("monthly");
                   }}
-                  type="button"
                 >
                   Reset Filters
-                </button>
+                </Button>
               </div>
             </div>
-            {loadingFilteredData ? (
+            {chartValidationError ? (
+              <div className={styles.chartLoading}>
+                <p>{chartValidationError}</p>
+              </div>
+            ) : loadingFilteredData ? (
               <div className={styles.chartLoading}>
                 <RiLoaderLine className={styles.loadingSpinner} />
                 <p>Loading filtered data...</p>
+              </div>
+            ) : chartData.trends.length === 0 ? (
+              <div className={styles.chartLoading}>
+                <p>No trend data is available for the selected filters.</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -770,9 +848,9 @@ const SuperUserDashboard = () => {
                     }}
                     formatter={(value, name) => [
                       value,
-                      name === "totalJobs" ? "Total Jobs" : "Completed Jobs",
+                      formatChartSeriesName(String(name)),
                     ]}
-                    labelFormatter={(label) => `Month: ${label}`}
+                    labelFormatter={(label) => `Period: ${label}`}
                   />
                   <Legend />
                   <Bar
@@ -792,6 +870,7 @@ const SuperUserDashboard = () => {
                   <Line
                     type="monotone"
                     dataKey="completedJobs"
+                    name="completionTrend"
                     stroke={isDarkMode ? "#34d399" : "#059669"}
                     strokeWidth={3}
                     dot={{
@@ -853,8 +932,24 @@ const SuperUserDashboard = () => {
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Pending Jobs:</span>
                       <span className={styles.detailValue}>
-                        {selectedChartData.totalJobs -
-                          selectedChartData.completedJobs}
+                        {selectedChartData.pendingJobs ??
+                          Math.max(
+                            selectedChartData.totalJobs -
+                              selectedChartData.completedJobs,
+                            0
+                          )}
+                      </span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Active Jobs:</span>
+                      <span className={styles.detailValue}>
+                        {selectedChartData.activeJobs ?? 0}
+                      </span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Overdue Jobs:</span>
+                      <span className={styles.detailValue}>
+                        {selectedChartData.overdueJobs ?? 0}
                       </span>
                     </div>
                   </div>
@@ -883,56 +978,81 @@ const SuperUserDashboard = () => {
               <h3>Job Status Distribution</h3>
               <RiPieChartLine />
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData.statusDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ status, percentage }) => `${status} ${percentage}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {chartData.statusDistribution.map(
-                    (entry: any, index: number) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={getStatusColor(entry.status)}
-                      />
-                    )
-                  )}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: isDarkMode ? "#1f2937" : "white",
-                    border: `1px solid ${isDarkMode ? "#374151" : "#e5e7eb"}`,
-                    borderRadius: "8px",
-                    boxShadow: isDarkMode
-                      ? "0 4px 12px rgba(0, 0, 0, 0.4)"
-                      : "0 4px 12px rgba(0, 0, 0, 0.1)",
-                    color: isDarkMode ? "#f9fafb" : "#1f2937",
-                  }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            {chartData.statusDistribution.length === 0 ? (
+              <div className={styles.chartLoading}>
+                <p>No status distribution data is available.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={chartData.statusDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={false}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="count"
+                    nameKey="status"
+                  >
+                    {chartData.statusDistribution.map(
+                      (entry: any, index: number) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={getStatusColor(entry.status)}
+                        />
+                      )
+                    )}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: isDarkMode ? "#1f2937" : "white",
+                      border: `1px solid ${isDarkMode ? "#374151" : "#e5e7eb"}`,
+                      borderRadius: "8px",
+                      boxShadow: isDarkMode
+                        ? "0 4px 12px rgba(0, 0, 0, 0.4)"
+                        : "0 4px 12px rgba(0, 0, 0, 0.1)",
+                      color: isDarkMode ? "#f9fafb" : "#1f2937",
+                    }}
+                    formatter={(value, _name, item: any) => [
+                      `${value} jobs (${item?.payload?.percentage || "0.0"}%)`,
+                      item?.payload?.status || "Status",
+                    ]}
+                  />
+                  <Legend
+                    formatter={(value) => String(value)}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className={`${styles.chartCard} ${styles.medium}`}>
             <div className={styles.chartHeader}>
-              <h3>Payment Overview</h3>
+              <h3>Invoice Overview</h3>
               <RiMoneyDollarCircleLine />
             </div>
             <div className={styles.paymentSummary}>
+              <div className={styles.paymentSummaryNote}>
+                Combined tracking across completed-job invoices and property-manager invoices.
+              </div>
+              <div className={styles.paymentItem}>
+                <div className={`${styles.paymentIcon} ${styles.pending}`}>
+                  <RiEditLine />
+                </div>
+                <div className={styles.paymentDetails}>
+                  <h4>{formatCurrency(invoiceStats.draftAmount)}</h4>
+                  <p>{invoiceStats.draftCount} Draft</p>
+                </div>
+              </div>
               <div className={styles.paymentItem}>
                 <div className={`${styles.paymentIcon} ${styles.paid}`}>
                   <RiCheckboxCircleLine />
                 </div>
                 <div className={styles.paymentDetails}>
-                  <h4>{formatCurrency(paymentStats.paidAmount)}</h4>
-                  <p>{paymentStats.paidCount} Paid</p>
+                  <h4>{formatCurrency(invoiceStats.paidAmount)}</h4>
+                  <p>{invoiceStats.paidCount} Paid</p>
                 </div>
               </div>
               <div className={styles.paymentItem}>
@@ -940,22 +1060,107 @@ const SuperUserDashboard = () => {
                   <RiTimeLine />
                 </div>
                 <div className={styles.paymentDetails}>
-                  <h4>{formatCurrency(paymentStats.pendingAmount)}</h4>
-                  <p>{paymentStats.pendingCount} Pending</p>
+                  <h4>{formatCurrency(invoiceStats.pendingAmount)}</h4>
+                  <p>{invoiceStats.pendingCount} Pending</p>
+                </div>
+              </div>
+              <div className={styles.paymentItem}>
+                <div className={`${styles.paymentIcon} ${styles.info}`}>
+                  <RiMoneyDollarCircleLine />
+                </div>
+                <div className={styles.paymentDetails}>
+                  <h4>{invoiceStats.completedJobInvoices}</h4>
+                  <p>Completed Job Invoices</p>
+                </div>
+              </div>
+              <div className={styles.paymentItem}>
+                <div className={`${styles.paymentIcon} ${styles.warning}`}>
+                  <RiFileList3Line />
+                </div>
+                <div className={styles.paymentDetails}>
+                  <h4>{invoiceStats.propertyManagerInvoices}</h4>
+                  <p>Property Manager Invoices</p>
                 </div>
               </div>
               <div className={styles.paymentActions}>
-                <button
+                <Button
+                  variant="primary"
+                  fullWidth
                   className={styles.viewAllPaymentsBtn}
-                  onClick={() => navigate("/technicianPayments")}
-                  type="button"
+                  onClick={() => navigate("/invoice-management")}
                 >
-                  View All Payments
-                </button>
+                  View All Invoices
+                </Button>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <div className={styles.pricingSection}>
+        <div className={styles.pricingHeader}>
+          <div>
+            <h3>Agency Pricing Summary</h3>
+            <p>Configured pricing totals from agency service setup, not collected payments.</p>
+          </div>
+          <Button
+            variant="outline"
+            className={styles.pricingCta}
+            onClick={() => navigate("/reports")}
+          >
+            <RiEyeLine />
+            View Detailed Reports
+          </Button>
+        </div>
+
+        <div className={styles.pricingStats}>
+          <div className={styles.pricingStatCard}>
+            <span className={styles.pricingStatLabel}>Configured service entries</span>
+            <strong>{pricingSummary.totalConfiguredServiceEntries}</strong>
+          </div>
+          <div className={styles.pricingStatCard}>
+            <span className={styles.pricingStatLabel}>Service types in use</span>
+            <strong>{pricingSummary.serviceTypesInUse}</strong>
+          </div>
+          <div className={styles.pricingStatCard}>
+            <span className={styles.pricingStatLabel}>Average service price</span>
+            <strong>{formatCurrency(pricingSummary.averageServicePrice)}</strong>
+          </div>
+        </div>
+
+        {topPricingServices.length > 0 ? (
+          <div className={styles.pricingGrid}>
+            {topPricingServices.map((service) => (
+              <div key={service.serviceType} className={styles.pricingCard}>
+                <div className={styles.pricingCardHeader}>
+                  <h4>{service.serviceType}</h4>
+                  <span>{service.percentageOfAgencies}% of agencies</span>
+                </div>
+                <div className={styles.pricingMetrics}>
+                  <div className={styles.pricingMetric}>
+                    <span>Configured revenue</span>
+                    <strong>{formatCurrency(service.totalConfiguredRevenue)}</strong>
+                  </div>
+                  <div className={styles.pricingMetric}>
+                    <span>Avg price</span>
+                    <strong>{formatCurrency(service.averagePrice)}</strong>
+                  </div>
+                  <div className={styles.pricingMetric}>
+                    <span>Agencies using it</span>
+                    <strong>{service.agenciesUsingService}</strong>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.pricingEmptyState}>
+            <RiInformationLine />
+            <p>
+              No agency service pricing is configured yet. Add pricing to agencies to populate this section and improve invoice automation coverage.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Top Technicians and Recent Jobs */}
@@ -1074,13 +1279,13 @@ const SuperUserDashboard = () => {
               )}
               {filteredRecentJobs.length > 8 && (
                 <div className={styles.viewMoreJobs}>
-                  <button
+                  <Button
+                    variant="outline"
                     className={styles.viewMoreBtn}
                     onClick={() => navigate("/jobs")}
-                    type="button"
                   >
                     View All Jobs ({filteredRecentJobs.length})
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

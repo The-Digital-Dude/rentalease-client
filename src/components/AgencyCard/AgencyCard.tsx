@@ -11,6 +11,7 @@ import {
   RiArchiveLine,
 } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
+import { getComplianceTypeLabel } from "../../constants";
 import type { Agency } from "../../services/agencyService";
 import "./AgencyCard.scss";
 
@@ -264,23 +265,22 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
             <span className="label">Region</span>
             <span>{agency.region}</span>
           </div>
-          {/* <div className="detail-item">
+          <div className="detail-item">
             <span className="label">Subscription Amount</span>
             <span>AUD ${agency.subscriptionAmount}</span>
-          </div> */}
+          </div>
         </div>
-        {/* <div className="detail-group compliance-group">
+        <div className="detail-group compliance-group">
           <div className="detail-item compliance-item">
             <span className="label">
               <RiShieldCheckLine className="label-icon" /> Compliance
               Subscriptions
             </span>
             <div className="compliance-badges">
-              {agency.complianceSubscriptions &&
-              agency.complianceSubscriptions.length > 0 ? (
-                agency.complianceSubscriptions.map((type) => (
-                  <span key={type} className="compliance-badge">
-                    {type}
+              {agency.servicePricing && agency.servicePricing.length > 0 ? (
+                agency.servicePricing.map((item) => (
+                  <span key={item.serviceType} className="compliance-badge">
+                    {getComplianceTypeLabel(item.serviceType)}: AUD ${item.price}
                   </span>
                 ))
               ) : (
@@ -288,7 +288,7 @@ const AgencyCard: React.FC<AgencyCardProps> = ({
               )}
             </div>
           </div>
-        </div> */}
+        </div>
       </div>
 
       <div className="agency-footer">

@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import Modal from "../Modal";
-import { VALID_REGIONS, COMPLIANCE_TYPES } from "../../constants";
+import {
+  VALID_REGIONS,
+  COMPLIANCE_TYPES,
+  getComplianceTypeLabel,
+} from "../../constants";
 import "./AgencyFormModal.scss";
 
 interface Agency {
@@ -13,6 +17,10 @@ interface Agency {
   region: string;
   complianceLevel: string;
   complianceSubscriptions?: string[];
+  servicePricing?: Array<{
+    serviceType: string;
+    price: number;
+  }>;
   status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
   subscriptionAmount?: number;
@@ -27,6 +35,10 @@ interface AgencyFormData {
   region: string;
   complianceLevel: string;
   complianceSubscriptions: string[];
+  servicePricing: Array<{
+    serviceType: string;
+    price: number | string;
+  }>;
   status: "active" | "inactive" | "pending" | "suspended";
   password?: string;
   subscriptionAmount?: number | string;
@@ -50,6 +62,7 @@ const initialFormData: AgencyFormData = {
   region: "",
   complianceLevel: "",
   complianceSubscriptions: [],
+  servicePricing: [],
   status: "active",
   password: "",
   subscriptionAmount: "",
@@ -79,6 +92,11 @@ const AgencyFormModal = ({
         region: editingAgency.region,
         complianceLevel: editingAgency.complianceLevel,
         complianceSubscriptions: editingAgency.complianceSubscriptions || [],
+        servicePricing:
+          editingAgency.servicePricing?.map((item) => ({
+            serviceType: item.serviceType,
+            price: item.price,
+          })) || [],
         status: editingAgency.status,
         subscriptionAmount: editingAgency.subscriptionAmount || "",
       });
@@ -132,6 +150,9 @@ const AgencyFormModal = ({
     e.currentTarget.blur();
   };
 
+  const getServicePrice = (type: string) =>
+    formData.servicePricing.find((item) => item.serviceType === type)?.price ?? "";
+
   // Handle compliance checkbox toggle
   const handleComplianceToggle = (type: string) => {
     setFormData((prev) => {
@@ -142,20 +163,55 @@ const AgencyFormModal = ({
         return {
           ...prev,
           complianceSubscriptions: current.filter((t) => t !== type),
+          servicePricing: prev.servicePricing.filter(
+            (item) => item.serviceType !== type
+          ),
         };
       } else {
         return {
           ...prev,
           complianceSubscriptions: [...current, type],
+          servicePricing: [
+            ...prev.servicePricing,
+            { serviceType: type, price: "" },
+          ],
         };
       }
     });
   };
 
+  const handleServicePriceChange = (serviceType: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      servicePricing: prev.servicePricing.map((item) =>
+        item.serviceType === serviceType
+          ? { ...item, price: value === "" ? "" : Number(value) }
+          : item
+      ),
+    }));
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return; // Prevent double submission
-    onSubmit(formData);
+    const normalizedServicePricing = formData.servicePricing
+      .filter((item) => item.price !== "" && item.price !== null)
+      .map((item) => ({
+        serviceType: item.serviceType,
+        price: Number(item.price),
+      }));
+
+    onSubmit({
+      ...formData,
+      complianceSubscriptions: normalizedServicePricing.map(
+        (item) => item.serviceType
+      ),
+      servicePricing: normalizedServicePricing,
+      subscriptionAmount: normalizedServicePricing.reduce(
+        (sum, item) => sum + item.price,
+        0
+      ),
+    });
     // Don't reset form data here - let parent component handle it after successful response
   };
 
@@ -257,10 +313,8 @@ const AgencyFormModal = ({
               ))}
             </select>
           </div>
-          {/* <div className="form-group">
-            <label htmlFor="complianceSubscriptions">
-              Compliance Subscriptions
-            </label>
+          <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+            <label htmlFor="complianceSubscriptions">Agency Service Pricing</label>
             <div className="custom-multi-select" ref={complianceDropdownRef}>
               <div
                 className={`select-display ${
@@ -272,32 +326,43 @@ const AgencyFormModal = ({
                 }
               >
                 <span className="selected-text">
-                  {formData.complianceSubscriptions &&
-                  formData.complianceSubscriptions.length > 0
-                    ? formData.complianceSubscriptions.join(", ")
-                    : "Select compliance types..."}
+                  {formData.complianceSubscriptions.length > 0
+                    ? `${formData.complianceSubscriptions.length} services selected`
+                    : "Select services and set pricing"}
                 </span>
                 <span className="dropdown-arrow">▼</span>
               </div>
               {isComplianceDropdownOpen && !isSubmitting && (
                 <div className="dropdown-menu">
                   {COMPLIANCE_TYPES.map((type) => (
-                    <label key={type} className="dropdown-item">
-                      <input
-                        type="checkbox"
-                        checked={
-                          formData.complianceSubscriptions?.includes(type) ||
-                          false
-                        }
-                        onChange={() => handleComplianceToggle(type)}
-                      />
-                      <span>{type}</span>
-                    </label>
+                    <div key={type} className="dropdown-item" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.complianceSubscriptions.includes(type)}
+                          onChange={() => handleComplianceToggle(type)}
+                        />
+                        <span>{getComplianceTypeLabel(type)}</span>
+                      </label>
+                      {formData.complianceSubscriptions.includes(type) && (
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={getServicePrice(type)}
+                          onChange={(e) =>
+                            handleServicePriceChange(type, e.target.value)
+                          }
+                          placeholder="Price"
+                          style={{ width: "120px" }}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-          </div> */}
+          </div>
           <div className="form-group">
             <label htmlFor="status">Status</label>
             <select
@@ -314,36 +379,21 @@ const AgencyFormModal = ({
               <option value="suspended">Suspended</option>
             </select>
           </div>
-          {/* Subscription amount field */}
-          {/* <div className="form-group">
-            <label htmlFor="subscriptionAmount">
-              Subscription Amount (AUD) {!editingAgency && "*"}
-            </label>
+          <div className="form-group">
+            <label htmlFor="subscriptionAmount">Total Service Price (AUD)</label>
             <input
               type="number"
               id="subscriptionAmount"
               name="subscriptionAmount"
-              value={formData.subscriptionAmount || ""}
-              onChange={handleInputChange}
-              onWheel={handleNumberInputWheel}
-              placeholder="99"
-              min="1"
-              max="100000"
-              step="1"
-              disabled={isSubmitting}
-              required={!editingAgency}
+              value={
+                formData.servicePricing.reduce(
+                  (sum, item) => sum + Number(item.price || 0),
+                  0
+                ) || ""
+              }
+              disabled
             />
-            <small
-              style={{
-                color: "#757575",
-                fontSize: "12px",
-                marginTop: "4px",
-                display: "block",
-              }}
-            >
-              Amount between $1 and $100,000 AUD per month
-            </small>
-          </div> */}
+          </div>
           {/* Password field only for new agencies */}
           {!editingAgency && (
             <div className="form-group">

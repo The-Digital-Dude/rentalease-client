@@ -1,0 +1,194 @@
+.app-button {
+  --button-bg: #2563eb;
+  --button-bg-hover: #1d4ed8;
+  --button-border: transparent;
+  --button-text: #ffffff;
+  --button-shadow: 0 8px 18px rgba(37, 99, 235, 0.16);
+  --button-shadow-hover: 0 12px 24px rgba(37, 99, 235, 0.2);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--button-border);
+  border-radius: 10px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease,
+    opacity 0.18s ease;
+  box-shadow: var(--button-shadow);
+
+  &:hover:not(:disabled) {
+    background: var(--button-bg-hover);
+    box-shadow: var(--button-shadow-hover);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 3px rgba(37, 99, 235, 0.18),
+      var(--button-shadow);
+  }
+
+  &:disabled,
+  &.is-disabled {
+    opacity: 0.56;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  &.app-button--primary {
+    --button-bg: #2563eb;
+    --button-bg-hover: #1d4ed8;
+    --button-text: #ffffff;
+    --button-border: transparent;
+    --button-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+    --button-shadow-hover: 0 14px 28px rgba(37, 99, 235, 0.22);
+  }
+
+  &.app-button--secondary {
+    --button-bg: #f8fafc;
+    --button-bg-hover: #eff6ff;
+    --button-text: #1e293b;
+    --button-border: #dbe3ea;
+    --button-shadow: none;
+    --button-shadow-hover: none;
+  }
+
+  &.app-button--outline {
+    --button-bg: #ffffff;
+    --button-bg-hover: #f8fafc;
+    --button-text: #1d4ed8;
+    --button-border: #bfdbfe;
+    --button-shadow: none;
+    --button-shadow-hover: none;
+  }
+
+  &.app-button--ghost {
+    --button-bg: transparent;
+    --button-bg-hover: rgba(37, 99, 235, 0.08);
+    --button-text: #334155;
+    --button-border: transparent;
+    --button-shadow: none;
+    --button-shadow-hover: none;
+  }
+
+  &.app-button--success {
+    --button-bg: #10b981;
+    --button-bg-hover: #059669;
+    --button-text: #ffffff;
+    --button-border: transparent;
+    --button-shadow: 0 10px 20px rgba(16, 185, 129, 0.16);
+    --button-shadow-hover: 0 14px 28px rgba(16, 185, 129, 0.2);
+  }
+
+  &.app-button--danger {
+    --button-bg: #ef4444;
+    --button-bg-hover: #dc2626;
+    --button-text: #ffffff;
+    --button-border: transparent;
+    --button-shadow: 0 10px 20px rgba(239, 68, 68, 0.16);
+    --button-shadow-hover: 0 14px 28px rgba(239, 68, 68, 0.2);
+  }
+
+  &.app-button--sm {
+    min-height: 36px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.86rem;
+    border-radius: 9px;
+  }
+
+  &.app-button--md {
+    min-height: 42px;
+    padding: 0.78rem 1.05rem;
+  }
+
+  &.app-button--lg {
+    min-height: 48px;
+    padding: 0.95rem 1.3rem;
+    border-radius: 12px;
+  }
+
+  &.app-button--full-width {
+    width: 100%;
+  }
+
+  &.app-button--icon-only {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    gap: 0;
+  }
+
+  .app-button__spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    animation: app-button-spin 0.85s linear infinite;
+  }
+
+  .app-button__icon,
+  .app-button__icon-right {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .app-button__label {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.dark-mode {
+  .app-button {
+    &.app-button--secondary {
+      --button-bg: var(--color-bg-card);
+      --button-bg-hover: var(--color-bg-hover);
+      --button-text: var(--color-text-primary);
+      --button-border: var(--color-border-primary);
+    }
+
+    &.app-button--outline {
+      --button-bg: transparent;
+      --button-bg-hover: rgba(96, 165, 250, 0.1);
+      --button-text: #93c5fd;
+      --button-border: rgba(96, 165, 250, 0.35);
+    }
+
+    &.app-button--ghost {
+      --button-bg: transparent;
+      --button-bg-hover: rgba(255, 255, 255, 0.06);
+      --button-text: var(--color-text-secondary);
+    }
+  }
+}
+
+@keyframes app-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

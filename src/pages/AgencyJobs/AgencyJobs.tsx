@@ -6,24 +6,20 @@ import {
   RiFilterLine,
   RiRefreshLine,
   RiEyeLine,
-  RiEditLine,
   RiCalendarLine,
   RiMapPinLine,
   RiUserLine,
   RiTimeLine,
   RiAlertLine,
   RiCheckLine,
-  RiCloseLine,
   RiArrowLeftLine,
   RiArrowRightLine,
-  RiDownloadLine,
-  RiMoreLine,
   RiLoaderLine,
   RiErrorWarningLine,
-  RiInformationLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import Button from "../../components/Button/Button";
 import TechnicianInfoModal from "../../components/TechnicianInfoModal";
 import "./AgencyJobs.scss";
 
@@ -95,12 +91,6 @@ interface JobStatistics {
   totalJobs: number;
 }
 
-interface JobsResponse {
-  jobs: AgencyJob[];
-  pagination: Pagination;
-  statistics: JobStatistics;
-}
-
 const AgencyJobs = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -130,8 +120,8 @@ const AgencyJobs = () => {
     endDate: "",
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState("dueDate");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("completedAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null);
   const [showTechnicianModal, setShowTechnicianModal] = useState(false);
 
@@ -146,11 +136,16 @@ const AgencyJobs = () => {
         : filters;
 
       // Build query parameters
+      const effectiveSortBy =
+        currentFilters.status.toLowerCase() === "completed" ? "completedAt" : sortBy;
+      const effectiveSortOrder =
+        currentFilters.status.toLowerCase() === "completed" ? "desc" : sortOrder;
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.itemsPerPage.toString(),
-        sortBy,
-        sortOrder,
+        sortBy: effectiveSortBy,
+        sortOrder: effectiveSortOrder,
       });
 
       // Add filters to query params
@@ -295,28 +290,11 @@ const AgencyJobs = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-AU", {
-      style: "currency",
-      currency: "AUD",
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-AU", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-AU", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
@@ -342,10 +320,10 @@ const AgencyJobs = () => {
           <RiErrorWarningLine className="error-icon" />
           <h3>Error Loading Jobs</h3>
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleRefresh}>
+          <Button variant="primary" onClick={handleRefresh}>
             <RiRefreshLine />
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -361,14 +339,14 @@ const AgencyJobs = () => {
             <p>{user?.userType === 'property_manager' ? 'Manage and track jobs for your assigned properties' : 'Manage and track all your property maintenance jobs'}</p>
           </div>
           <div className="header-actions">
-            <button
-              className="btn btn-secondary"
+            <Button
+              variant="secondary"
               onClick={handleRefresh}
               disabled={refreshing}
             >
               <RiRefreshLine className={refreshing ? "spinning" : ""} />
               {refreshing ? "Refreshing..." : "Refresh"}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -423,16 +401,17 @@ const AgencyJobs = () => {
             />
           </div>
           <div className="filter-actions">
-            <button
-              className={`btn btn-outline ${showFilters ? "active" : ""}`}
+            <Button
+              variant="outline"
+              className={showFilters ? "active" : ""}
               onClick={() => setShowFilters(!showFilters)}
             >
               <RiFilterLine />
               Filters
-            </button>
-            <button className="btn btn-outline" onClick={handleFilterReset}>
+            </Button>
+            <Button variant="outline" onClick={handleFilterReset}>
               Clear
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -511,12 +490,9 @@ const AgencyJobs = () => {
               </div>
 
               <div className="filter-group">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleFilterSubmit}
-                >
+                <Button variant="primary" onClick={handleFilterSubmit}>
                   Apply Filters
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -570,9 +546,17 @@ const AgencyJobs = () => {
                     </span>
                   )}
                 </th>
-                <th onClick={() => handleSort("dueDate")}>
-                  Due Date
-                  {sortBy === "dueDate" && (
+                <th
+                  onClick={() =>
+                    handleSort(filters.status.toLowerCase() === "completed"
+                      ? "completedAt"
+                      : "dueDate")
+                  }
+                >
+                  {filters.status.toLowerCase() === "completed"
+                    ? "Completed Date"
+                    : "Due Date"}
+                  {(sortBy === "dueDate" || sortBy === "completedAt") && (
                     <span className="sort-indicator">
                       {sortOrder === "asc" ? "↑" : "↓"}
                     </span>
@@ -632,7 +616,13 @@ const AgencyJobs = () => {
                   <td>
                     <div className="due-date">
                       <RiCalendarLine />
-                      <span>{formatDate(job.dueDate)}</span>
+                      <span>
+                        {formatDate(
+                          job.status.toLowerCase() === "completed" && job.completedAt
+                            ? job.completedAt
+                            : job.dueDate
+                        )}
+                      </span>
                     </div>
                   </td>
                   <td>
@@ -655,13 +645,17 @@ const AgencyJobs = () => {
 
                   <td>
                     <div className="actions">
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        iconOnly
                         className="action-btn view"
                         title="View Details"
+                        aria-label="View Details"
                         onClick={() => handleViewJob(job.id)}
                       >
                         <RiEyeLine />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -688,14 +682,14 @@ const AgencyJobs = () => {
               </span>
             </div>
             <div className="pagination-controls">
-              <button
-                className="btn btn-outline"
+              <Button
+                variant="outline"
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
               >
                 <RiArrowLeftLine />
                 Previous
-              </button>
+              </Button>
 
               <div className="page-numbers">
                 {Array.from(
@@ -717,14 +711,14 @@ const AgencyJobs = () => {
                 )}
               </div>
 
-              <button
-                className="btn btn-outline"
+              <Button
+                variant="outline"
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                 disabled={!pagination.hasNextPage}
               >
                 Next
                 <RiArrowRightLine />
-              </button>
+              </Button>
             </div>
           </div>
         )}

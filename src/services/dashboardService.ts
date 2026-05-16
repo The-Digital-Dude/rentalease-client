@@ -33,6 +33,34 @@ interface DashboardStats {
     pendingCount: number;
     paidCount: number;
   };
+  invoiceStats: {
+    totalInvoices: number;
+    totalAmount: number;
+    draftAmount: number;
+    draftCount: number;
+    pendingAmount: number;
+    pendingCount: number;
+    paidAmount: number;
+    paidCount: number;
+    rejectedAmount: number;
+    rejectedCount: number;
+    completedJobInvoices: number;
+    propertyManagerInvoices: number;
+  };
+  pricingSummary: {
+    totalConfiguredMonthlyRevenue: number;
+    averageAgencyPricing: number;
+    totalConfiguredServiceEntries: number;
+    serviceTypesInUse: number;
+    averageServicePrice: number;
+    topServices: Array<{
+      serviceType: string;
+      agenciesUsingService: number;
+      totalConfiguredRevenue: number;
+      averagePrice: number;
+      percentageOfAgencies: string;
+    }>;
+  };
   monthlyTrends: Array<{
     month: string;
     totalJobs: number;
@@ -82,7 +110,7 @@ interface FilteredDashboardData {
     totalJobs: number;
     completedJobs: number;
     pendingJobs: number;
-    inProgressJobs: number;
+    activeJobs: number;
     overdueJobs: number;
     completionRate: string;
   }>;
@@ -136,3 +164,4 @@ const dashboardService = {
 };
 
 export default dashboardService;
+export type { DashboardStats };

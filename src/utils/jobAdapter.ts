@@ -14,6 +14,8 @@ export interface ComponentJob {
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
   createdDate: string;
+  completedAt?: string;
+  updatedAt?: string;
 }
 
 export const adaptServiceJobToComponentJob = (
@@ -100,6 +102,8 @@ export const adaptServiceJobToComponentJob = (
     priority: serviceJob.priority,
     description: serviceJob.description,
     createdDate: serviceJob.createdAt,
+    completedAt: serviceJob.completedAt,
+    updatedAt: serviceJob.updatedAt,
   };
 };
 

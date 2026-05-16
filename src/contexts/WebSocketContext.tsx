@@ -51,9 +51,22 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const suppressDevFallbackSocketRef = useRef(false);
   const [lastMessage, setLastMessage] = React.useState<any | null>(null);
   const [lastMessageTimestamp, setLastMessageTimestamp] = React.useState(0);
   const [connectionAttempts, setConnectionAttempts] = React.useState(0);
+
+  const isImplicitLocalDevSocket = () => {
+    const wsUrl = import.meta.env.VITE_WS_URL;
+    const wsPort = import.meta.env.VITE_WS_PORT;
+
+    return (
+      import.meta.env.DEV &&
+      !wsUrl &&
+      (!wsPort || wsPort === "4000") &&
+      window.location.hostname === "localhost"
+    );
+  };
 
   // Get WebSocket URL based on environment
   const getWebSocketUrl = () => {
@@ -103,6 +116,19 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       return;
     }
 
+    if (isImplicitLocalDevSocket()) {
+      if (!suppressDevFallbackSocketRef.current) {
+        console.info(
+          "Skipping implicit local WebSocket connection in dev because no explicit WebSocket server is configured."
+        );
+        suppressDevFallbackSocketRef.current = true;
+      }
+      dispatch(
+        setConnectionStatus({ isConnected: false, connectionError: null })
+      );
+      return;
+    }
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       console.log("WebSocket already connected");
       return;
@@ -113,10 +139,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       console.log("Connecting to WebSocket:", wsUrl);
 
       const ws = new WebSocket(wsUrl);
+      const shouldSuppressDevFallbackSocket = isImplicitLocalDevSocket();
       wsRef.current = ws;
 
       ws.onopen = () => {
         console.log("🔗 WebSocket connected successfully");
+        suppressDevFallbackSocketRef.current = false;
         dispatch(
           setConnectionStatus({ isConnected: true, connectionError: null })
         );
@@ -213,26 +241,49 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
 
       ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        if (shouldSuppressDevFallbackSocket) {
+          if (!suppressDevFallbackSocketRef.current) {
+            console.info(
+              "WebSocket server is not running on the local fallback URL. Live chat updates are disabled for this dev session."
+            );
+            suppressDevFallbackSocketRef.current = true;
+          }
+        } else {
+          console.error("WebSocket error:", error);
+        }
+
         dispatch(
           setConnectionStatus({
             isConnected: false,
-            connectionError: "Connection error occurred",
+            connectionError: shouldSuppressDevFallbackSocket
+              ? null
+              : "Connection error occurred",
           })
         );
       };
 
       ws.onclose = (event) => {
-        console.log("WebSocket disconnected:", event.code, event.reason);
+        if (!shouldSuppressDevFallbackSocket) {
+          console.log("WebSocket disconnected:", event.code, event.reason);
+        }
+
         dispatch(
           setConnectionStatus({
             isConnected: false,
-            connectionError: event.reason || "Connection closed",
+            connectionError: shouldSuppressDevFallbackSocket
+              ? null
+              : event.reason || "Connection closed",
           })
         );
         wsRef.current = null;
 
         // Attempt to reconnect if not a normal closure
+        if (shouldSuppressDevFallbackSocket) {
+          reconnectAttemptsRef.current = 5;
+          setConnectionAttempts(0);
+          return;
+        }
+
         if (event.code !== 1000 && reconnectAttemptsRef.current < 5) {
           reconnectAttemptsRef.current++;
           setConnectionAttempts(reconnectAttemptsRef.current);
@@ -251,11 +302,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         }
       };
     } catch (error) {
-      console.error("Error creating WebSocket connection:", error);
+      if (!isImplicitLocalDevSocket()) {
+        console.error("Error creating WebSocket connection:", error);
+      }
       dispatch(
         setConnectionStatus({
           isConnected: false,
-          connectionError: "Failed to create connection",
+          connectionError: isImplicitLocalDevSocket()
+            ? null
+            : "Failed to create connection",
         })
       );
     }

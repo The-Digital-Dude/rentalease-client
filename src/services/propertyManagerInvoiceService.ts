@@ -38,7 +38,7 @@ export interface PropertyManagerInvoice {
     lastName: string;
     email: string;
     phone: string;
-  };
+  } | null;
   propertyManager?: // For backwards compatibility
   | {
         _id: string;
@@ -46,16 +46,21 @@ export interface PropertyManagerInvoice {
         lastName: string;
         email: string;
       }
+    | null
     | string;
   agencyId?: {
     _id: string;
     companyName: string;
     contactPerson: string;
+    email?: string;
   };
   agency?: // For backwards compatibility
   | {
         _id: string;
-        agencyName: string;
+        agencyName?: string;
+        companyName?: string;
+        contactPerson?: string;
+        email?: string;
       }
     | string;
   description: string;
@@ -124,8 +129,11 @@ export interface PropertyManagerInvoiceListResponse {
 }
 
 export interface SinglePropertyManagerInvoiceResponse {
-  success: boolean;
-  data: PropertyManagerInvoice;
+  status: string;
+  success?: boolean;
+  data: {
+    invoice: PropertyManagerInvoice;
+  };
   message?: string;
 }
 
@@ -161,7 +169,6 @@ class PropertyManagerInvoiceService {
     invoiceData: CreatePropertyManagerInvoiceRequest
   ): Promise<SinglePropertyManagerInvoiceResponse> {
     try {
-      console.log(invoiceData);
       const response: AxiosResponse<SinglePropertyManagerInvoiceResponse> =
         await api.post("/v1/property-manager-invoices", invoiceData);
       return response.data;
@@ -232,7 +239,6 @@ class PropertyManagerInvoiceService {
         await api.get(
           "/v1/property-manager-invoices" // Get all invoices for management interface
         );
-      console.log(response);
       return response.data;
     } catch (error: any) {
       throw new Error(

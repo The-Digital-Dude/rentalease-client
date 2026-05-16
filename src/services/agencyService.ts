@@ -1,5 +1,10 @@
 import api from "./api";
 import type { Region } from "../constants";
+import {
+  COMPLIANCE_TYPES,
+  normalizeComplianceType,
+  type ComplianceType,
+} from "../constants";
 
 export interface AgencySubscription {
   id: string;
@@ -28,6 +33,10 @@ export interface Agency {
   region: string;
   complianceLevel: string;
   complianceSubscriptions?: string[];
+  servicePricing?: Array<{
+    serviceType: string;
+    price: number;
+  }>;
   status: "active" | "inactive" | "pending" | "suspended";
   outstandingAmount: number;
   subscriptionAmount?: number;
@@ -47,6 +56,10 @@ export interface ServerAgency {
   region: string;
   compliance: string;
   complianceSubscriptions?: string[];
+  servicePricing?: Array<{
+    serviceType: string;
+    price: number;
+  }>;
   status: string;
   outstandingAmount: number;
   totalProperties: number;
@@ -79,6 +92,11 @@ export interface AgencyProfile {
     phone: string;
     region: string;
     compliance: string;
+    complianceSubscriptions?: string[];
+    servicePricing?: Array<{
+      serviceType: string;
+      price: number;
+    }>;
     status: string;
     abn: string;
     outstandingAmount: number;
@@ -88,6 +106,10 @@ export interface AgencyProfile {
     createdAt?: string;
     lastUpdated?: string;
     subscriptionAmount?: number;
+    servicePricing?: Array<{
+      serviceType: string;
+      price: number;
+    }>;
     subscription?: {
       id: string;
       planType: string;
@@ -234,6 +256,63 @@ export interface AgencyResponse {
   message?: string;
 }
 
+const normalizeAgencyComplianceType = (value?: string | null): string => {
+  if (!value) return "";
+  return normalizeComplianceType(value);
+};
+
+const normalizeComplianceSubscriptions = (values?: string[]): string[] =>
+  (values || [])
+    .map((value) => normalizeAgencyComplianceType(value))
+    .filter((value, index, array) =>
+      value.length > 0 &&
+      COMPLIANCE_TYPES.includes(value as ComplianceType) &&
+      array.indexOf(value) === index
+    );
+
+const normalizeServicePricing = (
+  values?: Agency["servicePricing"]
+): Agency["servicePricing"] =>
+  (values || [])
+    .map((item) => ({
+      serviceType: normalizeAgencyComplianceType(item.serviceType),
+      price: item.price,
+    }))
+    .filter(
+      (item, index, array) =>
+        item.serviceType.length > 0 &&
+        COMPLIANCE_TYPES.includes(item.serviceType as ComplianceType) &&
+        typeof item.price === "number" &&
+        !Number.isNaN(item.price) &&
+        array.findIndex(
+          (candidate) => candidate.serviceType === item.serviceType
+        ) === index
+    );
+
+const deriveComplianceValue = (agency: {
+  complianceLevel?: string;
+  complianceSubscriptions?: string[];
+  servicePricing?: Agency["servicePricing"];
+}): string => {
+  if (agency.complianceLevel && agency.complianceLevel.trim().length > 0) {
+    return agency.complianceLevel.trim();
+  }
+
+  const normalizedServicePricing = normalizeServicePricing(agency.servicePricing);
+  if (normalizedServicePricing.length > 0) {
+    return normalizedServicePricing[0].serviceType;
+  }
+
+  const normalizedSubscriptions = normalizeComplianceSubscriptions(
+    agency.complianceSubscriptions
+  );
+  if (normalizedSubscriptions.length > 0) {
+    return normalizedSubscriptions[0];
+  }
+
+  return "Smoke Alarm";
+};
+
 // Helper function to map server data to client format
 const mapServerToClient = (serverData: ServerAgency): Agency => ({
   id: serverData.id,
@@ -245,6 +324,7 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   region: serverData.region,
   complianceLevel: serverData.compliance,
   complianceSubscriptions: serverData.complianceSubscriptions || [],
+  servicePricing: serverData.servicePricing || [],
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
   subscriptionAmount: serverData.subscriptionAmount,
@@ -325,6 +405,13 @@ export const agencyService = {
     }
   ): Promise<AgencyResponse> => {
     try {
+      const normalizedComplianceSubscriptions = normalizeComplianceSubscriptions(
+        agency.complianceSubscriptions
+      );
+      const normalizedServicePricing = normalizeServicePricing(
+        agency.servicePricing
+      );
+
       // Map client data to server format
       const serverData = {
         companyName: agency.name,
@@ -333,7 +420,9 @@ export const agencyService = {
         email: agency.contactEmail,
         phone: agency.contactPhone,
         region: agency.region,
-        complianceSubscriptions: agency.complianceSubscriptions,
+        compliance: deriveComplianceValue(agency),
+        complianceSubscriptions: normalizedComplianceSubscriptions,
+        servicePricing: normalizedServicePricing,
         password: agency.password, // Required for new agencies
         subscriptionAmount: agency.subscriptionAmount, // Required for new agencies
       };
@@ -383,7 +472,13 @@ export const agencyService = {
       if (agency.complianceLevel)
         serverData.compliance = agency.complianceLevel;
       if (agency.complianceSubscriptions !== undefined)
-        serverData.complianceSubscriptions = agency.complianceSubscriptions;
+        serverData.complianceSubscriptions = normalizeComplianceSubscriptions(
+          agency.complianceSubscriptions
+        );
+      if (agency.servicePricing !== undefined)
+        serverData.servicePricing = normalizeServicePricing(
+          agency.servicePricing
+        );
       if (agency.status)
         serverData.status =
           agency.status.charAt(0).toUpperCase() + agency.status.slice(1);

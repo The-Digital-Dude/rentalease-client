@@ -185,11 +185,16 @@ const JobManagement = () => {
       setError(null);
 
       // Build filter object
+      const effectiveSortBy =
+        statusFilter === "Completed" ? "completedAt" : sortBy;
+      const effectiveSortOrder =
+        statusFilter === "Completed" ? "desc" : sortOrder;
+
       const filters: JobFilters = {
         page: currentPage,
         limit: itemsPerPage,
-        sortBy: sortBy,
-        sortOrder: sortOrder as "asc" | "desc",
+        sortBy: effectiveSortBy,
+        sortOrder: effectiveSortOrder as "asc" | "desc",
       };
 
       // Add search filter

@@ -19,6 +19,114 @@ import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/
 import { useAppSelector } from "../../store";
 import "./ReportsAnalytics.scss";
 
+const DEFAULT_EXECUTIVE_DASHBOARD: ExecutiveDashboard = {
+  kpis: {
+    today: {
+      newJobs: 0,
+      completedJobs: 0,
+      revenue: 0,
+      growth: { newJobs: "0", completedJobs: "0", revenue: "0" },
+    },
+    thisWeek: {
+      newJobs: 0,
+      completedJobs: 0,
+      revenue: 0,
+      growth: { newJobs: "0", completedJobs: "0", revenue: "0" },
+    },
+    thisMonth: {
+      newJobs: 0,
+      completedJobs: 0,
+      revenue: 0,
+      growth: { newJobs: "0", completedJobs: "0", revenue: "0" },
+    },
+    yearToDate: {
+      newJobs: 0,
+      completedJobs: 0,
+      revenue: 0,
+    },
+  },
+  businessHealth: {
+    totalActiveEntities: {
+      agencies: 0,
+      properties: 0,
+      technicians: 0,
+      managers: 0,
+      total: 0,
+    },
+    jobCompletionRate: 0,
+    avgJobValue: 0,
+    customerSatisfaction: 0,
+    technicianUtilization: 0,
+  },
+  quotations: {
+    totalQuotations: 0,
+    acceptedQuotations: 0,
+    acceptedValue: 0,
+    acceptanceRate: 0,
+  },
+  alerts: {
+    critical: 0,
+    warnings: 0,
+    info: 0,
+  },
+  lastUpdated: "",
+};
+
+const DEFAULT_AGENCY_ANALYTICS: AgencyAnalytics = {
+  overview: {
+    totalAgencies: 0,
+    activeAgencies: 0,
+    inactiveAgencies: 0,
+    suspendedAgencies: 0,
+    pendingAgencies: 0,
+    activeRate: 0,
+    churnRate: 0,
+  },
+  revenue: {
+    totalMonthlyRevenue: 0,
+    averageSubscription: 0,
+    minimumSubscription: 0,
+    maximumSubscription: 0,
+    projectedAnnualRevenue: 0,
+    revenueByStatus: {},
+  },
+  growth: {
+    thisWeek: {
+      newAgencies: 0,
+      growth: "0",
+    },
+    thisMonth: {
+      newAgencies: 0,
+      growth: "0",
+    },
+    yearToDate: {
+      newAgencies: 0,
+    },
+  },
+  distribution: {
+    bySubscription: [],
+    byRegion: [],
+  },
+  trends: {
+    monthly: [],
+  },
+  topPerformers: {
+    bySubscription: [],
+  },
+  properties: {
+    totalPropertiesManaged: 0,
+    avgPropertiesPerAgency: 0,
+  },
+  services: {
+    totalConfiguredServices: 0,
+    breakdown: [],
+  },
+  recentActivity: {
+    newAgencies: [],
+  },
+  lastUpdated: "",
+};
+
 const ReportsAnalytics = () => {
   const { userType } = useAppSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("executive");
@@ -107,6 +215,61 @@ const ReportsAnalytics = () => {
     }
   }, [userType, activeTab]);
 
+  const safeExecutiveDashboard = executiveDashboard
+    ? {
+        ...DEFAULT_EXECUTIVE_DASHBOARD,
+        ...executiveDashboard,
+        kpis: {
+          ...DEFAULT_EXECUTIVE_DASHBOARD.kpis,
+          ...executiveDashboard.kpis,
+          today: {
+            ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.today,
+            ...executiveDashboard.kpis?.today,
+            growth: {
+              ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.today.growth,
+              ...executiveDashboard.kpis?.today?.growth,
+            },
+          },
+          thisWeek: {
+            ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.thisWeek,
+            ...executiveDashboard.kpis?.thisWeek,
+            growth: {
+              ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.thisWeek.growth,
+              ...executiveDashboard.kpis?.thisWeek?.growth,
+            },
+          },
+          thisMonth: {
+            ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.thisMonth,
+            ...executiveDashboard.kpis?.thisMonth,
+            growth: {
+              ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.thisMonth.growth,
+              ...executiveDashboard.kpis?.thisMonth?.growth,
+            },
+          },
+          yearToDate: {
+            ...DEFAULT_EXECUTIVE_DASHBOARD.kpis.yearToDate,
+            ...executiveDashboard.kpis?.yearToDate,
+          },
+        },
+        businessHealth: {
+          ...DEFAULT_EXECUTIVE_DASHBOARD.businessHealth,
+          ...executiveDashboard.businessHealth,
+          totalActiveEntities: {
+            ...DEFAULT_EXECUTIVE_DASHBOARD.businessHealth.totalActiveEntities,
+            ...executiveDashboard.businessHealth?.totalActiveEntities,
+          },
+        },
+        quotations: {
+          ...DEFAULT_EXECUTIVE_DASHBOARD.quotations,
+          ...executiveDashboard.quotations,
+        },
+        alerts: {
+          ...DEFAULT_EXECUTIVE_DASHBOARD.alerts,
+          ...executiveDashboard.alerts,
+        },
+      }
+    : DEFAULT_EXECUTIVE_DASHBOARD;
+
   const renderAgencyAnalytics = () => {
     if (loadingAgency) {
       return (
@@ -125,9 +288,105 @@ const ReportsAnalytics = () => {
       );
     }
 
+    const safeAgencyAnalytics = {
+      ...DEFAULT_AGENCY_ANALYTICS,
+      ...agencyAnalytics,
+      overview: {
+        ...DEFAULT_AGENCY_ANALYTICS.overview,
+        ...agencyAnalytics.overview,
+      },
+      revenue: {
+        ...DEFAULT_AGENCY_ANALYTICS.revenue,
+        ...agencyAnalytics.revenue,
+      },
+      growth: {
+        ...DEFAULT_AGENCY_ANALYTICS.growth,
+        ...agencyAnalytics.growth,
+        thisWeek: {
+          ...DEFAULT_AGENCY_ANALYTICS.growth.thisWeek,
+          ...agencyAnalytics.growth?.thisWeek,
+        },
+        thisMonth: {
+          ...DEFAULT_AGENCY_ANALYTICS.growth.thisMonth,
+          ...agencyAnalytics.growth?.thisMonth,
+        },
+        yearToDate: {
+          ...DEFAULT_AGENCY_ANALYTICS.growth.yearToDate,
+          ...agencyAnalytics.growth?.yearToDate,
+        },
+      },
+      distribution: {
+        ...DEFAULT_AGENCY_ANALYTICS.distribution,
+        ...agencyAnalytics.distribution,
+      },
+      topPerformers: {
+        ...DEFAULT_AGENCY_ANALYTICS.topPerformers,
+        ...agencyAnalytics.topPerformers,
+      },
+      properties: {
+        ...DEFAULT_AGENCY_ANALYTICS.properties,
+        ...agencyAnalytics.properties,
+      },
+      services: {
+        ...DEFAULT_AGENCY_ANALYTICS.services,
+        ...agencyAnalytics.services,
+      },
+      recentActivity: {
+        ...DEFAULT_AGENCY_ANALYTICS.recentActivity,
+        ...agencyAnalytics.recentActivity,
+      },
+    };
+
+    const serviceBreakdown = safeAgencyAnalytics.services?.breakdown || [];
+
     return (
       <div className="agency-analytics-section">
         <h4>Agency Analytics</h4>
+
+        <div className="summary-cards">
+          <div className="summary-card">
+            <div className="card-icon revenue">
+              <RiMoneyDollarCircleLine />
+            </div>
+            <div className="card-content">
+              <h4>
+                $
+                {safeAgencyAnalytics.revenue.totalMonthlyRevenue.toLocaleString()}
+              </h4>
+              <p>Total Configured Revenue</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon jobs">
+              <RiCheckboxCircleLine />
+            </div>
+            <div className="card-content">
+              <h4>{safeAgencyAnalytics.services?.totalConfiguredServices || 0}</h4>
+              <p>Total Configured Service Entries</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon average">
+              <RiStarLine />
+            </div>
+            <div className="card-content">
+              <h4>
+                $
+                {safeAgencyAnalytics.revenue.averageSubscription.toLocaleString()}
+              </h4>
+              <p>Average Agency Total Pricing</p>
+            </div>
+          </div>
+          <div className="summary-card">
+            <div className="card-icon growth">
+              <RiBuildingLine />
+            </div>
+            <div className="card-content">
+              <h4>{serviceBreakdown.length}</h4>
+              <p>Service Types In Use</p>
+            </div>
+          </div>
+        </div>
 
         {/* Agency Overview KPIs */}
         <div className="kpi-grid">
@@ -136,29 +395,29 @@ const ReportsAnalytics = () => {
             <div className="kpi-cards">
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.growth.thisWeek.newAgencies}
+                  {safeAgencyAnalytics.growth.thisWeek.newAgencies}
                 </div>
                 <div className="kpi-label">New Agencies</div>
                 <div
                   className={`kpi-growth ${
-                    parseFloat(agencyAnalytics.growth.thisWeek.growth) >= 0
+                    parseFloat(safeAgencyAnalytics.growth.thisWeek.growth) >= 0
                       ? "positive"
                       : "negative"
                   }`}
                 >
-                  {parseFloat(agencyAnalytics.growth.thisWeek.growth) >= 0
+                  {parseFloat(safeAgencyAnalytics.growth.thisWeek.growth) >= 0
                     ? "+"
                     : ""}
-                  {agencyAnalytics.growth.thisWeek.growth}%
+                  {safeAgencyAnalytics.growth.thisWeek.growth}%
                 </div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.overview.activeAgencies}
+                  {safeAgencyAnalytics.overview.activeAgencies}
                 </div>
                 <div className="kpi-label">Active Agencies</div>
                 <div className="kpi-growth positive">
-                  {agencyAnalytics.overview.activeRate.toFixed(1)}%
+                  {safeAgencyAnalytics.overview.activeRate.toFixed(1)}%
                 </div>
               </div>
               {/* <div className="kpi-card">
@@ -176,25 +435,25 @@ const ReportsAnalytics = () => {
             <div className="kpi-cards">
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.growth.thisMonth.newAgencies}
+                  {safeAgencyAnalytics.growth.thisMonth.newAgencies}
                 </div>
                 <div className="kpi-label">New Agencies</div>
                 <div
                   className={`kpi-growth ${
-                    parseFloat(agencyAnalytics.growth.thisMonth.growth) >= 0
+                    parseFloat(safeAgencyAnalytics.growth.thisMonth.growth) >= 0
                       ? "positive"
                       : "negative"
                   }`}
                 >
-                  {parseFloat(agencyAnalytics.growth.thisMonth.growth) >= 0
+                  {parseFloat(safeAgencyAnalytics.growth.thisMonth.growth) >= 0
                     ? "+"
                     : ""}
-                  {agencyAnalytics.growth.thisMonth.growth}%
+                  {safeAgencyAnalytics.growth.thisMonth.growth}%
                 </div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.overview.totalAgencies}
+                  {safeAgencyAnalytics.overview.totalAgencies}
                 </div>
                 <div className="kpi-label">Total Agencies</div>
                 {/* <div className="kpi-breakdown">
@@ -217,13 +476,13 @@ const ReportsAnalytics = () => {
             <div className="kpi-cards">
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.growth.yearToDate.newAgencies}
+                  {safeAgencyAnalytics.growth.yearToDate.newAgencies}
                 </div>
                 <div className="kpi-label">New Agencies</div>
               </div>
               <div className="kpi-card">
                 <div className="kpi-value">
-                  {agencyAnalytics.properties.totalPropertiesManaged}
+                  {safeAgencyAnalytics.properties.totalPropertiesManaged}
                 </div>
                 <div className="kpi-label">Total Properties</div>
                 {/* <div className="kpi-breakdown">
@@ -281,11 +540,11 @@ const ReportsAnalytics = () => {
         )} */}
 
         {/* Regional Distribution */}
-        {agencyAnalytics.distribution.byRegion.length > 0 && (
+        {safeAgencyAnalytics.distribution.byRegion.length > 0 && (
           <div className="regional-distribution-section">
             <h5>Agency Distribution by Region</h5>
             <div className="distribution-grid">
-              {agencyAnalytics.distribution.byRegion
+              {safeAgencyAnalytics.distribution.byRegion
                 .slice(0, 6)
                 .map((region, index) => (
                   <div key={index} className="distribution-card">
@@ -320,6 +579,57 @@ const ReportsAnalytics = () => {
             </div>
           </div>
         )}
+
+        {serviceBreakdown.length > 0 ? (
+          <div className="regional-distribution-section">
+            <h5>Service Pricing Breakdown</h5>
+            <div className="distribution-grid">
+              {serviceBreakdown.map((service) => (
+                <div key={service.serviceType} className="distribution-card">
+                  <div className="distribution-header">
+                    <strong>{service.serviceType}</strong>
+                    <span className="distribution-percentage">
+                      {service.percentageOfAgencies}% of agencies
+                    </span>
+                  </div>
+                  <div className="distribution-metrics">
+                    <div className="metric-row">
+                      <span>Using Service:</span>
+                      <span>{service.agenciesUsingService}</span>
+                    </div>
+                    <div className="metric-row">
+                      <span>Total Configured Revenue:</span>
+                      <span>
+                        ${service.totalConfiguredRevenue.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="metric-row">
+                      <span>Average Price:</span>
+                      <span>${service.averagePrice.toFixed(2)}</span>
+                    </div>
+                    <div className="metric-row">
+                      <span>Price Range:</span>
+                      <span>
+                        ${service.minimumPrice.toFixed(2)} - $
+                        {service.maximumPrice.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="regional-distribution-section">
+            <h5>Service Pricing Breakdown</h5>
+            <div className="error-state">
+              <p>
+                No agencies with configured per-service pricing were returned by
+                the API yet.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -349,68 +659,68 @@ const ReportsAnalytics = () => {
                 <div className="kpi-cards">
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.today.newJobs}
+                      {safeExecutiveDashboard.kpis.today.newJobs}
                     </div>
                     <div className="kpi-label">New Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.today.growth.newJobs
+                          safeExecutiveDashboard.kpis.today.growth.newJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.today.growth.newJobs
+                        safeExecutiveDashboard.kpis.today.growth.newJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.today.growth.newJobs}%
+                      {safeExecutiveDashboard.kpis.today.growth.newJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.today.completedJobs}
+                      {safeExecutiveDashboard.kpis.today.completedJobs}
                     </div>
                     <div className="kpi-label">Completed Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.today.growth.completedJobs
+                          safeExecutiveDashboard.kpis.today.growth.completedJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.today.growth.completedJobs
+                        safeExecutiveDashboard.kpis.today.growth.completedJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.today.growth.completedJobs}%
+                      {safeExecutiveDashboard.kpis.today.growth.completedJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      ${executiveDashboard.kpis.today.revenue.toLocaleString()}
+                      ${safeExecutiveDashboard.kpis.today.revenue.toLocaleString()}
                     </div>
                     <div className="kpi-label">Revenue</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.today.growth.revenue
+                          safeExecutiveDashboard.kpis.today.growth.revenue
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.today.growth.revenue
+                        safeExecutiveDashboard.kpis.today.growth.revenue
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.today.growth.revenue}%
+                      {safeExecutiveDashboard.kpis.today.growth.revenue}%
                     </div>
                   </div>
                 </div>
@@ -421,69 +731,69 @@ const ReportsAnalytics = () => {
                 <div className="kpi-cards">
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.thisWeek.newJobs}
+                      {safeExecutiveDashboard.kpis.thisWeek.newJobs}
                     </div>
                     <div className="kpi-label">New Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisWeek.growth.newJobs
+                          safeExecutiveDashboard.kpis.thisWeek.growth.newJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisWeek.growth.newJobs
+                        safeExecutiveDashboard.kpis.thisWeek.growth.newJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisWeek.growth.newJobs}%
+                      {safeExecutiveDashboard.kpis.thisWeek.growth.newJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.thisWeek.completedJobs}
+                      {safeExecutiveDashboard.kpis.thisWeek.completedJobs}
                     </div>
                     <div className="kpi-label">Completed Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisWeek.growth.completedJobs
+                          safeExecutiveDashboard.kpis.thisWeek.growth.completedJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisWeek.growth.completedJobs
+                        safeExecutiveDashboard.kpis.thisWeek.growth.completedJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisWeek.growth.completedJobs}%
+                      {safeExecutiveDashboard.kpis.thisWeek.growth.completedJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
                       $
-                      {executiveDashboard.kpis.thisWeek.revenue.toLocaleString()}
+                      {safeExecutiveDashboard.kpis.thisWeek.revenue.toLocaleString()}
                     </div>
                     <div className="kpi-label">Revenue</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisWeek.growth.revenue
+                          safeExecutiveDashboard.kpis.thisWeek.growth.revenue
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisWeek.growth.revenue
+                        safeExecutiveDashboard.kpis.thisWeek.growth.revenue
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisWeek.growth.revenue}%
+                      {safeExecutiveDashboard.kpis.thisWeek.growth.revenue}%
                     </div>
                   </div>
                 </div>
@@ -494,69 +804,69 @@ const ReportsAnalytics = () => {
                 <div className="kpi-cards">
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.thisMonth.newJobs}
+                      {safeExecutiveDashboard.kpis.thisMonth.newJobs}
                     </div>
                     <div className="kpi-label">New Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisMonth.growth.newJobs
+                          safeExecutiveDashboard.kpis.thisMonth.growth.newJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisMonth.growth.newJobs
+                        safeExecutiveDashboard.kpis.thisMonth.growth.newJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisMonth.growth.newJobs}%
+                      {safeExecutiveDashboard.kpis.thisMonth.growth.newJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
-                      {executiveDashboard.kpis.thisMonth.completedJobs}
+                      {safeExecutiveDashboard.kpis.thisMonth.completedJobs}
                     </div>
                     <div className="kpi-label">Completed Jobs</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisMonth.growth.completedJobs
+                          safeExecutiveDashboard.kpis.thisMonth.growth.completedJobs
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisMonth.growth.completedJobs
+                        safeExecutiveDashboard.kpis.thisMonth.growth.completedJobs
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisMonth.growth.completedJobs}%
+                      {safeExecutiveDashboard.kpis.thisMonth.growth.completedJobs}%
                     </div>
                   </div>
                   <div className="kpi-card">
                     <div className="kpi-value">
                       $
-                      {executiveDashboard.kpis.thisMonth.revenue.toLocaleString()}
+                      {safeExecutiveDashboard.kpis.thisMonth.revenue.toLocaleString()}
                     </div>
                     <div className="kpi-label">Revenue</div>
                     <div
                       className={`kpi-growth ${
                         parseFloat(
-                          executiveDashboard.kpis.thisMonth.growth.revenue
+                          safeExecutiveDashboard.kpis.thisMonth.growth.revenue
                         ) >= 0
                           ? "positive"
                           : "negative"
                       }`}
                     >
                       {parseFloat(
-                        executiveDashboard.kpis.thisMonth.growth.revenue
+                        safeExecutiveDashboard.kpis.thisMonth.growth.revenue
                       ) >= 0
                         ? "+"
                         : ""}
-                      {executiveDashboard.kpis.thisMonth.growth.revenue}%
+                      {safeExecutiveDashboard.kpis.thisMonth.growth.revenue}%
                     </div>
                   </div>
                 </div>
@@ -578,24 +888,24 @@ const ReportsAnalytics = () => {
                 <div className="health-content">
                   <div className="health-value">
                     {
-                      executiveDashboard.businessHealth.totalActiveEntities
+                      safeExecutiveDashboard.businessHealth.totalActiveEntities
                         .total
                     }
                   </div>
                   <div className="health-label">Total Active Entities</div>
                   <div className="health-breakdown">
                     {
-                      executiveDashboard.businessHealth.totalActiveEntities
+                      safeExecutiveDashboard.businessHealth.totalActiveEntities
                         .agencies
                     }{" "}
                     Agencies •{" "}
                     {
-                      executiveDashboard.businessHealth.totalActiveEntities
+                      safeExecutiveDashboard.businessHealth.totalActiveEntities
                         .properties
                     }{" "}
                     Properties •{" "}
                     {
-                      executiveDashboard.businessHealth.totalActiveEntities
+                      safeExecutiveDashboard.businessHealth.totalActiveEntities
                         .technicians
                     }{" "}
                     Technicians
@@ -609,7 +919,7 @@ const ReportsAnalytics = () => {
                 </div>
                 <div className="health-content">
                   <div className="health-value">
-                    {executiveDashboard.businessHealth.jobCompletionRate.toFixed(
+                    {safeExecutiveDashboard.businessHealth.jobCompletionRate.toFixed(
                       1
                     )}
                     %
@@ -617,17 +927,17 @@ const ReportsAnalytics = () => {
                   <div className="health-label">Job Completion Rate</div>
                   <div
                     className={`health-status ${
-                      executiveDashboard.businessHealth.jobCompletionRate >= 90
+                      safeExecutiveDashboard.businessHealth.jobCompletionRate >= 90
                         ? "excellent"
-                        : executiveDashboard.businessHealth.jobCompletionRate >=
+                        : safeExecutiveDashboard.businessHealth.jobCompletionRate >=
                           80
                         ? "good"
                         : "needs-improvement"
                     }`}
                   >
-                    {executiveDashboard.businessHealth.jobCompletionRate >= 90
+                    {safeExecutiveDashboard.businessHealth.jobCompletionRate >= 90
                       ? "Excellent"
-                      : executiveDashboard.businessHealth.jobCompletionRate >=
+                      : safeExecutiveDashboard.businessHealth.jobCompletionRate >=
                         80
                       ? "Good"
                       : "Needs Improvement"}
@@ -642,7 +952,7 @@ const ReportsAnalytics = () => {
                 <div className="health-content">
                   <div className="health-value">
                     $
-                    {executiveDashboard.businessHealth.avgJobValue.toLocaleString()}
+                    {safeExecutiveDashboard.businessHealth.avgJobValue.toLocaleString()}
                   </div>
                   <div className="health-label">Average Job Value</div>
                   <div className="health-trend">Monthly Average</div>
@@ -655,7 +965,7 @@ const ReportsAnalytics = () => {
                 </div>
                 <div className="health-content">
                   <div className="health-value">
-                    {executiveDashboard.businessHealth.customerSatisfaction.toFixed(
+                    {safeExecutiveDashboard.businessHealth.customerSatisfaction.toFixed(
                       1
                     )}
                     /5
@@ -663,19 +973,19 @@ const ReportsAnalytics = () => {
                   <div className="health-label">Customer Satisfaction</div>
                   <div
                     className={`health-status ${
-                      executiveDashboard.businessHealth.customerSatisfaction >=
+                      safeExecutiveDashboard.businessHealth.customerSatisfaction >=
                       4.5
                         ? "excellent"
-                        : executiveDashboard.businessHealth
+                        : safeExecutiveDashboard.businessHealth
                             .customerSatisfaction >= 4.0
                         ? "good"
                         : "needs-improvement"
                     }`}
                   >
-                    {executiveDashboard.businessHealth.customerSatisfaction >=
+                    {safeExecutiveDashboard.businessHealth.customerSatisfaction >=
                     4.5
                       ? "Excellent"
-                      : executiveDashboard.businessHealth
+                      : safeExecutiveDashboard.businessHealth
                           .customerSatisfaction >= 4.0
                       ? "Good"
                       : "Needs Improvement"}
@@ -689,7 +999,7 @@ const ReportsAnalytics = () => {
                 </div>
                 <div className="health-content">
                   <div className="health-value">
-                    {executiveDashboard.businessHealth.technicianUtilization.toFixed(
+                    {safeExecutiveDashboard.businessHealth.technicianUtilization.toFixed(
                       1
                     )}
                     %
@@ -697,19 +1007,19 @@ const ReportsAnalytics = () => {
                   <div className="health-label">Technician Utilization</div>
                   <div
                     className={`health-status ${
-                      executiveDashboard.businessHealth.technicianUtilization >=
+                      safeExecutiveDashboard.businessHealth.technicianUtilization >=
                       80
                         ? "excellent"
-                        : executiveDashboard.businessHealth
+                        : safeExecutiveDashboard.businessHealth
                             .technicianUtilization >= 60
                         ? "good"
                         : "needs-improvement"
                     }`}
                   >
-                    {executiveDashboard.businessHealth.technicianUtilization >=
+                    {safeExecutiveDashboard.businessHealth.technicianUtilization >=
                     80
                       ? "Excellent"
-                      : executiveDashboard.businessHealth
+                      : safeExecutiveDashboard.businessHealth
                           .technicianUtilization >= 60
                       ? "Good"
                       : "Needs Improvement"}
@@ -724,13 +1034,13 @@ const ReportsAnalytics = () => {
                 <div className="health-content">
                   <div className="health-value">
                     $
-                    {executiveDashboard.quotations.acceptedValue.toLocaleString()}
+                    {safeExecutiveDashboard.quotations.acceptedValue.toLocaleString()}
                   </div>
                   <div className="health-label">Accepted Quotations Value</div>
                   <div className="health-breakdown">
-                    {executiveDashboard.quotations.acceptedQuotations} of{" "}
-                    {executiveDashboard.quotations.totalQuotations} quotations (
-                    {executiveDashboard.quotations.acceptanceRate}% acceptance
+                    {safeExecutiveDashboard.quotations.acceptedQuotations} of{" "}
+                    {safeExecutiveDashboard.quotations.totalQuotations} quotations (
+                    {safeExecutiveDashboard.quotations.acceptanceRate}% acceptance
                     rate)
                   </div>
                 </div>
@@ -739,40 +1049,40 @@ const ReportsAnalytics = () => {
           </div>
 
           {/* Alerts Section */}
-          {(executiveDashboard.alerts.critical > 0 ||
-            executiveDashboard.alerts.warnings > 0 ||
-            executiveDashboard.alerts.info > 0) && (
+          {(safeExecutiveDashboard.alerts.critical > 0 ||
+            safeExecutiveDashboard.alerts.warnings > 0 ||
+            safeExecutiveDashboard.alerts.info > 0) && (
             <div className="alerts-section">
               <h4>System Alerts</h4>
               <div className="alerts-grid">
-                {executiveDashboard.alerts.critical > 0 && (
+                {safeExecutiveDashboard.alerts.critical > 0 && (
                   <div className="alert critical">
                     <RiCloseLine className="alert-icon" />
                     <div className="alert-content">
                       <div className="alert-count">
-                        {executiveDashboard.alerts.critical}
+                        {safeExecutiveDashboard.alerts.critical}
                       </div>
                       <div className="alert-label">Overdue Jobs</div>
                     </div>
                   </div>
                 )}
-                {executiveDashboard.alerts.warnings > 0 && (
+                {safeExecutiveDashboard.alerts.warnings > 0 && (
                   <div className="alert warning">
                     <RiTimeLine className="alert-icon" />
                     <div className="alert-content">
                       <div className="alert-count">
-                        {executiveDashboard.alerts.warnings}
+                        {safeExecutiveDashboard.alerts.warnings}
                       </div>
                       <div className="alert-label">Pending Payments</div>
                     </div>
                   </div>
                 )}
-                {executiveDashboard.alerts.info > 0 && (
+                {safeExecutiveDashboard.alerts.info > 0 && (
                   <div className="alert info">
                     <RiBuildingLine className="alert-icon" />
                     <div className="alert-content">
                       <div className="alert-count">
-                        {executiveDashboard.alerts.info}
+                        {safeExecutiveDashboard.alerts.info}
                       </div>
                       <div className="alert-label">Inactive Agencies</div>
                     </div>

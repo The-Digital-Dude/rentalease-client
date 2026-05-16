@@ -54,6 +54,14 @@ interface JobProfileData {
   };
 }
 
+const getCompletedTimestamp = (job: any): string | undefined =>
+  job?.completedAt ||
+  job?.completionDate ||
+  job?.jobCompletedAt ||
+  job?.completed_at ||
+  job?.completionDetails?.completedAt ||
+  undefined;
+
 const JobProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -88,6 +96,7 @@ const JobProfile: React.FC = () => {
         if (response.success && response.data) {
           // Transform the data to match our JobProfileData interface
           const job = response.data as any; // Using any for now since the API response structure is different
+          const completedAt = getCompletedTimestamp(job);
 
           // Use real data from the API response
           const jobData: JobProfileData = {
@@ -101,7 +110,7 @@ const JobProfile: React.FC = () => {
               status: job.status,
               priority: job.priority,
               description: job.description,
-              completedAt: job.completedAt,
+              completedAt,
               estimatedDuration: job.estimatedDuration,
               actualDuration: job.actualDuration,
               cost: job.cost,

@@ -260,6 +260,18 @@ export interface AgencyAnalytics {
     totalPropertiesManaged: number;
     avgPropertiesPerAgency: number;
   };
+  services: {
+    totalConfiguredServices: number;
+    breakdown: Array<{
+      serviceType: string;
+      agenciesUsingService: number;
+      totalConfiguredRevenue: number;
+      averagePrice: number;
+      minimumPrice: number;
+      maximumPrice: number;
+      percentageOfAgencies: string;
+    }>;
+  };
   recentActivity: {
     newAgencies: Array<{
       id: string;

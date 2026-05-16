@@ -1,5 +1,6 @@
 import api from "./api";
 import type { AxiosResponse } from "axios";
+import type { EmailParticipant } from "./emailService";
 
 export interface InvoiceItem {
   _id?: string;
@@ -13,7 +14,27 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  jobId: string | { _id: string; job_id?: string; jobType?: string; property?: string };
+  propertyAddress?: string;
+  jobId:
+    | string
+    | {
+        _id: string;
+        job_id?: string;
+        jobType?: string;
+        property?:
+          | string
+          | {
+              _id?: string;
+              fullAddress?: string;
+              address?: {
+                street?: string;
+                suburb?: string;
+                state?: string;
+                postcode?: string;
+                fullAddress?: string;
+              };
+            };
+      };
   technicianId:
     | string
     | {
@@ -47,11 +68,26 @@ export interface Invoice {
   updatedAt?: string;
 }
 
+export interface InvoiceDocumentReviewData {
+  propertyAddress: string;
+  jobType: string;
+  jobNumber: string;
+  agencyName?: string;
+  reportFile: string | null;
+  hasReport: boolean;
+  recipients: {
+    to: EmailParticipant[];
+    cc: EmailParticipant[];
+    bcc: EmailParticipant[];
+  };
+}
+
 export interface InvoiceResponse {
   status: "success" | "error";
   message: string;
   data: {
     invoice: Invoice;
+    reviewData?: InvoiceDocumentReviewData;
   };
 }
 
@@ -82,6 +118,31 @@ interface InvoiceFilters {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+}
+
+interface CreateInvoicePayload {
+  jobId: string;
+  description: string;
+  items: InvoiceItem[];
+  tax: number;
+  notes?: string;
+  technicianId?: string;
+  agencyId?: string;
+}
+
+interface SendInvoicePayload {
+  to?: EmailParticipant[];
+  cc?: EmailParticipant[];
+  bcc?: EmailParticipant[];
+  subject: string;
+  bodyHtml: string;
+  bodyText?: string;
+}
+
+interface UpdateInvoiceStatusPayload {
+  status: "Draft" | "Pending" | "Sent" | "Paid";
+  paymentMethod?: string | null;
+  paymentReference?: string;
 }
 
 class InvoiceService {
@@ -155,6 +216,59 @@ class InvoiceService {
         }
       );
     }
+  }
+
+  async updateInvoice(
+    invoiceId: string,
+    payload: {
+      description: string;
+      items: InvoiceItem[];
+      tax: number;
+      notes?: string;
+    }
+  ): Promise<InvoiceResponse> {
+    const response: AxiosResponse<InvoiceResponse> = await api.patch(
+      `${this.baseUrl}/${invoiceId}`,
+      payload
+    );
+    return response.data;
+  }
+
+  async sendInvoice(
+    invoiceId: string,
+    payload: SendInvoicePayload
+  ): Promise<InvoiceResponse> {
+    const response: AxiosResponse<InvoiceResponse> = await api.patch(
+      `${this.baseUrl}/${invoiceId}/send`,
+      payload
+    );
+    return response.data;
+  }
+
+  async updateInvoiceStatus(
+    invoiceId: string,
+    payload: UpdateInvoiceStatusPayload
+  ): Promise<InvoiceResponse> {
+    const response: AxiosResponse<InvoiceResponse> = await api.patch(
+      `${this.baseUrl}/${invoiceId}/status`,
+      payload
+    );
+    return response.data;
+  }
+
+  async createInvoice(payload: CreateInvoicePayload): Promise<InvoiceResponse> {
+    const response: AxiosResponse<InvoiceResponse> = await api.post(
+      this.baseUrl,
+      payload
+    );
+    return response.data;
+  }
+
+  async generateDraftForJob(jobId: string): Promise<InvoiceResponse> {
+    const response: AxiosResponse<InvoiceResponse> = await api.post(
+      `${this.baseUrl}/job/${jobId}/generate-draft`
+    );
+    return response.data;
   }
 }
 

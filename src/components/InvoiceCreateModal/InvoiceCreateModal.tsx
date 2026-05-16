@@ -14,6 +14,10 @@ interface Property {
     firstName: string;
     lastName: string;
   };
+  agency?: {
+    companyName: string;
+    contactPerson: string;
+  };
 }
 
 interface InvoiceCreateModalProps {
@@ -69,6 +73,7 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
             id: prop.id,
             fullAddress: prop.fullAddress,
             assignedPropertyManager: prop.assignedPropertyManager,
+            agency: prop.agency,
           })
         );
         setProperties(transformedProperties);
@@ -152,7 +157,9 @@ export const InvoiceCreateModal: React.FC<InvoiceCreateModalProps> = ({
 
   const getPropertyManagerName = (property: Property) => {
     if (!property.assignedPropertyManager) {
-      return "No Property Manager";
+      return property.agency?.contactPerson
+        ? `Agency Contact Fallback (${property.agency.contactPerson})`
+        : "Agency Contact Fallback";
     }
     return `${property.assignedPropertyManager.firstName} ${property.assignedPropertyManager.lastName}`;
   };

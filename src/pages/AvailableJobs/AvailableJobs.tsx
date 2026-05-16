@@ -23,6 +23,7 @@ import {
 } from "../../store/availableJobsSlice";
 import Toast from "../../components/Toast";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import Button from "../../components/Button/Button";
 import "./AvailableJobs.scss";
 
 const PRIORITY_OPTIONS = [
@@ -218,7 +219,13 @@ const AvailableJobs: React.FC = () => {
       {error && (
         <div className="error-message">
           <span>{error}</span>
-          <button onClick={() => dispatch(fetchAvailableJobs())}>Retry</button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => dispatch(fetchAvailableJobs())}
+          >
+            Retry
+          </Button>
         </div>
       )}
 
@@ -276,10 +283,14 @@ const AvailableJobs: React.FC = () => {
             </div>
           </div>
 
-          <button className="clear-filters-btn" onClick={handleClearFilters}>
-            <RiCloseLine />
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<RiCloseLine />}
+            onClick={handleClearFilters}
+          >
             Clear
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -351,21 +362,25 @@ const AvailableJobs: React.FC = () => {
                 </div>
 
                 <div className="job-actions">
-                  <button
-                    className="btn btn-outline"
+                  <Button
+                    variant="outline"
+                    size="md"
+                    leftIcon={<RiEyeLine />}
                     onClick={() => handleViewJob(job.id)}
+                    fullWidth
                   >
-                    <RiEyeLine />
                     View Details
-                  </button>
-                  <button
-                    className="btn btn-primary"
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    leftIcon={<RiUserAddLine />}
                     onClick={() => handleClaimJobClick(job)}
                     disabled={claimingJobs[job.id]}
+                    fullWidth
                   >
-                    <RiUserAddLine />
                     {claimingJobs[job.id] ? "Claiming..." : "Claim Job"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

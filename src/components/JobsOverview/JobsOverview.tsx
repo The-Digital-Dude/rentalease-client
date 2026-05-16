@@ -205,6 +205,8 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
             >
               <option value="createdAt-desc">Latest First</option>
               <option value="createdAt-asc">Oldest First</option>
+              <option value="completedAt-desc">Completion Date (Latest)</option>
+              <option value="completedAt-asc">Completion Date (Earliest)</option>
               <option value="dueDate-asc">Due Date (Earliest)</option>
               <option value="dueDate-desc">Due Date (Latest)</option>
               <option value="priority-desc">Priority (High to Low)</option>
@@ -258,7 +260,11 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                 <td className="date-cell">
                   <div className="date-cell-items">
                     <RiCalendarLine />
-                    {new Date(job.dueDate).toLocaleDateString()}
+                    {new Date(
+                      job.status === "Completed" && job.completedAt
+                        ? job.completedAt
+                        : job.dueDate
+                    ).toLocaleDateString()}
                   </div>
                 </td>
                 <td className="technician-cell">

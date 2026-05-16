@@ -124,6 +124,27 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
     return "";
   };
 
+  const getAgencyContactName = () => {
+    if (!invoice) return "";
+
+    if (invoice.agencyId && typeof invoice.agencyId === "object") {
+      return (
+        invoice.agencyId.contactPerson || invoice.agencyId.companyName || ""
+      );
+    }
+
+    if (invoice.agency && typeof invoice.agency === "object") {
+      return (
+        invoice.agency.contactPerson ||
+        invoice.agency.companyName ||
+        invoice.agency.agencyName ||
+        ""
+      );
+    }
+
+    return "";
+  };
+
   const getStatusIcon = (statusValue: string) => {
     switch (statusValue) {
       case "Pending":
@@ -166,10 +187,16 @@ export const InvoiceResponseModal: React.FC<InvoiceResponseModalProps> = ({
               <span className="label">Property:</span>
               <span className="value">{getPropertyAddress()}</span>
             </div>
-            {getPropertyManagerName() && (
+            {(getPropertyManagerName() || getAgencyContactName()) && (
               <div className="summary-item">
-                <span className="label">Property Manager:</span>
-                <span className="value">{getPropertyManagerName()}</span>
+                <span className="label">
+                  {getPropertyManagerName()
+                    ? "Property Manager:"
+                    : "Agency Contact:"}
+                </span>
+                <span className="value">
+                  {getPropertyManagerName() || getAgencyContactName()}
+                </span>
               </div>
             )}
             <div className="summary-item">

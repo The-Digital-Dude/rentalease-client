@@ -137,6 +137,7 @@ interface SendInvoicePayload {
   subject: string;
   bodyHtml: string;
   bodyText?: string;
+  attachments?: File[];
 }
 
 interface UpdateInvoiceStatusPayload {
@@ -238,10 +239,31 @@ class InvoiceService {
     invoiceId: string,
     payload: SendInvoicePayload
   ): Promise<InvoiceResponse> {
-    const response: AxiosResponse<InvoiceResponse> = await api.patch(
-      `${this.baseUrl}/${invoiceId}/send`,
-      payload
-    );
+    let response: AxiosResponse<InvoiceResponse>;
+
+    if (payload.attachments && payload.attachments.length > 0) {
+      const formData = new FormData();
+      formData.append("to", JSON.stringify(payload.to || []));
+      formData.append("cc", JSON.stringify(payload.cc || []));
+      formData.append("bcc", JSON.stringify(payload.bcc || []));
+      formData.append("subject", payload.subject);
+      formData.append("bodyHtml", payload.bodyHtml);
+      if (payload.bodyText) {
+        formData.append("bodyText", payload.bodyText);
+      }
+      payload.attachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
+
+      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } else {
+      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, payload);
+    }
+
     return response.data;
   }
 

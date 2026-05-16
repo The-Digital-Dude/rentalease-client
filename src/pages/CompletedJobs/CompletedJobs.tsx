@@ -39,7 +39,10 @@ import invoiceService, { type Invoice } from "../../services/invoiceService";
 import emailService from "../../services/emailService";
 import ReactQuill from "react-quill";
 import CompletedJobInvoicePreview from "../../components/CompletedJobInvoicePreview/CompletedJobInvoicePreview";
-import { generateCompletedJobInvoicePDF } from "../../utils/completedJobInvoicePdfGenerator";
+import {
+  createCompletedJobInvoicePDF,
+  generateCompletedJobInvoicePDF,
+} from "../../utils/completedJobInvoicePdfGenerator";
 import "react-quill/dist/quill.snow.css";
 import "./CompletedJobs.scss";
 
@@ -729,6 +732,19 @@ const CompletedJobs = () => {
     try {
       setInvoiceActionLoading(true);
       setEmailValidationError(null);
+      const { blob, fileName } = await createCompletedJobInvoicePDF({
+        invoice: invoiceDraft,
+        jobNumber: reviewData?.jobNumber || selectedJob.job_id,
+        jobType: reviewData?.jobType || selectedJob.jobType,
+        propertyAddress:
+          reviewData?.propertyAddress ||
+          selectedJob.property.address.fullAddress,
+        agencyName: reviewData?.agencyName || selectedJob.agency?.name,
+        hasReport: Boolean(reviewData?.hasReport),
+      });
+      const attachmentFile = new File([blob], fileName, {
+        type: "application/pdf",
+      });
       const response = await invoiceService.sendInvoice(invoiceDraft.id, {
         to: toRecipients,
         cc: ccRecipients,
@@ -736,6 +752,7 @@ const CompletedJobs = () => {
         subject: emailComposer.subject.trim(),
         bodyHtml: emailComposer.bodyHtml,
         bodyText: emailService.stripHtml(emailComposer.bodyHtml),
+        attachments: [attachmentFile],
       });
       setInvoiceDraft(response.data.invoice);
       toast.success("Documents sent");

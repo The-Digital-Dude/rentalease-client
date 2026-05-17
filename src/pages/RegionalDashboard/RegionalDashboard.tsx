@@ -249,7 +249,7 @@ const RegionalDashboard = () => {
       <div className="dashboard-header">
         <div className="header-content">
           <h1>Regional Dashboard</h1>
-          <p>Comprehensive view of properties, managers, and technicians across all regions</p>
+          <p>Regional coverage, staffing visibility, and property operations across states and metro areas.</p>
         </div>
         <div className="header-actions">
           <button

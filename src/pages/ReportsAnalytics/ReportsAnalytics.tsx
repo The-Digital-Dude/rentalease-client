@@ -639,7 +639,19 @@ const ReportsAnalytics = () => {
       <div className="report-header">
         <div className="header-content">
           <h3>Executive Dashboard</h3>
-          <p>High-level KPIs and business performance metrics</p>
+          <p>Board-level view of revenue, throughput, quotation conversion, and business health.</p>
+        </div>
+      </div>
+
+      <div className="report-purpose-card">
+        <div className="purpose-icon">
+          <RiDashboardLine />
+        </div>
+        <div className="purpose-content">
+          <h4>Use this view for trend and performance review</h4>
+          <p>
+            Executive reports should explain what changed, where commercial risk sits, and whether job delivery is keeping pace with demand.
+          </p>
         </div>
       </div>
 
@@ -1105,7 +1117,19 @@ const ReportsAnalytics = () => {
       <div className="report-header">
         <div className="header-content">
           <h3>Operational Analytics</h3>
-          <p>Detailed operational metrics and resource utilization</p>
+          <p>Detailed delivery analytics for workload, cycle time, property activity, and regional execution.</p>
+        </div>
+      </div>
+
+      <div className="report-purpose-card">
+        <div className="purpose-icon">
+          <RiBuildingLine />
+        </div>
+        <div className="purpose-content">
+          <h4>Use this view for staffing and execution decisions</h4>
+          <p>
+            These modules are for balancing technician workload, spotting slow job types, and identifying property or regional bottlenecks.
+          </p>
         </div>
       </div>
 
@@ -1116,6 +1140,45 @@ const ReportsAnalytics = () => {
         </div>
       ) : operationalAnalytics ? (
         <>
+          <div className="summary-cards">
+            <div className="summary-card">
+              <div className="card-icon jobs">
+                <RiUserStarLine />
+              </div>
+              <div className="card-content">
+                <h4>{operationalAnalytics.resourceUtilization.totalActiveTechnicians}</h4>
+                <p>Active Technicians</p>
+              </div>
+            </div>
+            <div className="summary-card">
+              <div className="card-icon average">
+                <RiStarLine />
+              </div>
+              <div className="card-content">
+                <h4>{operationalAnalytics.resourceUtilization.avgUtilization}%</h4>
+                <p>Average Utilization</p>
+              </div>
+            </div>
+            <div className="summary-card">
+              <div className="card-icon completed">
+                <RiCheckboxCircleLine />
+              </div>
+              <div className="card-content">
+                <h4>{operationalAnalytics.jobAnalytics.totalJobTypes}</h4>
+                <p>Job Types in Analysis</p>
+              </div>
+            </div>
+            <div className="summary-card">
+              <div className="card-icon compliance">
+                <RiBuildingLine />
+              </div>
+              <div className="card-content">
+                <h4>{operationalAnalytics.propertyInsights.totalPropertiesWithJobs}</h4>
+                <p>Properties With Recorded Jobs</p>
+              </div>
+            </div>
+          </div>
+
           {/* Resource Utilization Section */}
           <div className="resource-section">
             <h4>Resource Utilization</h4>

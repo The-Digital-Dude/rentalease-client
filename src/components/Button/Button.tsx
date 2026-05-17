@@ -98,7 +98,20 @@ const Button = (props: ButtonProps) => {
   } = props;
 
   if ("href" in props && props.href) {
-    const { href, disabled, ...anchorProps } = props;
+    const {
+      href,
+      disabled,
+      variant: _variant,
+      size: _size,
+      iconOnly: _iconOnly,
+      fullWidth: _fullWidth,
+      loading: _loading,
+      leftIcon: _leftIcon,
+      rightIcon: _rightIcon,
+      className: _className,
+      children: _children,
+      ...anchorProps
+    } = props;
     return (
       <a
         {...anchorProps}
@@ -125,7 +138,20 @@ const Button = (props: ButtonProps) => {
     );
   }
 
-  const { disabled, type = "button", ...buttonProps } = props;
+  const {
+    disabled,
+    type = "button",
+    variant: _variant,
+    size: _size,
+    iconOnly: _iconOnly,
+    fullWidth: _fullWidth,
+    loading: _loading,
+    leftIcon: _leftIcon,
+    rightIcon: _rightIcon,
+    className: _className,
+    children: _children,
+    ...buttonProps
+  } = props;
   return (
     <button
       {...buttonProps}

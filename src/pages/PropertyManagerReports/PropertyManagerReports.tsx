@@ -118,7 +118,7 @@ const PropertyManagerReports = () => {
     <div className="page-container property-manager-reports">
       <div className="page-header">
         <h1>Reports & Analytics</h1>
-        <p>Property performance insights and detailed analytics</p>
+        <p>Compliance risk, job activity, and property-level performance for managed properties.</p>
       </div>
 
       <div className="reports-tabs">

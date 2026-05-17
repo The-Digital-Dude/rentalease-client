@@ -64,6 +64,20 @@ import propertyManagerInvoiceService, {
 
 const INVOICE_STATS_CHANGED_EVENT = "invoice-stats-changed";
 
+type DashboardSystemHealth = {
+  totalActiveUsers: number;
+  jobsCompletionRate: number;
+  avgResponseTime: string;
+  systemAlerts: Array<{
+    type: "warning" | "info" | "error";
+    message: string;
+    count: number;
+  }>;
+  uptime: string;
+  serverStatus: string;
+  lastChecked: string;
+};
+
 const toNumber = (value: unknown) =>
   typeof value === "number" && Number.isFinite(value) ? value : 0;
 
@@ -221,6 +235,9 @@ const SuperUserDashboard = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
+  const [systemHealth, setSystemHealth] = useState<DashboardSystemHealth | null>(
+    null
+  );
   const [invoiceStatsOverride, setInvoiceStatsOverride] = useState<
     ReturnType<typeof getNormalizedInvoiceStats> | null
   >(null);
@@ -252,11 +269,17 @@ const SuperUserDashboard = () => {
     try {
       setRefreshing(true);
       setError(null);
-      const response = await dashboardService.getAdminStats();
-      if (response.status === "success") {
-        setDashboardData(response.data);
+      const [dashboardResponse, healthResponse] = await Promise.all([
+        dashboardService.getAdminStats(),
+        dashboardService.getSystemHealth(),
+      ]);
+      if (dashboardResponse.status === "success") {
+        setDashboardData(dashboardResponse.data);
+        if (healthResponse.status === "success") {
+          setSystemHealth(healthResponse.data);
+        }
 
-        if (hasNestedInvoiceStatsShape(response.data.invoiceStats)) {
+        if (hasNestedInvoiceStatsShape(dashboardResponse.data.invoiceStats)) {
           setInvoiceStatsOverride(null);
         } else {
           try {
@@ -560,9 +583,9 @@ const SuperUserDashboard = () => {
     overview,
     jobStatusDistribution,
     recentActivity,
-    monthlyTrends,
-    topTechnicians,
-    recentJobs,
+      monthlyTrends,
+      topTechnicians,
+      recentJobs,
   } = dashboardData;
 
   const invoiceStats =
@@ -576,8 +599,87 @@ const SuperUserDashboard = () => {
     averageServicePrice: 0,
     topServices: [],
   };
+  const paymentStats = dashboardData.paymentStats || {
+    totalPayments: 0,
+    totalAmount: 0,
+    pendingAmount: 0,
+    paidAmount: 0,
+    pendingCount: 0,
+    paidCount: 0,
+  };
 
   const topPricingServices = pricingSummary.topServices.slice(0, 4);
+  const systemAlerts = systemHealth?.systemAlerts || [];
+  const attentionItems = [
+    {
+      title: "Overdue Jobs",
+      value: overview.overdueJobs,
+      description: "Jobs already past due and needing follow-up.",
+      action: "Open Jobs",
+      route: "/jobs",
+      tone: "danger",
+      icon: <RiAlertLine />,
+    },
+    {
+      title: "Pending Technician Payments",
+      value: paymentStats.pendingCount,
+      description: `${formatCurrency(
+        paymentStats.pendingAmount
+      )} waiting to be paid out.`,
+      action: "Open Payments",
+      route: "/invoice-management",
+      tone: "warning",
+      icon: <RiMoneyDollarCircleLine />,
+    },
+    {
+      title: "Draft Completed Job Invoices",
+      value: invoiceStats.completedJob.draftCount,
+      description: `${formatCurrency(
+        invoiceStats.completedJob.draftAmount
+      )} still needs to be sent.`,
+      action: "Open Invoices",
+      route: "/invoice-management",
+      tone: "info",
+      icon: <RiEditLine />,
+    },
+    {
+      title: "Rejected Extra Services",
+      value: invoiceStats.extraServices.rejectedCount,
+      description: `${formatCurrency(
+        invoiceStats.extraServices.rejectedAmount
+      )} has been rejected.`,
+      action: "Review Extras",
+      route: "/invoice-management",
+      tone: "neutral",
+      icon: <RiFileList3Line />,
+    },
+  ];
+  const growthMetrics = [
+    {
+      label: "New agencies this week",
+      value: recentActivity.newAgencies,
+      support: `${overview.totalAgencies} total agencies`,
+      icon: <RiBuildingLine />,
+    },
+    {
+      label: "Properties added this week",
+      value: recentActivity.newProperties,
+      support: `${overview.totalProperties} active properties`,
+      icon: <RiHomeSmileLine />,
+    },
+    {
+      label: "Technicians added this week",
+      value: recentActivity.newTechnicians,
+      support: `${overview.totalTechnicians} technicians`,
+      icon: <RiToolsLine />,
+    },
+    {
+      label: "Jobs created this week",
+      value: recentActivity.newJobs,
+      support: `${recentActivity.completedJobsWeek} completed this week`,
+      icon: <RiBriefcaseLine />,
+    },
+  ];
 
   // Filter recent jobs based on search and status
   const filteredRecentJobs = recentJobs.filter((job) => {
@@ -864,6 +966,61 @@ const SuperUserDashboard = () => {
                 <span>Active users</span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.executiveSections}>
+        <div className={styles.executivePanel}>
+          <div className={styles.executivePanelHeader}>
+            <div>
+              <h3>Attention Required</h3>
+              <p>Work that should be reviewed before the rest of the pipeline.</p>
+            </div>
+            {systemAlerts.length > 0 ? (
+              <span className={styles.executivePanelMeta}>
+                {systemAlerts.length} system alert{systemAlerts.length === 1 ? "" : "s"}
+              </span>
+            ) : null}
+          </div>
+          <div className={styles.attentionGrid}>
+            {attentionItems.map((item) => (
+              <button
+                key={item.title}
+                type="button"
+                className={`${styles.attentionCard} ${styles[item.tone]}`}
+                onClick={() => navigate(item.route)}
+              >
+                <div className={styles.attentionIcon}>{item.icon}</div>
+                <div className={styles.attentionContent}>
+                  <span className={styles.attentionTitle}>{item.title}</span>
+                  <strong>{item.value}</strong>
+                  <p>{item.description}</p>
+                  <span className={styles.attentionAction}>{item.action}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.executivePanel}>
+          <div className={styles.executivePanelHeader}>
+            <div>
+              <h3>Growth Snapshot</h3>
+              <p>What changed across the portfolio this week.</p>
+            </div>
+          </div>
+          <div className={styles.growthGrid}>
+            {growthMetrics.map((metric) => (
+              <div key={metric.label} className={styles.growthCard}>
+                <div className={styles.growthIcon}>{metric.icon}</div>
+                <div className={styles.growthContent}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                  <p>{metric.support}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1389,6 +1546,54 @@ const SuperUserDashboard = () => {
       {/* Top Technicians and Recent Jobs */}
       <div className={styles.dashboardContent}>
         <div className={styles.contentGrid}>
+          <div className={styles.contentCard}>
+            <div className={styles.cardHeader}>
+              <h3>System Health</h3>
+              <RiShieldLine />
+            </div>
+            <div className={styles.healthSummary}>
+              <div className={styles.healthStatsRow}>
+                <div className={styles.healthMetric}>
+                  <span>Status</span>
+                  <strong>{systemHealth?.serverStatus || "Unknown"}</strong>
+                </div>
+                <div className={styles.healthMetric}>
+                  <span>Uptime</span>
+                  <strong>{systemHealth?.uptime || "N/A"}</strong>
+                </div>
+                <div className={styles.healthMetric}>
+                  <span>Active Users</span>
+                  <strong>{systemHealth?.totalActiveUsers || 0}</strong>
+                </div>
+                <div className={styles.healthMetric}>
+                  <span>Completion Rate</span>
+                  <strong>
+                    {typeof systemHealth?.jobsCompletionRate === "number"
+                      ? `${systemHealth.jobsCompletionRate.toFixed(1)}%`
+                      : "0.0%"}
+                  </strong>
+                </div>
+              </div>
+              <div className={styles.systemAlertsList}>
+                {systemAlerts.length > 0 ? (
+                  systemAlerts.map((alert) => (
+                    <div key={`${alert.type}-${alert.message}`} className={styles.systemAlertItem}>
+                      <span className={`${styles.systemAlertBadge} ${styles[alert.type]}`}>
+                        {alert.type}
+                      </span>
+                      <p>{alert.message}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles.systemAlertEmpty}>
+                    <RiCheckLine />
+                    <p>No current system alerts. Core operations look healthy.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className={styles.contentCard}>
             <div className={styles.cardHeader}>
               <h3>Top Performing Technicians</h3>

@@ -696,7 +696,7 @@ const AgencyDashboard = () => {
         <div className="welcome-section">
           <div className="welcome-content">
             <h1>Welcome back, {user?.name || "Agency"}!</h1>
-            <p>Your property management and job overview dashboard</p>
+            <p>Track portfolio health, job delivery, technicians, and property exceptions from one place.</p>
             <div className="last-updated">
               <RiInformationLine />
               <span>

@@ -34,18 +34,26 @@ interface DashboardStats {
     paidCount: number;
   };
   invoiceStats: {
-    totalInvoices: number;
-    totalAmount: number;
-    draftAmount: number;
-    draftCount: number;
-    pendingAmount: number;
-    pendingCount: number;
-    paidAmount: number;
-    paidCount: number;
-    rejectedAmount: number;
-    rejectedCount: number;
-    completedJobInvoices: number;
-    propertyManagerInvoices: number;
+    completedJob: {
+      totalInvoices: number;
+      totalAmount: number;
+      draftAmount: number;
+      draftCount: number;
+      sentAmount: number;
+      sentCount: number;
+      paidAmount: number;
+      paidCount: number;
+    };
+    extraServices: {
+      totalInvoices: number;
+      totalAmount: number;
+      pendingAmount: number;
+      pendingCount: number;
+      acceptedAmount: number;
+      acceptedCount: number;
+      rejectedAmount: number;
+      rejectedCount: number;
+    };
   };
   pricingSummary: {
     totalConfiguredMonthlyRevenue: number;

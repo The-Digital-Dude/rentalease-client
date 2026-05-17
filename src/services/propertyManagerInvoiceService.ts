@@ -1,7 +1,7 @@
 import api from "./api";
 import type { AxiosResponse } from "axios";
 
-// Property Manager Invoice interfaces
+// Extra Services Invoice interfaces
 export interface PropertyManagerInvoice {
   id?: string; // For list responses
   _id?: string; // For single responses
@@ -121,8 +121,8 @@ export interface PropertyManagerInvoiceListResponse {
       pendingAmount: number;
       statusCounts: {
         Pending?: number;
-        Sent?: number;
-        Paid?: number;
+        Accepted?: number;
+        Rejected?: number;
       };
     };
   };
@@ -164,7 +164,7 @@ export interface ApiResponse {
 }
 
 class PropertyManagerInvoiceService {
-  // Create a new property manager invoice
+  // Create a new extra services invoice
   async createPropertyManagerInvoice(
     invoiceData: CreatePropertyManagerInvoiceRequest
   ): Promise<SinglePropertyManagerInvoiceResponse> {
@@ -179,7 +179,7 @@ class PropertyManagerInvoiceService {
     }
   }
 
-  // Get property manager invoices (filtered by user role)
+  // Get extra services invoices (filtered by user role)
   async getPropertyManagerInvoices(params?: {
     status?: string;
     property?: string;
@@ -201,7 +201,7 @@ class PropertyManagerInvoiceService {
     }
   }
 
-  // Get single property manager invoice
+  // Get single extra services invoice
   async getPropertyManagerInvoice(
     id: string
   ): Promise<SinglePropertyManagerInvoiceResponse> {
@@ -216,7 +216,7 @@ class PropertyManagerInvoiceService {
     }
   }
 
-  // Update property manager invoice (SuperUser only)
+  // Update extra services invoice (SuperUser only)
   async updatePropertyManagerInvoice(
     id: string,
     updateData: UpdatePropertyManagerInvoiceRequest
@@ -232,7 +232,7 @@ class PropertyManagerInvoiceService {
     }
   }
 
-  // Get all property manager invoices for SuperUser management (no pagination)
+  // Get all extra services invoices for SuperUser management (no pagination)
   async getAllPropertyManagerInvoices(): Promise<PropertyManagerInvoiceListResponse> {
     try {
       const response: AxiosResponse<PropertyManagerInvoiceListResponse> =
@@ -266,7 +266,7 @@ class PropertyManagerInvoiceService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          "Failed to fetch property manager invoices"
+          "Failed to fetch extra services invoices"
       );
     }
   }
@@ -327,7 +327,7 @@ class PropertyManagerInvoiceService {
     }
   }
 
-  // Get property manager invoice statistics (SuperUser only)
+  // Get extra services invoice statistics (SuperUser only)
   async getPropertyManagerInvoiceStats(): Promise<PropertyManagerInvoiceStatsResponse> {
     try {
       const response: AxiosResponse<PropertyManagerInvoiceStatsResponse> =
@@ -361,10 +361,10 @@ class PropertyManagerInvoiceService {
     switch (status) {
       case "Pending":
         return "#ffc107"; // warning yellow
-      case "Sent":
-        return "#17a2b8"; // info blue
-      case "Paid":
+      case "Accepted":
         return "#28a745"; // success green
+      case "Rejected":
+        return "#dc3545"; // danger red
       default:
         return "#6c757d";
     }
@@ -375,10 +375,10 @@ class PropertyManagerInvoiceService {
     switch (status) {
       case "Pending":
         return "RiTimeLine";
-      case "Sent":
-        return "RiSendPlaneLine";
-      case "Paid":
+      case "Accepted":
         return "RiCheckboxCircleLine";
+      case "Rejected":
+        return "RiCloseCircleLine";
       default:
         return "RiQuestionLine";
     }

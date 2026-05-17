@@ -58,7 +58,7 @@ export interface Invoice {
   subtotal: number;
   tax: number;
   totalCost: number;
-  status: "Pending" | "Sent" | "Paid" | string;
+  status: "Draft" | "Sent" | "Paid" | string;
   notes?: string;
   paymentMethod?: string | null;
   paymentReference?: string | null;
@@ -141,7 +141,7 @@ interface SendInvoicePayload {
 }
 
 interface UpdateInvoiceStatusPayload {
-  status: "Draft" | "Pending" | "Sent" | "Paid";
+  status: "Draft" | "Sent" | "Paid";
   paymentMethod?: string | null;
   paymentReference?: string;
 }

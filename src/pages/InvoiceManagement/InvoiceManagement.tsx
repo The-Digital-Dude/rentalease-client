@@ -132,8 +132,9 @@ interface CompletedInvoicePaymentState {
 
 type InvoiceSourceTab = "property-manager" | "completed-job";
 type PropertyManagerStatusTab = "pending" | "accepted" | "rejected" | "all";
-type CompletedJobStatusTab = "draft" | "pending" | "sent" | "paid" | "all";
+type CompletedJobStatusTab = "draft" | "sent" | "paid" | "all";
 type ActiveStatusTab = PropertyManagerStatusTab | CompletedJobStatusTab;
+const INVOICE_STATS_CHANGED_EVENT = "invoice-stats-changed";
 
 const InvoiceManagement: React.FC = () => {
   const { userType } = useAppSelector((state) => state.user);
@@ -316,6 +317,10 @@ const InvoiceManagement: React.FC = () => {
     } catch (error) {
       console.error("Error fetching properties:", error);
     }
+  };
+
+  const notifyInvoiceStatsChanged = () => {
+    window.dispatchEvent(new Event(INVOICE_STATS_CHANGED_EVENT));
   };
 
   const getPropertyAddress = useCallback(
@@ -519,12 +524,6 @@ const InvoiceManagement: React.FC = () => {
         count: completedInvoices.filter((invoice) => invoice.status === "Draft").length,
       },
       {
-        key: "pending" as CompletedJobStatusTab,
-        label: "Pending",
-        count: completedInvoices.filter((invoice) => invoice.status === "Pending")
-          .length,
-      },
-      {
         key: "sent" as CompletedJobStatusTab,
         label: "Sent",
         count: completedInvoices.filter((invoice) => invoice.status === "Sent").length,
@@ -615,9 +614,6 @@ const InvoiceManagement: React.FC = () => {
       case "draft":
         filtered = filtered.filter((invoice) => invoice.status === "Draft");
         break;
-      case "pending":
-        filtered = filtered.filter((invoice) => invoice.status === "Pending");
-        break;
       case "sent":
         filtered = filtered.filter((invoice) => invoice.status === "Sent");
         break;
@@ -671,6 +667,9 @@ const InvoiceManagement: React.FC = () => {
       pendingValue: propertyManagerInvoices
         .filter((invoice) => invoice.status === "Pending")
         .reduce((sum, invoice) => sum + (invoice.amount || 0), 0),
+      rejectedValue: propertyManagerInvoices
+        .filter((invoice) => invoice.status === "Rejected")
+        .reduce((sum, invoice) => sum + (invoice.amount || 0), 0),
     }),
     [propertyManagerInvoices]
   );
@@ -684,6 +683,15 @@ const InvoiceManagement: React.FC = () => {
         .length,
       paidCount: completedInvoices.filter((invoice) => invoice.status === "Paid")
         .length,
+      draftValue: completedInvoices
+        .filter((invoice) => invoice.status === "Draft")
+        .reduce((sum, invoice) => sum + (invoice.totalCost || 0), 0),
+      sentValue: completedInvoices
+        .filter((invoice) => invoice.status === "Sent")
+        .reduce((sum, invoice) => sum + (invoice.totalCost || 0), 0),
+      paidValue: completedInvoices
+        .filter((invoice) => invoice.status === "Paid")
+        .reduce((sum, invoice) => sum + (invoice.totalCost || 0), 0),
       totalValue: completedInvoices.reduce(
         (sum, invoice) => sum + (invoice.totalCost || 0),
         0
@@ -707,6 +715,7 @@ const InvoiceManagement: React.FC = () => {
       );
       toast.success("Invoice deleted successfully");
       await fetchPropertyManagerInvoices();
+      notifyInvoiceStatsChanged();
     } catch (error: any) {
       toast.error(error.message || "Failed to delete invoice");
     }
@@ -849,6 +858,7 @@ const InvoiceManagement: React.FC = () => {
       );
       setCompletedInvoiceEditorOpen(false);
       await fetchCompletedInvoices();
+      notifyInvoiceStatsChanged();
       toast.success("Invoice updated");
     } catch (error: any) {
       toast.error(error.message || "Failed to update invoice");
@@ -881,6 +891,7 @@ const InvoiceManagement: React.FC = () => {
           : current
       );
       await fetchCompletedInvoices();
+      notifyInvoiceStatsChanged();
       toast.success("Invoice marked as paid");
     } catch (error: any) {
       toast.error(error.message || "Failed to update invoice status");
@@ -892,7 +903,7 @@ const InvoiceManagement: React.FC = () => {
   const sourceTabs = [
     {
       key: "property-manager" as InvoiceSourceTab,
-      label: "Property Manager Invoices",
+      label: "Extra Services Invoices",
       count: propertyManagerInvoices.length,
     },
     {
@@ -924,20 +935,26 @@ const InvoiceManagement: React.FC = () => {
           {
             key: "pending",
             icon: <MdPendingActions />,
-            value: activePropertyManagerStats.pendingInvoices,
-            label: "Pending",
+            value: formatCurrency(activePropertyManagerStats.pendingValue),
+            label: `${activePropertyManagerStats.pendingInvoices} Pending`,
           },
           {
             key: "accepted",
             icon: <MdCheckCircle />,
-            value: activePropertyManagerStats.acceptedInvoices,
-            label: "Accepted",
+            value: formatCurrency(activePropertyManagerStats.acceptedValue),
+            label: `${activePropertyManagerStats.acceptedInvoices} Accepted`,
+          },
+          {
+            key: "rejected",
+            icon: <MdCancel />,
+            value: formatCurrency(activePropertyManagerStats.rejectedValue),
+            label: `${activePropertyManagerStats.rejectedInvoices} Rejected`,
           },
           {
             key: "value",
             icon: <MdTrendingUp />,
-            value: formatCurrency(activePropertyManagerStats.acceptedValue),
-            label: "Accepted Value",
+            value: formatCurrency(activePropertyManagerStats.totalValue),
+            label: "Total Value",
             highlight: true,
           },
         ]
@@ -951,14 +968,20 @@ const InvoiceManagement: React.FC = () => {
           {
             key: "draft",
             icon: <MdPendingActions />,
-            value: completedInvoiceStats.draftCount,
-            label: "Draft",
+            value: formatCurrency(completedInvoiceStats.draftValue),
+            label: `${completedInvoiceStats.draftCount} Draft`,
           },
           {
             key: "sent",
             icon: <MdCheckCircle />,
-            value: completedInvoiceStats.sentCount,
-            label: "Sent",
+            value: formatCurrency(completedInvoiceStats.sentValue),
+            label: `${completedInvoiceStats.sentCount} Sent`,
+          },
+          {
+            key: "paid",
+            icon: <MdCheckCircle />,
+            value: formatCurrency(completedInvoiceStats.paidValue),
+            label: `${completedInvoiceStats.paidCount} Paid`,
           },
           {
             key: "value",
@@ -1055,7 +1078,7 @@ const InvoiceManagement: React.FC = () => {
                 type="text"
                 placeholder={
                   invoiceSource === "property-manager"
-                    ? "Search property manager invoices..."
+                    ? "Search extra services invoices..."
                     : "Search completed-job invoices..."
                 }
                 value={searchTerm}
@@ -1209,7 +1232,7 @@ const InvoiceManagement: React.FC = () => {
             <h3>No invoices found</h3>
             <p>
               {invoiceSource === "property-manager"
-                ? "No property manager invoices match the current filters."
+                ? "No extra services invoices match the current filters."
                 : "No completed-job invoices match the current filters."}
             </p>
           </div>
@@ -1531,6 +1554,7 @@ const InvoiceManagement: React.FC = () => {
         }}
         onSuccess={() => {
           void fetchPropertyManagerInvoices();
+          notifyInvoiceStatsChanged();
         }}
         invoice={selectedInvoice}
       />
@@ -1553,6 +1577,7 @@ const InvoiceManagement: React.FC = () => {
         }}
         onSuccess={() => {
           void fetchPropertyManagerInvoices();
+          notifyInvoiceStatsChanged();
         }}
       />
 
@@ -1601,7 +1626,7 @@ const InvoiceManagement: React.FC = () => {
                   <div>
                     <h4>Invoice Actions</h4>
                     <p>
-                      Edit draft or pending invoices, then mark them paid when
+                      Edit draft invoices, then mark them paid when
                       payment is received.
                     </p>
                   </div>

@@ -57,6 +57,151 @@ import Button from "../../components/Button/Button";
 import dashboardService, {
   type DashboardStats as DashboardData,
 } from "../../services/dashboardService";
+import invoiceService, { type Invoice } from "../../services/invoiceService";
+import propertyManagerInvoiceService, {
+  type PropertyManagerInvoice,
+} from "../../services/propertyManagerInvoiceService";
+
+const INVOICE_STATS_CHANGED_EVENT = "invoice-stats-changed";
+
+const toNumber = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+const hasNestedInvoiceStatsShape = (invoiceStats: any) =>
+  Boolean(invoiceStats?.completedJob && invoiceStats?.extraServices);
+
+const getNormalizedInvoiceStats = (invoiceStats: any) => {
+  if (invoiceStats?.completedJob && invoiceStats?.extraServices) {
+    const completedDraftAmount = toNumber(invoiceStats.completedJob.draftAmount);
+    const completedSentAmount = toNumber(invoiceStats.completedJob.sentAmount);
+    const completedPaidAmount = toNumber(invoiceStats.completedJob.paidAmount);
+    const completedTotalAmount =
+      completedDraftAmount + completedSentAmount + completedPaidAmount;
+
+    const extraPendingAmount = toNumber(invoiceStats.extraServices.pendingAmount);
+    const extraAcceptedAmount = toNumber(
+      invoiceStats.extraServices.acceptedAmount
+    );
+    const extraRejectedAmount = toNumber(
+      invoiceStats.extraServices.rejectedAmount
+    );
+    const extraTotalAmount =
+      extraPendingAmount + extraAcceptedAmount + extraRejectedAmount;
+
+    return {
+      completedJob: {
+        totalInvoices: toNumber(invoiceStats.completedJob.totalInvoices),
+        totalAmount: completedTotalAmount,
+        draftAmount: completedDraftAmount,
+        draftCount: toNumber(invoiceStats.completedJob.draftCount),
+        sentAmount: completedSentAmount,
+        sentCount: toNumber(invoiceStats.completedJob.sentCount),
+        paidAmount: completedPaidAmount,
+        paidCount: toNumber(invoiceStats.completedJob.paidCount),
+      },
+      extraServices: {
+        totalInvoices: toNumber(invoiceStats.extraServices.totalInvoices),
+        totalAmount: extraTotalAmount,
+        pendingAmount: extraPendingAmount,
+        pendingCount: toNumber(invoiceStats.extraServices.pendingCount),
+        acceptedAmount: extraAcceptedAmount,
+        acceptedCount: toNumber(invoiceStats.extraServices.acceptedCount),
+        rejectedAmount: extraRejectedAmount,
+        rejectedCount: toNumber(invoiceStats.extraServices.rejectedCount),
+      },
+    };
+  }
+
+  const legacyDraftAmount = toNumber(invoiceStats?.draftAmount);
+  const legacySentAmount = toNumber(invoiceStats?.pendingAmount);
+  const legacyPaidAmount = toNumber(invoiceStats?.paidAmount);
+
+  return {
+    completedJob: {
+      totalInvoices: toNumber(invoiceStats?.completedJobInvoices),
+      totalAmount: legacyDraftAmount + legacySentAmount + legacyPaidAmount,
+      draftAmount: legacyDraftAmount,
+      draftCount: toNumber(invoiceStats?.draftCount),
+      sentAmount: legacySentAmount,
+      sentCount: toNumber(invoiceStats?.pendingCount),
+      paidAmount: legacyPaidAmount,
+      paidCount: toNumber(invoiceStats?.paidCount),
+    },
+    extraServices: {
+      totalInvoices: toNumber(invoiceStats?.propertyManagerInvoices),
+      totalAmount: 0,
+      pendingAmount: 0,
+      pendingCount: 0,
+      acceptedAmount: 0,
+      acceptedCount: 0,
+      rejectedAmount: toNumber(invoiceStats?.rejectedAmount),
+      rejectedCount: toNumber(invoiceStats?.rejectedCount),
+    },
+  };
+};
+
+const buildInvoiceStatsFromInvoices = (
+  completedInvoices: Invoice[],
+  extraServiceInvoices: PropertyManagerInvoice[]
+) => {
+  const completedJob = {
+    totalInvoices: completedInvoices.length,
+    draftAmount: completedInvoices
+      .filter((invoice) => invoice.status === "Draft")
+      .reduce((sum, invoice) => sum + toNumber(invoice.totalCost), 0),
+    draftCount: completedInvoices.filter((invoice) => invoice.status === "Draft")
+      .length,
+    sentAmount: completedInvoices
+      .filter((invoice) => invoice.status === "Sent")
+      .reduce((sum, invoice) => sum + toNumber(invoice.totalCost), 0),
+    sentCount: completedInvoices.filter((invoice) => invoice.status === "Sent")
+      .length,
+    paidAmount: completedInvoices
+      .filter((invoice) => invoice.status === "Paid")
+      .reduce((sum, invoice) => sum + toNumber(invoice.totalCost), 0),
+    paidCount: completedInvoices.filter((invoice) => invoice.status === "Paid")
+      .length,
+  };
+
+  const extraServices = {
+    totalInvoices: extraServiceInvoices.length,
+    pendingAmount: extraServiceInvoices
+      .filter((invoice) => invoice.status === "Pending")
+      .reduce((sum, invoice) => sum + toNumber(invoice.amount), 0),
+    pendingCount: extraServiceInvoices.filter(
+      (invoice) => invoice.status === "Pending"
+    ).length,
+    acceptedAmount: extraServiceInvoices
+      .filter((invoice) => invoice.status === "Accepted")
+      .reduce((sum, invoice) => sum + toNumber(invoice.amount), 0),
+    acceptedCount: extraServiceInvoices.filter(
+      (invoice) => invoice.status === "Accepted"
+    ).length,
+    rejectedAmount: extraServiceInvoices
+      .filter((invoice) => invoice.status === "Rejected")
+      .reduce((sum, invoice) => sum + toNumber(invoice.amount), 0),
+    rejectedCount: extraServiceInvoices.filter(
+      (invoice) => invoice.status === "Rejected"
+    ).length,
+  };
+
+  return {
+    completedJob: {
+      ...completedJob,
+      totalAmount:
+        completedJob.draftAmount +
+        completedJob.sentAmount +
+        completedJob.paidAmount,
+    },
+    extraServices: {
+      ...extraServices,
+      totalAmount:
+        extraServices.pendingAmount +
+        extraServices.acceptedAmount +
+        extraServices.rejectedAmount,
+    },
+  };
+};
 
 const SuperUserDashboard = () => {
   const userState = useAppSelector((state) => state.user);
@@ -76,6 +221,9 @@ const SuperUserDashboard = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
+  const [invoiceStatsOverride, setInvoiceStatsOverride] = useState<
+    ReturnType<typeof getNormalizedInvoiceStats> | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +255,44 @@ const SuperUserDashboard = () => {
       const response = await dashboardService.getAdminStats();
       if (response.status === "success") {
         setDashboardData(response.data);
+
+        if (hasNestedInvoiceStatsShape(response.data.invoiceStats)) {
+          setInvoiceStatsOverride(null);
+        } else {
+          try {
+            const [completedInvoicesResponse, extraServicesResponse] =
+              await Promise.all([
+                invoiceService.getInvoices({
+                  limit: 1000,
+                  sortBy: "createdAt",
+                  sortOrder: "desc",
+                }),
+                propertyManagerInvoiceService.getAllPropertyManagerInvoices(),
+              ]);
+
+            const completedInvoices =
+              completedInvoicesResponse.status === "success"
+                ? completedInvoicesResponse.data?.invoices || []
+                : [];
+            const extraServiceInvoices =
+              extraServicesResponse.status === "success"
+                ? extraServicesResponse.data?.invoices || []
+                : [];
+
+            setInvoiceStatsOverride(
+              buildInvoiceStatsFromInvoices(
+                completedInvoices,
+                extraServiceInvoices
+              )
+            );
+          } catch (invoiceStatsError) {
+            console.error(
+              "Failed to build fallback invoice stats for dashboard:",
+              invoiceStatsError
+            );
+            setInvoiceStatsOverride(null);
+          }
+        }
       } else {
         throw new Error("Failed to fetch dashboard data");
       }
@@ -174,6 +360,24 @@ const SuperUserDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const handleInvoiceStatsChanged = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener(
+      INVOICE_STATS_CHANGED_EVENT,
+      handleInvoiceStatsChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        INVOICE_STATS_CHANGED_EVENT,
+        handleInvoiceStatsChanged
+      );
+    };
   }, []);
 
   useEffect(() => {
@@ -361,20 +565,8 @@ const SuperUserDashboard = () => {
     recentJobs,
   } = dashboardData;
 
-  const invoiceStats = dashboardData.invoiceStats || {
-    totalInvoices: 0,
-    totalAmount: 0,
-    draftAmount: 0,
-    draftCount: 0,
-    pendingAmount: 0,
-    pendingCount: 0,
-    paidAmount: 0,
-    paidCount: 0,
-    rejectedAmount: 0,
-    rejectedCount: 0,
-    completedJobInvoices: 0,
-    propertyManagerInvoices: 0,
-  };
+  const invoiceStats =
+    invoiceStatsOverride ?? getNormalizedInvoiceStats(dashboardData.invoiceStats);
 
   const pricingSummary = dashboardData.pricingSummary || {
     totalConfiguredMonthlyRevenue: 0,
@@ -631,11 +823,11 @@ const SuperUserDashboard = () => {
               <RiMoneyDollarCircleLine />
             </div>
             <div className={styles.statContent}>
-              <h3>{formatCurrency(invoiceStats.totalAmount)}</h3>
-              <p>Total Invoiced</p>
+              <h3>{formatCurrency(invoiceStats.completedJob.totalAmount)}</h3>
+              <p>Completed Job Invoiced</p>
               <div className={`${styles.statTrend} ${styles.neutral}`}>
                 <RiMoneyDollarCircleLine />
-                <span>{invoiceStats.totalInvoices} invoices</span>
+                <span>{invoiceStats.completedJob.totalInvoices} invoices</span>
               </div>
             </div>
           </div>
@@ -1035,51 +1227,82 @@ const SuperUserDashboard = () => {
             </div>
             <div className={styles.paymentSummary}>
               <div className={styles.paymentSummaryNote}>
-                Combined tracking across completed-job invoices and property-manager invoices.
+                Completed-job invoices and Extra Services invoices are tracked separately.
               </div>
-              <div className={styles.paymentItem}>
-                <div className={`${styles.paymentIcon} ${styles.pending}`}>
-                  <RiEditLine />
+              <div className={styles.invoiceAnalyticsSection}>
+                <div className={styles.invoiceAnalyticsHeader}>
+                  <div>
+                    <h4>Completed Job Invoices</h4>
+                    <p>{invoiceStats.completedJob.totalInvoices} invoices</p>
+                  </div>
+                  <strong>{formatCurrency(invoiceStats.completedJob.totalAmount)}</strong>
                 </div>
-                <div className={styles.paymentDetails}>
-                  <h4>{formatCurrency(invoiceStats.draftAmount)}</h4>
-                  <p>{invoiceStats.draftCount} Draft</p>
+                <div className={styles.invoiceAnalyticsGrid}>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.pending}`}>
+                      <RiEditLine />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.completedJob.draftAmount)}</h4>
+                      <p>{invoiceStats.completedJob.draftCount} Draft</p>
+                    </div>
+                  </div>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.pending}`}>
+                      <RiTimeLine />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.completedJob.sentAmount)}</h4>
+                      <p>{invoiceStats.completedJob.sentCount} Sent</p>
+                    </div>
+                  </div>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.paid}`}>
+                      <RiCheckboxCircleLine />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.completedJob.paidAmount)}</h4>
+                      <p>{invoiceStats.completedJob.paidCount} Paid</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className={styles.paymentItem}>
-                <div className={`${styles.paymentIcon} ${styles.paid}`}>
-                  <RiCheckboxCircleLine />
+              <div className={styles.invoiceAnalyticsSection}>
+                <div className={styles.invoiceAnalyticsHeader}>
+                  <div>
+                    <h4>Extra Services Invoices</h4>
+                    <p>{invoiceStats.extraServices.totalInvoices} invoices</p>
+                  </div>
+                  <strong>{formatCurrency(invoiceStats.extraServices.totalAmount)}</strong>
                 </div>
-                <div className={styles.paymentDetails}>
-                  <h4>{formatCurrency(invoiceStats.paidAmount)}</h4>
-                  <p>{invoiceStats.paidCount} Paid</p>
-                </div>
-              </div>
-              <div className={styles.paymentItem}>
-                <div className={`${styles.paymentIcon} ${styles.pending}`}>
-                  <RiTimeLine />
-                </div>
-                <div className={styles.paymentDetails}>
-                  <h4>{formatCurrency(invoiceStats.pendingAmount)}</h4>
-                  <p>{invoiceStats.pendingCount} Pending</p>
-                </div>
-              </div>
-              <div className={styles.paymentItem}>
-                <div className={`${styles.paymentIcon} ${styles.info}`}>
-                  <RiMoneyDollarCircleLine />
-                </div>
-                <div className={styles.paymentDetails}>
-                  <h4>{invoiceStats.completedJobInvoices}</h4>
-                  <p>Completed Job Invoices</p>
-                </div>
-              </div>
-              <div className={styles.paymentItem}>
-                <div className={`${styles.paymentIcon} ${styles.warning}`}>
-                  <RiFileList3Line />
-                </div>
-                <div className={styles.paymentDetails}>
-                  <h4>{invoiceStats.propertyManagerInvoices}</h4>
-                  <p>Property Manager Invoices</p>
+                <div className={styles.invoiceAnalyticsGrid}>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.pending}`}>
+                      <RiTimeLine />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.extraServices.pendingAmount)}</h4>
+                      <p>{invoiceStats.extraServices.pendingCount} Pending</p>
+                    </div>
+                  </div>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.info}`}>
+                      <RiCheckLine />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.extraServices.acceptedAmount)}</h4>
+                      <p>{invoiceStats.extraServices.acceptedCount} Accepted</p>
+                    </div>
+                  </div>
+                  <div className={styles.paymentItem}>
+                    <div className={`${styles.paymentIcon} ${styles.warning}`}>
+                      <RiFileList3Line />
+                    </div>
+                    <div className={styles.paymentDetails}>
+                      <h4>{formatCurrency(invoiceStats.extraServices.rejectedAmount)}</h4>
+                      <p>{invoiceStats.extraServices.rejectedCount} Rejected</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className={styles.paymentActions}>

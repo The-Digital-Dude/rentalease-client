@@ -646,8 +646,11 @@
         }
 
         .paymentSummary {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+
           .paymentSummaryNote {
-            margin-bottom: 1rem;
             padding: 0.875rem 1rem;
             border-radius: 0.75rem;
             background: #eef6ff;
@@ -661,6 +664,67 @@
             }
           }
 
+          .invoiceAnalyticsSection {
+            padding: 1rem;
+            border-radius: 0.9rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+
+            :global(.dark-mode) & {
+              background: var(--color-bg-hover);
+              border-color: var(--color-border-primary);
+            }
+          }
+
+          .invoiceAnalyticsHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+
+            h4 {
+              margin: 0 0 0.25rem 0;
+              font-size: 1rem;
+              font-weight: 700;
+              color: #0f172a;
+            }
+
+            p {
+              margin: 0;
+              font-size: 0.82rem;
+              color: #64748b;
+            }
+
+            strong {
+              font-size: 1.05rem;
+              font-weight: 700;
+              color: #111827;
+              white-space: nowrap;
+            }
+
+            :global(.dark-mode) & {
+              h4,
+              strong {
+                color: var(--color-text-primary);
+              }
+
+              p {
+                color: var(--color-text-secondary);
+              }
+            }
+          }
+
+          .invoiceAnalyticsGrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+
+            @media (max-width: 900px) {
+              grid-template-columns: 1fr;
+            }
+          }
+
           .paymentItem {
             display: flex;
             align-items: center;
@@ -668,11 +732,10 @@
             padding: 1rem;
             background: #f8fafc;
             border-radius: 0.75rem;
-            margin-bottom: 1rem;
 
             // Dark mode styles
             :global(.dark-mode) & {
-              background: var(--color-bg-hover);
+              background: rgba(255, 255, 255, 0.03);
             }
 
             .paymentIcon {
@@ -733,7 +796,7 @@
           }
 
           .paymentActions {
-            margin-top: 1.5rem;
+            margin-top: 0.5rem;
 
             .viewAllPaymentsBtn {
               width: 100%;

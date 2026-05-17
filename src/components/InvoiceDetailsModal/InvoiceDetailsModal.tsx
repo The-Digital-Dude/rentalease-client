@@ -219,7 +219,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
       >
         <div className="modal-header">
           <h2>
-            <MdReceipt /> Invoice Details
+            <MdReceipt /> Extra Services Invoice Details
           </h2>
           <button className="close-btn" onClick={onClose} type="button">
             <MdClose />

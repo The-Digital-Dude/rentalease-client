@@ -211,7 +211,7 @@ export const generateInvoicePDF = async (invoice: PropertyManagerInvoice) => {
   // Subtitle
   doc.setFontSize(16);
   doc.setFont("helvetica", "normal");
-  doc.text("Property Manager Invoice", margin, 42);
+  doc.text("Extra Services Invoice", margin, 42);
 
   // Status badge (right side)
   const statusColor = getStatusColor(invoice.status);

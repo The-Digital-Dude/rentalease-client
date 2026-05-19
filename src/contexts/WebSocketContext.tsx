@@ -11,6 +11,7 @@ import {
   setConnectionStatus,
   handleWebSocketMessage,
 } from "../store/chatSlice";
+import { getWebSocketUrl, isLocalDevHost } from "../utils/runtimeConfig";
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -59,36 +60,23 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const isImplicitLocalDevSocket = () => {
     const wsUrl = import.meta.env.VITE_WS_URL;
     const wsPort = import.meta.env.VITE_WS_PORT;
+    const resolvedWsUrl = getWebSocketUrl();
+
+    let resolvedHostname = "";
+
+    try {
+      resolvedHostname = new URL(resolvedWsUrl).hostname;
+    } catch {
+      resolvedHostname = "";
+    }
 
     return (
       import.meta.env.DEV &&
       !wsUrl &&
       (!wsPort || wsPort === "4000") &&
-      window.location.hostname === "localhost"
+      isLocalDevHost() &&
+      ["localhost", "127.0.0.1", "::1"].includes(resolvedHostname)
     );
-  };
-
-  // Get WebSocket URL based on environment
-  const getWebSocketUrl = () => {
-    const wsUrl = import.meta.env.VITE_WS_URL;
-    
-    if (wsUrl) {
-      // If VITE_WS_URL is a full URL (includes protocol), use it directly
-      if (wsUrl.startsWith('http://') || wsUrl.startsWith('https://')) {
-        // Convert HTTP/HTTPS to WS/WSS
-        return wsUrl.replace('http://', 'ws://').replace('https://', 'wss://');
-      }
-      
-      // If it's just a hostname, build the URL
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const port = import.meta.env.VITE_WS_PORT || "4000";
-      return `${protocol}//${wsUrl}:${port}`;
-    }
-    
-    // Fallback to current location
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const port = import.meta.env.VITE_WS_PORT || "4000";
-    return `${protocol}//${window.location.hostname}:${port}`;
   };
 
   // Disconnect from WebSocket server

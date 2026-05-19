@@ -5,26 +5,11 @@ import type {
   AxiosResponse,
   AxiosError,
 } from "axios";
-
-const DEFAULT_API_BASE_URL = "https://rentalease-cloud-server.onrender.com/api";
-
-// Get base URL from environment variables
-const getBaseURL = (): string => {
-  const env =
-    import.meta.env.VITE_NODE_ENV || import.meta.env.MODE || "development";
-
-  switch (env) {
-    case "production":
-      return import.meta.env.VITE_API_BASE_URL_PROD || DEFAULT_API_BASE_URL;
-    case "development":
-    default:
-      return import.meta.env.VITE_API_BASE_URL_DEV || DEFAULT_API_BASE_URL;
-  }
-};
+import { getApiBaseUrl } from "../utils/runtimeConfig";
 
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: getApiBaseUrl(),
   timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "10000"),
   headers: {
     Accept: "application/json",

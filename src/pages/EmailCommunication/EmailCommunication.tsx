@@ -18,6 +18,7 @@ import { EmailDetail } from '../../components/EmailDetail';
 import { ComposeModal } from '../../components/ComposeModal';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
 import emailService from '../../services/emailService';
+import { getWebSocketUrl } from '../../utils/runtimeConfig';
 import './EmailCommunication.scss';
 
 export const EmailCommunication: React.FC = () => {
@@ -55,7 +56,7 @@ export const EmailCommunication: React.FC = () => {
   
   // Set up WebSocket for real-time updates
   useEffect(() => {
-    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:4000';
+    const wsUrl = getWebSocketUrl();
     const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {

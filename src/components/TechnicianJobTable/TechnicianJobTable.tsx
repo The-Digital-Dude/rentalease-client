@@ -88,6 +88,8 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
         return "status-pending";
       case "Scheduled":
         return "status-scheduled";
+      case "In Progress":
+        return "status-in-progress";
       case "Completed":
         return "status-completed";
       case "Overdue":
@@ -239,6 +241,7 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
                 <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
                 <option value="Overdue">Overdue</option>
               </select>

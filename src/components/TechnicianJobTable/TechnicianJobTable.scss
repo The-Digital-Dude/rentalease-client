@@ -47,6 +47,11 @@
             color: #1e40af;
           }
 
+          &.status-in-progress {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
           &.status-completed {
             background: #d1fae5;
             color: #065f46;
@@ -285,6 +290,11 @@
                 &.status-scheduled {
                   background: #dbeafe;
                   color: #1e40af;
+                }
+
+                &.status-in-progress {
+                  background: #fef3c7;
+                  color: #92400e;
                 }
 
                 &.status-completed {

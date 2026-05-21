@@ -43,7 +43,13 @@ export interface Job {
         lastName?: string;
       }
     | null;
-  status: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
+  status:
+    | "Pending"
+    | "Scheduled"
+    | "In Progress"
+    | "Completed"
+    | "Overdue"
+    | "Cancelled";
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
   completedAt?: string;
@@ -105,7 +111,13 @@ export interface UpdateJobData {
   jobType?: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate?: string;
   assignedTechnician?: string;
-  status?: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
+  status?:
+    | "Pending"
+    | "Scheduled"
+    | "In Progress"
+    | "Completed"
+    | "Overdue"
+    | "Cancelled";
   description?: string;
   priority?: "Low" | "Medium" | "High" | "Urgent";
   estimatedDuration?: number;
@@ -710,6 +722,7 @@ class JobService {
     jobId: string,
     completionData?: {
       reportFile?: File;
+      inspectionReportId?: string;
       hasInvoice?: boolean;
       invoiceData?: {
         description: string;
@@ -735,6 +748,10 @@ class JobService {
       // Add report file if provided
       if (completionData?.reportFile) {
         formData.append("reportFile", completionData.reportFile);
+      }
+
+      if (completionData?.inspectionReportId) {
+        formData.append("inspectionReportId", completionData.inspectionReportId);
       }
 
       // Add invoice data if provided

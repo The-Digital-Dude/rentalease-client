@@ -71,7 +71,11 @@ const UserProfileDropdown: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    setShowEditModal(true);
+    if (userType === "technician") {
+      navigate("/technician-profile");
+    } else {
+      setShowEditModal(true);
+    }
     setIsOpen(false);
   };
 
@@ -159,7 +163,9 @@ const UserProfileDropdown: React.FC = () => {
 
               <button
                 className="dropdown-item"
-                onClick={() => navigate("/profile")}
+                onClick={() =>
+                  navigate(userType === "technician" ? "/technician-profile" : "/profile")
+                }
               >
                 <RiUserLine />
                 <span>View Profile</span>

@@ -23,6 +23,9 @@ const TechnicianCalendar = lazy(
 const TechnicianSupport = lazy(
   () => import("../pages/TechnicianSupport/TechnicianSupport")
 );
+const TechnicianProfileSelf = lazy(
+  () => import("../pages/TechnicianProfileSelf/TechnicianProfileSelf")
+);
 const Agencies = lazy(() => import("../pages/Agencies/Agencies"));
 const AgencyJobs = lazy(() => import("../pages/AgencyJobs/AgencyJobs"));
 const Contacts = lazy(
@@ -124,6 +127,7 @@ export const routeConfig = (userType: UserType) => {
     "invoice-management": InvoiceManagement,
     "technician-dashboard": TechnicianDashboard,
     "technician-calendar": TechnicianCalendar,
+    "technician-profile": TechnicianProfileSelf,
     "technician-support": TechnicianSupport,
   };
 

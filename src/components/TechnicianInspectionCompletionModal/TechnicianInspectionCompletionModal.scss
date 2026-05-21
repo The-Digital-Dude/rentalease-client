@@ -1,0 +1,321 @@
+.technician-inspection-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 24px;
+}
+
+.technician-inspection-modal {
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 48px);
+  background: #fff;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.technician-inspection-modal .modal-header,
+.technician-inspection-modal .modal-footer,
+.technician-inspection-modal .summary-strip {
+  padding: 20px 24px;
+}
+
+.technician-inspection-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.technician-inspection-modal .modal-header h2 {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+}
+
+.technician-inspection-modal .modal-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.technician-inspection-modal .close-btn {
+  font-size: 1.25rem;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-strip > div {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  background: #f8fafc;
+}
+
+.inspection-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-header h3 {
+  margin: 0 0 6px;
+}
+
+.section-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.inspection-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inspection-field label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.inspection-field input,
+.inspection-field select,
+.inspection-field textarea,
+.notes-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font: inherit;
+  background: #fff;
+}
+
+.inspection-field textarea,
+.notes-input {
+  resize: vertical;
+}
+
+.inspection-field small {
+  color: #64748b;
+}
+
+.required {
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.checkbox-list {
+  display: grid;
+  gap: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.checkbox-field {
+  justify-content: center;
+}
+
+.file-drop {
+  position: relative;
+  border: 1px dashed #94a3b8;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.file-drop input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-drop span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.file-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
+.repeatable-items {
+  display: grid;
+  gap: 16px;
+}
+
+.repeatable-card,
+.table-row-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.repeatable-card-header,
+.table-row-header,
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.repeatable-card-header h4,
+.table-row-header strong {
+  margin: 0;
+}
+
+.table-field {
+  grid-column: 1 / -1;
+}
+
+.empty-inline {
+  color: #64748b;
+  padding: 10px 0 2px;
+}
+
+.secondary-btn,
+.primary-btn,
+.icon-btn {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.secondary-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.primary-btn {
+  background: #0f766e;
+  color: #fff;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.icon-btn {
+  background: transparent;
+  color: #475569;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.modal-loading,
+.modal-error {
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-loading {
+  color: #334155;
+}
+
+.modal-error {
+  color: #b91c1c;
+}
+
+.spin {
+  animation: technician-inspection-spin 1s linear infinite;
+}
+
+@keyframes technician-inspection-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 960px) {
+  .summary-strip,
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .technician-inspection-modal-overlay {
+    padding: 12px;
+  }
+
+  .technician-inspection-modal {
+    max-height: calc(100vh - 24px);
+  }
+}

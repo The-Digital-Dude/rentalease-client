@@ -178,6 +178,8 @@ const TechnicianDashboard: React.FC = () => {
   const handleRefresh = () => fetchDashboardData();
 
   const handlePrimaryCta = () => navigate("/availableJobs");
+  const handleOpenCalendar = () => navigate("/technician-calendar");
+  const handleOpenProfile = () => navigate("/technician-profile");
 
   const navigateToPayments = () => navigate("/myPayments");
 
@@ -267,7 +269,18 @@ const TechnicianDashboard: React.FC = () => {
           <RiEyeLine />
           View Job
         </button>
-        <button className="btn btn-primary" onClick={() => navigate("/myJobs")}>
+        <button
+          className="btn btn-primary"
+          onClick={() =>
+            navigate(
+              job.status?.toLowerCase() === "completed"
+                ? "/completedJobs"
+                : job.status?.toLowerCase() === "overdue"
+                ? "/overdueJobs"
+                : "/myJobs"
+            )
+          }
+        >
           <RiPlayLine />
           Manage
         </button>
@@ -324,6 +337,12 @@ const TechnicianDashboard: React.FC = () => {
           <div className="header-actions">
             <button className="btn btn-secondary" onClick={handlePrimaryCta}>
               Browse Available Jobs
+            </button>
+            <button className="btn btn-outline" onClick={handleOpenCalendar}>
+              Calendar
+            </button>
+            <button className="btn btn-outline" onClick={handleOpenProfile}>
+              My Profile
             </button>
             <button
               className="btn btn-outline"

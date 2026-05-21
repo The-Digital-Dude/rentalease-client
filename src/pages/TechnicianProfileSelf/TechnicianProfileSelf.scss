@@ -1,0 +1,193 @@
+.technician-profile-self-page {
+  padding: 24px;
+}
+
+.technician-profile-self-page .page-header,
+.technician-profile-self-page .profile-overview,
+.technician-profile-self-page .page-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.technician-profile-self-page .page-header {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.technician-profile-self-page .header-copy {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.technician-profile-self-page .header-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.technician-profile-self-page h1,
+.technician-profile-self-page h2 {
+  margin: 0 0 6px;
+}
+
+.technician-profile-self-page p {
+  margin: 0;
+  color: #64748b;
+}
+
+.profile-overview {
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.overview-card,
+.profile-card,
+.profile-loading,
+.profile-error {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+}
+
+.overview-card {
+  min-width: 180px;
+  flex: 1;
+  padding: 18px;
+}
+
+.overview-card .label {
+  display: block;
+  color: #64748b;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.profile-card {
+  padding: 20px;
+}
+
+.profile-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.field-grid label.full-width {
+  grid-column: 1 / -1;
+}
+
+.field-grid input {
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font: inherit;
+}
+
+.password-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.page-actions {
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.profile-loading,
+.profile-error {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.secondary-btn,
+.primary-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.secondary-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.primary-btn {
+  background: #0f766e;
+  color: #fff;
+}
+
+.spin {
+  animation: technician-profile-spin 1s linear infinite;
+}
+
+@keyframes technician-profile-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .technician-profile-self-page {
+    padding: 16px;
+  }
+
+  .technician-profile-self-page .page-header,
+  .technician-profile-self-page .page-actions,
+  .profile-form-grid,
+  .field-grid {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .overview-card {
+    min-width: 0;
+  }
+}

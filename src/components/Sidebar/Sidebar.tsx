@@ -77,6 +77,7 @@ const labelMap: Record<string, string> = {
   "invoice-management": "Invoice Management",
   "technician-dashboard": "Dashboard",
   "technician-calendar": "Calendar",
+  "technician-profile": "My Profile",
   "technician-support": "Support",
 };
 
@@ -115,6 +116,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "invoice-management": <MdReceipt />,
   "technician-dashboard": <MdDashboard />,
   "technician-calendar": <MdCalendarToday />,
+  "technician-profile": <MdPerson />,
   "technician-support": <MdHelpOutline />,
 };
 

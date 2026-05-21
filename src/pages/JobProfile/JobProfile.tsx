@@ -8,7 +8,7 @@ import Toast from "../../components/Toast";
 import JobProfileHeader from "../../components/JobProfileHeader";
 import JobProfileStats from "../../components/JobProfileStats";
 import JobProfileTabs from "../../components/JobProfileTabs";
-import JobCompletionModal from "../../components/JobCompletionModal";
+import TechnicianInspectionCompletionModal from "../../components/TechnicianInspectionCompletionModal/TechnicianInspectionCompletionModal";
 import "./JobProfile.scss";
 
 interface JobProfileData {
@@ -182,6 +182,10 @@ const JobProfile: React.FC = () => {
   }, [id]);
 
   const handleBack = () => {
+    if (userType === "technician") {
+      navigate("/myJobs");
+      return;
+    }
     navigate("/jobs");
   };
 
@@ -195,93 +199,15 @@ const JobProfile: React.FC = () => {
   };
 
   const handleViewTechnician = (technicianId: string) => {
-    navigate(`/staff/${technicianId}`);
+    if (userType === "technician") {
+      navigate("/technician-profile");
+      return;
+    }
+    navigate(`/technicians/${technicianId}`);
   };
 
   const handleCompleteJob = () => {
     setShowCompletionModal(true);
-  };
-
-  const handleCompletionSubmit = async (data: {
-    reportFile: File | null;
-    hasInvoice: boolean;
-    invoiceData?: {
-      description: string;
-      items: Array<{
-        id: string;
-        name: string;
-        quantity: number;
-        rate: number;
-        amount: number;
-      }>;
-      subtotal: number;
-      tax: number;
-      taxPercentage: number;
-      totalCost: number;
-      notes: string;
-    };
-  }) => {
-    if (!id || !jobData) return;
-
-    try {
-      setCompletingJob(true);
-      setError(null);
-
-      // Call the job service to complete the job with report file and invoice data
-      const completionResult = await jobService.completeJob(id, {
-        reportFile: data.reportFile || undefined,
-        hasInvoice: data.hasInvoice,
-        invoiceData: data.invoiceData,
-      });
-
-      if (completionResult.success) {
-        // Update the job data with the completed job
-        const responseData = completionResult.data as {
-          job: Job;
-          technician: {
-            id: string;
-            fullName: string;
-            currentJobs: number;
-            availabilityStatus: string;
-          };
-        };
-
-        if (responseData?.job) {
-          setJobData({
-            ...jobData,
-            job: responseData.job,
-          });
-        }
-
-        // Show success toast
-        setToast({
-          message: completionResult.message || "Job completed successfully!",
-          type: "success",
-          isVisible: true,
-        });
-
-        // Close the modal
-        setShowCompletionModal(false);
-      } else {
-        // Show error toast
-        setToast({
-          message: completionResult.message || "Failed to complete job",
-          type: "error",
-          isVisible: true,
-        });
-      }
-    } catch (error: unknown) {
-      console.error("Error completing job:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to complete job";
-      setToast({
-        message: errorMessage,
-        type: "error",
-        isVisible: true,
-      });
-    } finally {
-      setCompletingJob(false);
-    }
   };
 
   const closeToast = () => {
@@ -493,16 +419,16 @@ const JobProfile: React.FC = () => {
         return "priority-medium";
     }
   };
-  // Get the unix time (ms) for 12am of the job's due date
-  const dueDateObj = new Date(job.dueDate);
-  dueDateObj.setHours(0, 0, 0, 0);
-  console.log(dueDateObj.getTime(), "Job due date 12am (unix time)");
-  console.log(new Date().getTime(), "Today's Date");
-
   const canComplete =
-    userType === "technician" &&
-    dueDateObj.getTime() < new Date().getTime() &&
-    job.status !== "Completed";
+    (() => {
+      if (userType !== "technician") return false;
+      if (!["Scheduled", "In Progress"].includes(job.status)) return false;
+      const today = new Date();
+      const dueDate = new Date(job.dueDate);
+      today.setHours(0, 0, 0, 0);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate <= today;
+    })();
 
   return (
     <div className="page-container job-profile-page">
@@ -515,13 +441,39 @@ const JobProfile: React.FC = () => {
       />
 
       {/* Job Completion Modal */}
-      <JobCompletionModal
+      <TechnicianInspectionCompletionModal
         isOpen={showCompletionModal}
         onClose={() => setShowCompletionModal(false)}
-        onSubmit={handleCompletionSubmit}
+        onCompleted={async () => {
+          try {
+            setCompletingJob(true);
+            const response = await jobService.getJobById(job.id);
+            if (response.success && response.data) {
+              const nextJob = response.data as any;
+              setJobData((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      job: {
+                        ...prev.job,
+                        ...nextJob,
+                      },
+                    }
+                  : prev
+              );
+            }
+            setToast({
+              message: "Job completed successfully!",
+              type: "success",
+              isVisible: true,
+            });
+            setShowCompletionModal(false);
+          } finally {
+            setCompletingJob(false);
+          }
+        }}
         jobId={job.id}
-        dueDate={job.dueDate}
-        loading={completingJob}
+        jobType={job.jobType}
       />
 
       {/* Header */}

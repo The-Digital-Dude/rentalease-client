@@ -12,11 +12,9 @@ import {
   RiEyeLine,
   RiLoader4Line,
 } from "react-icons/ri";
-import toast from "react-hot-toast";
 import technicianService from "../../services/technicianService";
-import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
-import JobCompletionModal from "../../components/JobCompletionModal";
+import TechnicianInspectionCompletionModal from "../../components/TechnicianInspectionCompletionModal/TechnicianInspectionCompletionModal";
 import "./MyJobs.scss";
 
 type TechnicianTab = "all" | "Scheduled" | "In Progress" | "Completed" | "Overdue";
@@ -54,7 +52,6 @@ const MyJobs: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [jobToComplete, setJobToComplete] = useState<Job | null>(null);
-  const [completionLoading, setCompletionLoading] = useState(false);
 
   const fetchJobs = useCallback(
     async (currentStatus: TechnicianTab) => {
@@ -124,42 +121,6 @@ const MyJobs: React.FC = () => {
     setShowCompletionModal(true);
   };
 
-  const handleCompletionSubmit = async (data: {
-    reportFile: File | null;
-    hasInvoice: boolean;
-    invoiceData?: {
-      description: string;
-      items: Array<{
-        id: string;
-        name: string;
-        quantity: number;
-        rate: number;
-        amount: number;
-      }>;
-      subtotal: number;
-      tax: number;
-      taxPercentage: number;
-      totalCost: number;
-      notes: string;
-    };
-  }) => {
-    if (!jobToComplete) return;
-
-    try {
-      setCompletionLoading(true);
-      await jobService.completeJob(jobToComplete.id, data);
-      toast.success("Job completed successfully");
-      setShowCompletionModal(false);
-      setJobToComplete(null);
-      fetchJobs(statusFilter);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to complete job");
-      throw err;
-    } finally {
-      setCompletionLoading(false);
-    }
-  };
-
   const getStatusClass = (status: string) => {
     switch (status?.toLowerCase()) {
       case "completed":
@@ -191,6 +152,8 @@ const MyJobs: React.FC = () => {
   const formatDueLabel = (date: string) => {
     const due = new Date(date);
     const today = new Date();
+    due.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
     if (due.toDateString() === today.toDateString()) return "Due today";
     if (due < today) return "Overdue";
     return `Due ${due.toLocaleDateString()}`;
@@ -273,8 +236,13 @@ const MyJobs: React.FC = () => {
             const statusClass = getStatusClass(job.status);
             const propertyAddress = extractAddress(job) || "Address not available";
             const dueLabel = formatDueLabel(job.dueDate);
-
-            const canComplete = job.status === "In Progress";
+            const dueDate = new Date(job.dueDate);
+            const today = new Date();
+            dueDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const canComplete =
+              (job.status === "Scheduled" || job.status === "In Progress") &&
+              dueDate <= today;
 
             return (
               <div key={job.id} className="job-card">
@@ -333,16 +301,19 @@ const MyJobs: React.FC = () => {
         </div>
       )}
 
-      <JobCompletionModal
+      <TechnicianInspectionCompletionModal
         isOpen={showCompletionModal}
         onClose={() => {
           setShowCompletionModal(false);
           setJobToComplete(null);
         }}
-        onSubmit={handleCompletionSubmit}
+        onCompleted={() => {
+          setShowCompletionModal(false);
+          setJobToComplete(null);
+          fetchJobs(statusFilter);
+        }}
         jobId={jobToComplete?.id || ""}
-        dueDate={jobToComplete?.dueDate || new Date().toISOString()}
-        loading={completionLoading}
+        jobType={jobToComplete?.jobType}
       />
     </div>
   );

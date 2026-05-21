@@ -139,6 +139,9 @@ const TechnicianDashboard: React.FC = () => {
     () => dashboardData?.recentJobs ?? [],
     [dashboardData?.recentJobs]
   );
+  const scheduledCount = quickStats?.scheduledJobs ?? 0;
+  const overdueCount = quickStats?.overdueJobs ?? 0;
+  const completedCount = quickStats?.completedJobs ?? 0;
 
   const completionRate = useMemo(() => {
     if (!quickStats || quickStats.totalJobs === 0) return 0;
@@ -197,19 +200,6 @@ const TechnicianDashboard: React.FC = () => {
     }
   };
 
-  const getPriorityClass = (priority: string | undefined) => {
-    switch ((priority || "medium").toLowerCase()) {
-      case "urgent":
-      case "high":
-        return "danger";
-      case "medium":
-        return "warning";
-      case "low":
-      default:
-        return "success";
-    }
-  };
-
   const getPropertyAddress = (property: RecentJobProperty): string => {
     if (!property) return "Address not available";
     if (typeof property === "string") return property;
@@ -251,8 +241,8 @@ const TechnicianDashboard: React.FC = () => {
           <span>{getPropertyAddress(job.property)}</span>
         </div>
         <div className="job-meta">
-          <span className={`priority-badge ${getPriorityClass(job.status)}`}>
-            {(job.status || "").replace(/(^\w|\s\w)/g, (s) => s.toUpperCase())}
+          <span className={`priority-badge ${getStatusClass(job.status)}`}>
+            {job.jobType}
           </span>
           <div className="job-due">
             <RiCalendarLine />
@@ -320,6 +310,7 @@ const TechnicianDashboard: React.FC = () => {
       <div className="dashboard-header">
         <div className="welcome-section">
           <div className="welcome-content">
+            <span className="eyebrow">Technician command centre</span>
             <h1>Welcome back, {user?.name || "Technician"}!</h1>
             <p>
               Plan your day, monitor performance, and action jobs from here.
@@ -331,6 +322,24 @@ const TechnicianDashboard: React.FC = () => {
                 {dashboardData?.lastUpdated
                   ? new Date(dashboardData.lastUpdated).toLocaleString()
                   : "N/A"}
+              </span>
+            </div>
+          </div>
+          <div className="hero-summary">
+            <div className="summary-card">
+              <span className="summary-label">Completion Rate</span>
+              <strong>{completionRate.toFixed(1)}%</strong>
+              <span className="summary-note">
+                {completedCount} completed out of {quickStats?.totalJobs ?? 0} jobs
+              </span>
+            </div>
+            <div className="summary-card accent">
+              <span className="summary-label">Today&apos;s Focus</span>
+              <strong>{scheduledCount + overdueCount}</strong>
+              <span className="summary-note">
+                {overdueCount > 0
+                  ? `${overdueCount} overdue need attention`
+                  : `${scheduledCount} scheduled and on track`}
               </span>
             </div>
           </div>
@@ -409,6 +418,30 @@ const TechnicianDashboard: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="quick-links">
+          <button className="quick-link-card" onClick={() => setActiveTab("active")}>
+            <RiPlayLine />
+            <div>
+              <span>Active queue</span>
+              <strong>{quickStats?.activeJobs ?? 0} jobs</strong>
+            </div>
+          </button>
+          <button className="quick-link-card" onClick={() => setActiveTab("completed")}>
+            <RiCheckLine />
+            <div>
+              <span>Recent completions</span>
+              <strong>{completedCount} finished</strong>
+            </div>
+          </button>
+          <button className="quick-link-card" onClick={() => setActiveTab("overdue")}>
+            <RiAlertLine />
+            <div>
+              <span>Overdue actions</span>
+              <strong>{overdueCount} jobs</strong>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -523,6 +556,12 @@ const TechnicianDashboard: React.FC = () => {
       )}
 
       <div className="dashboard-content">
+        <div className="section-header activity-header">
+          <div>
+            <h2>Job activity</h2>
+            <p>Filter recent work and jump straight into the next action.</p>
+          </div>
+        </div>
         <div className="tab-navigation">
           <button
             className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}

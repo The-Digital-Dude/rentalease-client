@@ -4,6 +4,7 @@ import {
   VALID_REGIONS,
   COMPLIANCE_TYPES,
   getComplianceTypeLabel,
+  normalizeComplianceType,
 } from "../../constants";
 import "./AgencyFormModal.scss";
 
@@ -81,8 +82,47 @@ const AgencyFormModal = ({
     useState(false);
   const complianceDropdownRef = useRef<HTMLDivElement>(null);
 
+  const normalizeServicePricingForForm = (
+    servicePricing: Agency["servicePricing"] = []
+  ) =>
+    servicePricing
+      .map((item) => ({
+        serviceType: normalizeComplianceType(item.serviceType),
+        price: item.price,
+      }))
+      .filter((item, index, array) => {
+        if (!COMPLIANCE_TYPES.includes(item.serviceType as any)) {
+          return false;
+        }
+
+        return (
+          array.findIndex(
+            (candidate) => candidate.serviceType === item.serviceType
+          ) === index
+        );
+      });
+
+  const normalizeComplianceSubscriptionsForForm = (
+    complianceSubscriptions: Agency["complianceSubscriptions"] = []
+  ) =>
+    complianceSubscriptions
+      .map((value) => normalizeComplianceType(value))
+      .filter(
+        (value, index, array) =>
+          COMPLIANCE_TYPES.includes(value as any) &&
+          array.indexOf(value) === index
+      );
+
   useEffect(() => {
     if (editingAgency) {
+      const normalizedServicePricing = normalizeServicePricingForForm(
+        editingAgency.servicePricing
+      );
+      const normalizedComplianceSubscriptions =
+        normalizeComplianceSubscriptionsForForm(
+          editingAgency.complianceSubscriptions
+        );
+
       setFormData({
         name: editingAgency.name,
         abn: editingAgency.abn,
@@ -91,12 +131,11 @@ const AgencyFormModal = ({
         contactPhone: editingAgency.contactPhone,
         region: editingAgency.region,
         complianceLevel: editingAgency.complianceLevel,
-        complianceSubscriptions: editingAgency.complianceSubscriptions || [],
-        servicePricing:
-          editingAgency.servicePricing?.map((item) => ({
-            serviceType: item.serviceType,
-            price: item.price,
-          })) || [],
+        complianceSubscriptions:
+          normalizedComplianceSubscriptions.length > 0
+            ? normalizedComplianceSubscriptions
+            : normalizedServicePricing.map((item) => item.serviceType),
+        servicePricing: normalizedServicePricing,
         status: editingAgency.status,
         subscriptionAmount: editingAgency.subscriptionAmount || "",
       });

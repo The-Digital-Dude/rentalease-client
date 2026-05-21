@@ -323,8 +323,10 @@ const mapServerToClient = (serverData: ServerAgency): Agency => ({
   contactPhone: serverData.phone,
   region: serverData.region,
   complianceLevel: serverData.compliance,
-  complianceSubscriptions: serverData.complianceSubscriptions || [],
-  servicePricing: serverData.servicePricing || [],
+  complianceSubscriptions: normalizeComplianceSubscriptions(
+    serverData.complianceSubscriptions
+  ),
+  servicePricing: normalizeServicePricing(serverData.servicePricing),
   status: serverData.status.toLowerCase() as "active" | "inactive" | "pending",
   outstandingAmount: serverData.outstandingAmount,
   subscriptionAmount: serverData.subscriptionAmount,

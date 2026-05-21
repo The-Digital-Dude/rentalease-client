@@ -759,6 +759,25 @@ const CompletedJobs = () => {
       fetchCompletedJobs(pagination.currentPage, true);
       await loadInvoiceReview(selectedJob);
     } catch (error: any) {
+      if (
+        error?.details?.currentStatus &&
+        ["Sent", "Paid"].includes(error.details.currentStatus)
+      ) {
+        const currentStatus = error.details.currentStatus;
+        if (error?.data?.invoice) {
+          setInvoiceDraft(error.data.invoice);
+        }
+        toast.success(
+          currentStatus === "Sent"
+            ? "Documents were already sent."
+            : "Invoice is already marked as paid."
+        );
+        setEmailValidationError(null);
+        fetchCompletedJobs(pagination.currentPage, true);
+        await loadInvoiceReview(selectedJob);
+        return;
+      }
+
       const message = error.message || "Failed to send documents";
       setEmailValidationError(message);
       toast.error(message);

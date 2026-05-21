@@ -2,6 +2,8 @@ import api from "./api";
 import type { AxiosResponse } from "axios";
 import type { EmailParticipant } from "./emailService";
 
+const INVOICE_SEND_TIMEOUT_MS = 60000;
+
 export interface InvoiceItem {
   _id?: string;
   id?: string;
@@ -259,9 +261,12 @@ class InvoiceService {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: INVOICE_SEND_TIMEOUT_MS,
       });
     } else {
-      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, payload);
+      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, payload, {
+        timeout: INVOICE_SEND_TIMEOUT_MS,
+      });
     }
 
     return response.data;

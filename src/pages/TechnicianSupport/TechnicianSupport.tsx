@@ -48,11 +48,10 @@ const TechnicianSupport: React.FC = () => {
           <h2>Talk to Support</h2>
           <p>
             Our operations team can help with urgent job issues, calendar
-            conflicts, or app access. Start a live chat or send us an email.
+            conflicts, or app access. Contact us directly by email.
           </p>
           <div className="action-list">
-            <a href="mailto:support@rentalease.com">support@rentalease.com</a>
-            <span>Live chat available 7am–7pm AEST</span>
+            <a href="mailto:info@rentalease.com.au">info@rentalease.com.au</a>
           </div>
         </section>
 

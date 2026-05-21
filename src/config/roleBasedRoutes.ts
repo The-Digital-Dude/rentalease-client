@@ -1,4 +1,5 @@
 import type { UserType } from "../store/userSlice";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "./features";
 
 // Define the default route for each user type after login
 export const defaultRoutes: Record<UserType, string> = {
@@ -24,7 +25,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "contacts",
     "quotation-management",
     "invoice-management",
-    "technicianPayments",
+    ...(TECHNICIAN_PAYMENTS_ENABLED ? ["technicianPayments"] : []),
     "lead-management",
     "reports",
     "teamMembers",
@@ -56,7 +57,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "technician-dashboard",
     "availableJobs",
     "myJobs",
-    "myPayments",
+    ...(TECHNICIAN_PAYMENTS_ENABLED ? ["myPayments"] : []),
     "technician-support",
   ],
   property_manager: [
@@ -84,7 +85,7 @@ export const allowedRoutes: Record<UserType, string[]> = {
     "technician",
     "contacts",
     "invoice-management",
-    "technicianPayments",
+    ...(TECHNICIAN_PAYMENTS_ENABLED ? ["technicianPayments"] : []),
     "reports",
     "regionalDashboard",
     "scheduled-jobs",

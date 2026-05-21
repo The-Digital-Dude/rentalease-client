@@ -28,6 +28,7 @@ import type { Technician } from "../../services/technicianService";
 import type { Job } from "../../services/jobService";
 import type { TechnicianPayment } from "../../services/technicianPaymentService";
 import { formatDateTime } from "../../utils";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "../../config/features";
 import "./TechnicianProfile.scss";
 
 const TechnicianProfile: React.FC = () => {
@@ -89,6 +90,12 @@ const TechnicianProfile: React.FC = () => {
     };
 
     const loadPayments = async () => {
+      if (!TECHNICIAN_PAYMENTS_ENABLED) {
+        setPayments([]);
+        setPaymentsLoading(false);
+        return;
+      }
+
       if (!id) return;
       try {
         setPaymentsLoading(true);
@@ -283,13 +290,15 @@ const TechnicianProfile: React.FC = () => {
           <RiTrophyLine />
           Performance
         </button>
-        <button
-          className={`tab-button ${activeTab === "payments" ? "active" : ""}`}
-          onClick={() => setActiveTab("payments")}
-        >
-          <RiWalletLine />
-          Payments ({payments.length})
-        </button>
+        {TECHNICIAN_PAYMENTS_ENABLED && (
+          <button
+            className={`tab-button ${activeTab === "payments" ? "active" : ""}`}
+            onClick={() => setActiveTab("payments")}
+          >
+            <RiWalletLine />
+            Payments ({payments.length})
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}

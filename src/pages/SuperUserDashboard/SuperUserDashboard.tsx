@@ -50,6 +50,7 @@ import {
   ComposedChart,
   Legend,
 } from "recharts";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "../../config/features";
 import { useAppSelector } from "../../store";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
@@ -620,17 +621,21 @@ const SuperUserDashboard = () => {
       tone: "danger",
       icon: <RiAlertLine />,
     },
-    {
-      title: "Pending Technician Payments",
-      value: paymentStats.pendingCount,
-      description: `${formatCurrency(
-        paymentStats.pendingAmount
-      )} waiting to be paid out.`,
-      action: "Open Payments",
-      route: "/invoice-management",
-      tone: "warning",
-      icon: <RiMoneyDollarCircleLine />,
-    },
+    ...(TECHNICIAN_PAYMENTS_ENABLED
+      ? [
+          {
+            title: "Pending Technician Payments",
+            value: paymentStats.pendingCount,
+            description: `${formatCurrency(
+              paymentStats.pendingAmount
+            )} waiting to be paid out.`,
+            action: "Open Payments",
+            route: "/invoice-management",
+            tone: "warning",
+            icon: <RiMoneyDollarCircleLine />,
+          },
+        ]
+      : []),
     {
       title: "Draft Completed Job Invoices",
       value: invoiceStats.completedJob.draftCount,
@@ -1829,32 +1834,34 @@ const SuperUserDashboard = () => {
                 </svg>
               </div>
             </button>
-            <button
-              className={`${styles.actionCard} ${styles.payments}`}
-              onClick={() => handleQuickAction("technicianPayments")}
-              type="button"
-            >
-              <div className={styles.iconWrapper}>
-                <RiMoneyDollarCircleLine className={styles.icon} />
-              </div>
-              <div className={styles.content}>
-                <h4 className={styles.cardTitle}>Payments</h4>
-                <p className={styles.cardDescription}>
-                  Technician payment tracking
-                </p>
-              </div>
-              <div className={styles.arrow}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M7.5 15L12.5 10L7.5 5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </button>
+            {TECHNICIAN_PAYMENTS_ENABLED && (
+              <button
+                className={`${styles.actionCard} ${styles.payments}`}
+                onClick={() => handleQuickAction("technicianPayments")}
+                type="button"
+              >
+                <div className={styles.iconWrapper}>
+                  <RiMoneyDollarCircleLine className={styles.icon} />
+                </div>
+                <div className={styles.content}>
+                  <h4 className={styles.cardTitle}>Payments</h4>
+                  <p className={styles.cardDescription}>
+                    Technician payment tracking
+                  </p>
+                </div>
+                <div className={styles.arrow}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </button>
+            )}
             <button
               className={`${styles.actionCard} ${styles.reports}`}
               onClick={() => handleQuickAction("reports")}

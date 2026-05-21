@@ -17,6 +17,7 @@ import reportService, {
 import toast from "react-hot-toast";
 import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
 import { useAppSelector } from "../../store";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "../../config/features";
 import "./ReportsAnalytics.scss";
 
 const DEFAULT_EXECUTIVE_DASHBOARD: ExecutiveDashboard = {
@@ -195,14 +196,18 @@ const ReportsAnalytics = () => {
         label: "Operational Analytics",
         icon: RiBuildingLine,
       },
-      {
-        id: "payments",
-        label: "Technician Payments",
-        icon: RiMoneyDollarCircleLine,
-      },
+      ...(TECHNICIAN_PAYMENTS_ENABLED
+        ? [
+            {
+              id: "payments",
+              label: "Technician Payments",
+              icon: RiMoneyDollarCircleLine,
+            },
+          ]
+        : []),
     ];
 
-    if (userType === "property_manager") {
+    if (userType === "property_manager" || !TECHNICIAN_PAYMENTS_ENABLED) {
       return baseTabs.filter((tab) => tab.id !== "payments");
     }
 
@@ -210,7 +215,10 @@ const ReportsAnalytics = () => {
   }, [userType]);
 
   useEffect(() => {
-    if (userType === "property_manager" && activeTab === "payments") {
+    if (
+      (userType === "property_manager" || !TECHNICIAN_PAYMENTS_ENABLED) &&
+      activeTab === "payments"
+    ) {
       setActiveTab("executive");
     }
   }, [userType, activeTab]);

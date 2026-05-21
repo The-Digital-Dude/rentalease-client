@@ -26,6 +26,7 @@ import {
   YAxis,
   Bar,
 } from "recharts";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "../../config/features";
 import { useAppSelector } from "../../store";
 import { useTheme } from "../../contexts/ThemeContext";
 import technicianService from "../../services/technicianService";
@@ -375,18 +376,20 @@ const TechnicianDashboard: React.FC = () => {
               <p>Overdue Jobs</p>
             </div>
           </div>
-          <div className="stat-card earnings">
-            <div className="stat-icon">
-              <RiMoneyDollarCircleLine />
+          {TECHNICIAN_PAYMENTS_ENABLED && (
+            <div className="stat-card earnings">
+              <div className="stat-icon">
+                <RiMoneyDollarCircleLine />
+              </div>
+              <div className="stat-content">
+                <h3>${paymentStats?.totalAmount ?? 0}</h3>
+                <p>Total Earnings</p>
+                <span className="stat-subtext">
+                  Pending ${paymentStats?.pendingAmount ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="stat-content">
-              <h3>${paymentStats?.totalAmount ?? 0}</h3>
-              <p>Total Earnings</p>
-              <span className="stat-subtext">
-                Pending ${paymentStats?.pendingAmount ?? 0}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -466,7 +469,7 @@ const TechnicianDashboard: React.FC = () => {
         </div>
       </div>
 
-      {paymentStats && (
+      {TECHNICIAN_PAYMENTS_ENABLED && paymentStats && (
         <div className="payment-overview">
           <div className="section-header">
             <h2>Payment Overview</h2>

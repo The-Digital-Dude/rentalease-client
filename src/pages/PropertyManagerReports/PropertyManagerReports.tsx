@@ -14,6 +14,7 @@ import { useAppSelector } from "../../store";
 import PropertyOverview from "./components/PropertyOverview/PropertyOverview";
 import JobAnalytics from "./components/JobAnalytics/JobAnalytics";
 import TechnicianPaymentsReport from "../../components/TechnicianPaymentsReport/TechnicianPaymentsReport";
+import { TECHNICIAN_PAYMENTS_ENABLED } from "../../config/features";
 import "./PropertyManagerReports.scss";
 
 const PropertyManagerReports = () => {
@@ -28,10 +29,12 @@ const PropertyManagerReports = () => {
     const baseTabs = [
       { id: "overview", label: "Property Overview", icon: RiDashboardLine },
       { id: "jobs", label: "Job Analytics", icon: RiBuildingLine },
-      { id: "payments", label: "Technician Payments", icon: RiUserStarLine },
+      ...(TECHNICIAN_PAYMENTS_ENABLED
+        ? [{ id: "payments", label: "Technician Payments", icon: RiUserStarLine }]
+        : []),
     ];
 
-    if (userType === "property_manager") {
+    if (userType === "property_manager" || !TECHNICIAN_PAYMENTS_ENABLED) {
       return baseTabs.filter((tab) => tab.id !== "payments");
     }
 

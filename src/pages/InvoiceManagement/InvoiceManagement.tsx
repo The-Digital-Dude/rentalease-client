@@ -295,8 +295,8 @@ const InvoiceManagement: React.FC = () => {
 
       setCompletedInvoices(mappedInvoices);
     } catch (error: any) {
-      console.error("Error fetching completed job invoices:", error);
-      toast.error(error.message || "Failed to fetch completed job invoices");
+      console.error("Error fetching compliance job invoices:", error);
+      toast.error(error.message || "Failed to fetch compliance job invoices");
       setCompletedInvoices([]);
     }
   };
@@ -769,7 +769,7 @@ const InvoiceManagement: React.FC = () => {
       });
       setCompletedInvoiceModalOpen(true);
     } catch (error: any) {
-      toast.error(error.message || "Failed to load completed invoice");
+      toast.error(error.message || "Failed to load compliance job invoice");
     } finally {
       setCompletedInvoiceLoadingId(null);
     }
@@ -908,7 +908,7 @@ const InvoiceManagement: React.FC = () => {
     },
     {
       key: "completed-job" as InvoiceSourceTab,
-      label: "Completed Job Invoices",
+      label: "Compliance Job Invoices",
       count: completedInvoices.length,
     },
   ];
@@ -1017,7 +1017,7 @@ const InvoiceManagement: React.FC = () => {
                 ? userType === "agency"
                   ? "View invoices for property managers and agency fallback recipients"
                   : "Create and manage invoices for property managers and agency fallback recipients"
-                : "Review completed-job invoices generated from the main invoice system"}
+                : "Review compliance job invoices generated from the main invoice system"}
             </p>
           </div>
           {invoiceSource === "property-manager" &&
@@ -1079,7 +1079,7 @@ const InvoiceManagement: React.FC = () => {
                 placeholder={
                   invoiceSource === "property-manager"
                     ? "Search extra services invoices..."
-                    : "Search completed-job invoices..."
+                    : "Search compliance job invoices..."
                 }
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
@@ -1233,7 +1233,7 @@ const InvoiceManagement: React.FC = () => {
             <p>
               {invoiceSource === "property-manager"
                 ? "No extra services invoices match the current filters."
-                : "No completed-job invoices match the current filters."}
+                : "No compliance job invoices match the current filters."}
             </p>
           </div>
         ) : (
@@ -1587,7 +1587,7 @@ const InvoiceManagement: React.FC = () => {
           setCompletedInvoiceModalOpen(false);
           setSelectedCompletedInvoice(null);
         }}
-        title="Completed Job Invoice"
+        title="Compliance Job Invoice"
         size="large"
       >
         {selectedCompletedInvoice && (

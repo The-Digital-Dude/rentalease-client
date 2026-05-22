@@ -16,8 +16,13 @@ import {
   RiEyeLine,
   RiStarLine,
   RiCheckboxCircleLine,
+  RiDownloadLine,
 } from "react-icons/ri";
 import { formatDateOnly } from "../../utils";
+import type {
+  Invoice,
+  InvoiceDocumentReviewData,
+} from "../../services/invoiceService";
 import "./JobProfileTabs.scss";
 
 interface JobProfileTabsProps {
@@ -33,6 +38,13 @@ interface JobProfileTabsProps {
   onViewTechnician: (technicianId: string) => void;
   getStatusBadgeClass: (status: string) => string;
   getPriorityBadgeClass: (priority: string) => string;
+  showDocuments?: boolean;
+  reportFile?: string | null;
+  invoice?: Invoice | null;
+  invoiceReviewData?: InvoiceDocumentReviewData | null;
+  invoiceLoading?: boolean;
+  onOpenInvoicePreview?: () => void;
+  onDownloadInvoice?: () => void;
 }
 
 const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
@@ -46,8 +58,14 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
   onViewTechnician,
   getStatusBadgeClass,
   getPriorityBadgeClass,
+  showDocuments = false,
+  reportFile,
+  invoice,
+  invoiceReviewData,
+  invoiceLoading = false,
+  onOpenInvoicePreview,
+  onDownloadInvoice,
 }) => {
-  console.log(job, technician, "Job and technician");
   return (
     <>
       {/* Tab Navigation */}
@@ -206,6 +224,83 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                   )}
                 </div>
               </div>
+
+              {showDocuments && (
+                <div className="detail-card full-width">
+                  <h3>Compliance Documents</h3>
+                  <div className="spec-list">
+                    <div className="spec-item">
+                      <label>Inspection Report</label>
+                      <span>
+                        {reportFile ? "Available to view" : "Not available yet"}
+                      </span>
+                    </div>
+                    <div className="spec-item">
+                      <label>Invoice</label>
+                      <span>
+                        {invoiceLoading
+                          ? "Loading..."
+                          : invoice
+                            ? invoice.invoiceNumber
+                            : "No invoice linked yet"}
+                      </span>
+                    </div>
+                    {invoice && (
+                      <>
+                        <div className="spec-item">
+                          <label>Invoice Status</label>
+                          <span
+                            className={`status-badge ${getStatusBadgeClass(
+                              invoice.status
+                            )}`}
+                          >
+                            {invoice.status}
+                          </span>
+                        </div>
+                        <div className="spec-item">
+                          <label>Total</label>
+                          <span>${Number(invoice.totalCost || 0).toFixed(2)}</span>
+                        </div>
+                        {invoiceReviewData?.jobNumber && (
+                          <div className="spec-item">
+                            <label>Job Reference</label>
+                            <span>{invoiceReviewData.jobNumber}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="property-actions">
+                    {reportFile && (
+                      <a
+                        href={reportFile}
+                        className="btn-primary"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <RiEyeLine />
+                        View Report
+                      </a>
+                    )}
+                    {invoice && onOpenInvoicePreview && (
+                      <button
+                        onClick={onOpenInvoicePreview}
+                        className="btn-primary"
+                      >
+                        <RiEyeLine />
+                        Open Invoice
+                      </button>
+                    )}
+                    {invoice && onDownloadInvoice && (
+                      <button onClick={onDownloadInvoice} className="btn-primary">
+                        <RiDownloadLine />
+                        Download Invoice
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* {job.description && (
                 <div className="detail-card full-width">

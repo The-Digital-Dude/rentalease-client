@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
+  RiAddLine,
   RiBriefcaseLine,
   RiSearchLine,
   RiFilterLine,
@@ -19,7 +21,10 @@ import {
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
+import { jobService } from "../../services";
+import propertyService, { type Property } from "../../services/propertyService";
 import Button from "../../components/Button/Button";
+import JobFormModal, { type JobFormData } from "../../components/JobFormModal";
 import TechnicianInfoModal from "../../components/TechnicianInfoModal";
 import "./AgencyJobs.scss";
 
@@ -91,11 +96,22 @@ interface JobStatistics {
   totalJobs: number;
 }
 
+const initialJobFormData: JobFormData = {
+  propertyId: "",
+  jobType: "Gas",
+  dueDate: "",
+  assignedTechnician: "null",
+  priority: "Medium",
+  description: "",
+};
+
 const AgencyJobs = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAppSelector((state) => state.user);
+  const user = useAppSelector((state) => state.user);
+  const isPropertyManager = user.userType === "property_manager";
   const [jobs, setJobs] = useState<AgencyJob[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +140,9 @@ const AgencyJobs = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null);
   const [showTechnicianModal, setShowTechnicianModal] = useState(false);
+  const [showCreateJobModal, setShowCreateJobModal] = useState(false);
+  const [isCreatingJob, setIsCreatingJob] = useState(false);
+  const [jobFormData, setJobFormData] = useState<JobFormData>(initialJobFormData);
 
   // Fetch jobs with filters and pagination
   const fetchJobs = async (page = 1, newFilters?: Partial<JobFilters>) => {
@@ -181,6 +200,25 @@ const AgencyJobs = () => {
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  useEffect(() => {
+    if (!isPropertyManager) {
+      return;
+    }
+
+    const fetchProperties = async () => {
+      try {
+        const response = await propertyService.getProperties({ limit: 100 });
+        if (response.status === "success") {
+          setProperties(response.data.properties);
+        }
+      } catch (propertyError) {
+        console.error("Failed to fetch properties for job creation:", propertyError);
+      }
+    };
+
+    void fetchProperties();
+  }, [isPropertyManager]);
 
   // Handle navigation state filters (from dashboard stats)
   useEffect(() => {
@@ -302,6 +340,42 @@ const AgencyJobs = () => {
     navigate(`/jobs/${jobId}`);
   };
 
+  const handleJobFormInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setJobFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateJob = async (formData: JobFormData) => {
+    try {
+      setIsCreatingJob(true);
+      setError(null);
+
+      const response = await jobService.createJob({
+        property: formData.propertyId,
+        jobType: formData.jobType,
+        dueDate: formData.dueDate,
+        assignedTechnician: null,
+        priority: formData.priority,
+        description: formData.description,
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to create job");
+      }
+
+      toast.success("Job request created and is awaiting assignment.");
+      setShowCreateJobModal(false);
+      setJobFormData(initialJobFormData);
+      await fetchJobs(1);
+    } catch (createError: any) {
+      toast.error(createError?.message || "Failed to create job");
+    } finally {
+      setIsCreatingJob(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="agency-jobs">
@@ -335,10 +409,19 @@ const AgencyJobs = () => {
       <div className="page-header">
         <div className="header-content">
           <div className="header-info">
-            <h1>{user?.userType === 'property_manager' ? 'Property Jobs' : 'Agency Jobs'}</h1>
-            <p>{user?.userType === 'property_manager' ? 'Manage and track jobs for your assigned properties' : 'Manage and track all your property maintenance jobs'}</p>
+            <h1>{isPropertyManager ? "Property Jobs" : "Agency Jobs"}</h1>
+            <p>{isPropertyManager ? "Manage and create jobs for your assigned properties" : "Manage and track all your property maintenance jobs"}</p>
           </div>
           <div className="header-actions">
+            {isPropertyManager && (
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateJobModal(true)}
+              >
+                <RiAddLine />
+                Create Job
+              </Button>
+            )}
             <Button
               variant="secondary"
               onClick={handleRefresh}
@@ -732,6 +815,28 @@ const AgencyJobs = () => {
           technicianId={selectedTechnicianId}
         />
       )}
+
+      <JobFormModal
+        isOpen={showCreateJobModal}
+        onClose={() => {
+          if (isCreatingJob) {
+            return;
+          }
+          setShowCreateJobModal(false);
+          setJobFormData(initialJobFormData);
+        }}
+        onSubmit={handleCreateJob}
+        formData={jobFormData}
+        onInputChange={handleJobFormInputChange}
+        technicians={[]}
+        properties={properties.map((property) => ({
+          id: property.id,
+          fullAddress: property.fullAddress,
+        }))}
+        mode="create"
+        isSubmitting={isCreatingJob}
+        allowTechnicianAssignment={false}
+      />
     </div>
   );
 };

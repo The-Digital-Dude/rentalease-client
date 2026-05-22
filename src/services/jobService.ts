@@ -53,6 +53,7 @@ export interface Job {
   priority: "Low" | "Medium" | "High" | "Urgent";
   description?: string;
   completedAt?: string;
+  reportFile?: string | null;
   estimatedDuration?: number;
   actualDuration?: number;
   cost?: {

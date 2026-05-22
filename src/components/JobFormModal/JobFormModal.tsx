@@ -34,6 +34,7 @@ interface JobFormModalProps {
   properties: Property[];
   mode: "create" | "edit";
   isSubmitting?: boolean;
+  allowTechnicianAssignment?: boolean;
 }
 
 const JobFormModal: React.FC<JobFormModalProps> = ({
@@ -46,6 +47,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   properties,
   mode,
   isSubmitting = false,
+  allowTechnicianAssignment = true,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,38 +161,40 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="assignedTechnician">Assigned Technician</label>
-            <select
-              id="assignedTechnician"
-              name="assignedTechnician"
-              value={formData.assignedTechnician || "null"}
-              onChange={onInputChange}
-              disabled={isSubmitting}
-            >
-              <option value="null">Select Technician</option>
-              {technicians
-                .filter((tech) => {
-                  // In create mode, only show available technicians
-                  if (mode === "create") {
-                    return tech.availability === "Available";
-                  }
-                  // In edit mode, show available technicians and the currently assigned one
-                  return (
-                    tech.availability === "Available" ||
-                    tech.availability === "Busy" ||
-                    tech.id === formData.assignedTechnician
-                  );
-                })
-                .map((technician) => (
-                  <option key={technician.id} value={technician.id}>
-                    {technician.name} - {technician.email} (
-                    {technician.currentJobs}/{technician.maxJobs} jobs,{" "}
-                    {technician.experience}y exp) - {technician.availability}
-                  </option>
-                ))}
-            </select>
-          </div>
+          {allowTechnicianAssignment && (
+            <div className="form-group">
+              <label htmlFor="assignedTechnician">Assigned Technician</label>
+              <select
+                id="assignedTechnician"
+                name="assignedTechnician"
+                value={formData.assignedTechnician || "null"}
+                onChange={onInputChange}
+                disabled={isSubmitting}
+              >
+                <option value="null">Select Technician</option>
+                {technicians
+                  .filter((tech) => {
+                    // In create mode, only show available technicians
+                    if (mode === "create") {
+                      return tech.availability === "Available";
+                    }
+                    // In edit mode, show available technicians and the currently assigned one
+                    return (
+                      tech.availability === "Available" ||
+                      tech.availability === "Busy" ||
+                      tech.id === formData.assignedTechnician
+                    );
+                  })
+                  .map((technician) => (
+                    <option key={technician.id} value={technician.id}>
+                      {technician.name} - {technician.email} (
+                      {technician.currentJobs}/{technician.maxJobs} jobs,{" "}
+                      {technician.experience}y exp) - {technician.availability}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="form-group">

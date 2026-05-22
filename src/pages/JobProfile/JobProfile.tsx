@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { RiAlertLine, RiRefreshLine, RiArrowLeftLine } from "react-icons/ri";
+import {
+  RiAlertLine,
+  RiRefreshLine,
+  RiArrowLeftLine,
+  RiDownloadLine,
+} from "react-icons/ri";
 import jobService from "../../services/jobService";
 import type { Job } from "../../services/jobService";
+import invoiceService, {
+  type Invoice,
+  type InvoiceDocumentReviewData,
+} from "../../services/invoiceService";
 import { useAppSelector } from "../../store/hooks";
 import Toast from "../../components/Toast";
 import JobProfileHeader from "../../components/JobProfileHeader";
 import JobProfileStats from "../../components/JobProfileStats";
 import JobProfileTabs from "../../components/JobProfileTabs";
+import Modal from "../../components/Modal";
+import Button from "../../components/Button/Button";
+import CompletedJobInvoicePreview from "../../components/CompletedJobInvoicePreview/CompletedJobInvoicePreview";
+import { createCompletedJobInvoicePDF } from "../../utils/completedJobInvoicePdfGenerator";
 import TechnicianInspectionCompletionModal from "../../components/TechnicianInspectionCompletionModal/TechnicianInspectionCompletionModal";
 import "./JobProfile.scss";
 
@@ -62,6 +75,13 @@ const getCompletedTimestamp = (job: any): string | undefined =>
   job?.completionDetails?.completedAt ||
   undefined;
 
+const COMPLIANCE_JOB_TYPES = new Set([
+  "Gas",
+  "Electrical",
+  "Smoke",
+  "MinimumSafetyStandard",
+]);
+
 const JobProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -83,6 +103,25 @@ const JobProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "overview" | "details" | "property" | "technician"
   >("overview");
+  const [jobInvoice, setJobInvoice] = useState<Invoice | null>(null);
+  const [invoiceReviewData, setInvoiceReviewData] =
+    useState<InvoiceDocumentReviewData | null>(null);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoicePreviewOpen, setInvoicePreviewOpen] = useState(false);
+
+  const loadJobInvoice = useCallback(async (jobId: string) => {
+    try {
+      setInvoiceLoading(true);
+      const response = await invoiceService.getInvoiceByJobId(jobId);
+      setJobInvoice(response.data.invoice);
+      setInvoiceReviewData(response.data.reviewData || null);
+    } catch {
+      setJobInvoice(null);
+      setInvoiceReviewData(null);
+    } finally {
+      setInvoiceLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -111,9 +150,12 @@ const JobProfile: React.FC = () => {
               priority: job.priority,
               description: job.description,
               completedAt,
+              reportFile: job.reportFile || null,
               estimatedDuration: job.estimatedDuration,
               actualDuration: job.actualDuration,
               cost: job.cost,
+              hasInvoice: Boolean(job.hasInvoice),
+              invoice: job.invoice || null,
               notes: job.notes,
               owner: job.owner,
               createdBy: job.createdBy,
@@ -165,6 +207,18 @@ const JobProfile: React.FC = () => {
           };
 
           setJobData(jobData);
+          const isCompletedComplianceJob =
+            job.status === "Completed" && COMPLIANCE_JOB_TYPES.has(job.jobType);
+
+          if (
+            isCompletedComplianceJob &&
+            (job.hasInvoice || job.invoice)
+          ) {
+            await loadJobInvoice(job.id);
+          } else {
+            setJobInvoice(null);
+            setInvoiceReviewData(null);
+          }
         } else {
           setError(response.message || "Failed to load job data");
         }
@@ -179,7 +233,7 @@ const JobProfile: React.FC = () => {
     };
 
     fetchJobData();
-  }, [id]);
+  }, [id, loadJobInvoice]);
 
   const handleBack = () => {
     if (userType === "technician") {
@@ -213,6 +267,24 @@ const JobProfile: React.FC = () => {
   const closeToast = () => {
     setToast((prev) => ({ ...prev, isVisible: false }));
   };
+
+  const handleDownloadInvoice = useCallback(async () => {
+    if (!jobData || !jobInvoice) return;
+
+    const { job } = jobData;
+    await createCompletedJobInvoicePDF({
+      invoice: jobInvoice,
+      jobNumber: invoiceReviewData?.jobNumber || job.job_id,
+      jobType: invoiceReviewData?.jobType || job.jobType,
+      propertyAddress:
+        invoiceReviewData?.propertyAddress ||
+        (typeof job.property === "string"
+          ? undefined
+          : job.property?.address?.fullAddress || job.property?.fullAddress),
+      agencyName: invoiceReviewData?.agencyName,
+      hasReport: Boolean(invoiceReviewData?.hasReport),
+    });
+  }, [invoiceReviewData, jobData, jobInvoice]);
 
   if (loading) {
     return (
@@ -388,6 +460,9 @@ const JobProfile: React.FC = () => {
   }
 
   const { job, property, technician, statistics } = jobData;
+  const isCompletedComplianceJob =
+    job.status === "Completed" && COMPLIANCE_JOB_TYPES.has(job.jobType);
+  const reportFile = invoiceReviewData?.reportFile || job.reportFile || null;
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
@@ -502,7 +577,41 @@ const JobProfile: React.FC = () => {
         onViewTechnician={handleViewTechnician}
         getStatusBadgeClass={getStatusBadgeClass}
         getPriorityBadgeClass={getPriorityBadgeClass}
+        showDocuments={isCompletedComplianceJob}
+        reportFile={reportFile}
+        invoice={jobInvoice}
+        invoiceReviewData={invoiceReviewData}
+        invoiceLoading={invoiceLoading}
+        onOpenInvoicePreview={() => setInvoicePreviewOpen(true)}
+        onDownloadInvoice={handleDownloadInvoice}
       />
+
+      <Modal
+        isOpen={invoicePreviewOpen}
+        onClose={() => setInvoicePreviewOpen(false)}
+        title="Compliance Job Invoice"
+        size="large"
+      >
+        {jobInvoice && (
+          <div className="invoice-preview-modal-content">
+            <div className="invoice-preview-modal-actions">
+              <Button
+                variant="secondary"
+                size="sm"
+                leftIcon={<RiDownloadLine />}
+                onClick={handleDownloadInvoice}
+              >
+                Download Invoice
+              </Button>
+            </div>
+            <CompletedJobInvoicePreview
+              invoice={jobInvoice}
+              job={job}
+              reviewData={invoiceReviewData}
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

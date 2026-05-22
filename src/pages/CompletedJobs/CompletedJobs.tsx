@@ -146,6 +146,7 @@ const buildCompletedJobReviewData = (job: CompletedJob) => ({
 const CompletedJobs = () => {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.user);
+  const isPropertyManager = user.userType === "property_manager";
   const [jobs, setJobs] = useState<CompletedJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -612,10 +613,11 @@ const CompletedJobs = () => {
       setInvoiceModalOpen(true);
     } catch (error: any) {
       const message = getErrorMessage(error, "Failed to load invoice");
-      if (
+      const missingInvoice =
         message.toLowerCase().includes("failed to fetch invoice for job") ||
-        message.toLowerCase().includes("no invoice")
-      ) {
+        message.toLowerCase().includes("no invoice");
+
+      if (!isPropertyManager && missingInvoice) {
         handleOpenManualInvoice(
           job,
           "No linked invoice could be loaded for this completed job. You can create one manually and send it to custom recipients."
@@ -996,17 +998,17 @@ const CompletedJobs = () => {
           View Details
         </Button>
         {jobHasInvoiceAccess(job) && (
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<RiInformationLine />}
-            onClick={() => handleOpenInvoice(job)}
-            disabled={invoiceActionLoading}
-          >
-            Invoice & Send
+        <Button
+          variant="secondary"
+          size="sm"
+          leftIcon={<RiInformationLine />}
+          onClick={() => handleOpenInvoice(job)}
+          disabled={invoiceActionLoading}
+        >
+            {isPropertyManager ? "View Invoice" : "Invoice & Send"}
           </Button>
         )}
-        {!jobHasInvoiceAccess(job) && (
+        {!isPropertyManager && !jobHasInvoiceAccess(job) && (
           <>
             <Button
               variant="secondary"
@@ -1041,7 +1043,7 @@ const CompletedJobs = () => {
           </Button>
         )}
       </div>
-      {!jobHasInvoiceAccess(job) && (
+      {!isPropertyManager && !jobHasInvoiceAccess(job) && (
         <div className="job-meta">
           <span className="meta-item">
             <RiInformationLine />
@@ -1102,8 +1104,10 @@ const CompletedJobs = () => {
           </h1>
           <p>
             {user.userType === "agency"
-              ? `Successfully completed jobs from your agency`
-              : `All completed jobs across the system`}
+              ? "Successfully completed jobs from your agency"
+              : user.userType === "property_manager"
+                ? "Completed jobs for properties currently assigned to you"
+                : "All completed jobs across the system"}
           </p>
           <div className="header-stats">
             <span className="stat">
@@ -1271,7 +1275,7 @@ const CompletedJobs = () => {
       <Modal
         isOpen={invoiceModalOpen}
         onClose={resetInvoiceWorkflow}
-        title="Review & Send Documents"
+        title={isPropertyManager ? "View Documents" : "Review & Send Documents"}
         size="large"
       >
         {invoiceDraft && (
@@ -1282,29 +1286,31 @@ const CompletedJobs = () => {
                 <p>{invoiceWorkflowNotice}</p>
               </div>
             )}
-            <div className="workflow-steps">
-              <button
-                type="button"
-                className={`workflow-step ${reviewStep === "review" ? "active" : ""}`}
-                onClick={() => setReviewStep("review")}
-              >
-                <span className="step-index">1</span>
-                <span>Review Documents</span>
-              </button>
-              <button
-                type="button"
-                className={`workflow-step ${reviewStep === "compose" ? "active" : ""}`}
-                onClick={() => {
-                  if (!manualInvoiceMode) {
-                    setReviewStep("compose");
-                  }
-                }}
-                disabled={manualInvoiceMode}
-              >
-                <span className="step-index">2</span>
-                <span>Compose & Send</span>
-              </button>
-            </div>
+            {!isPropertyManager && (
+              <div className="workflow-steps">
+                <button
+                  type="button"
+                  className={`workflow-step ${reviewStep === "review" ? "active" : ""}`}
+                  onClick={() => setReviewStep("review")}
+                >
+                  <span className="step-index">1</span>
+                  <span>Review Documents</span>
+                </button>
+                <button
+                  type="button"
+                  className={`workflow-step ${reviewStep === "compose" ? "active" : ""}`}
+                  onClick={() => {
+                    if (!manualInvoiceMode) {
+                      setReviewStep("compose");
+                    }
+                  }}
+                  disabled={manualInvoiceMode}
+                >
+                  <span className="step-index">2</span>
+                  <span>Compose & Send</span>
+                </button>
+              </div>
+            )}
 
             <div className="review-header-card">
               <div>
@@ -1347,20 +1353,22 @@ const CompletedJobs = () => {
                       >
                         Open Full Preview
                       </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        leftIcon={<RiEditLine />}
-                        onClick={() => setInvoiceEditorOpen((current) => !current)}
-                        disabled={
-                          invoiceActionLoading ||
-                          (!manualInvoiceMode &&
-                            (invoiceDraft.status === "Sent" ||
-                              invoiceDraft.status === "Paid"))
-                        }
-                      >
-                        {invoiceEditorOpen ? "Close Editor" : "Edit Invoice"}
-                      </Button>
+                      {!isPropertyManager && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          leftIcon={<RiEditLine />}
+                          onClick={() => setInvoiceEditorOpen((current) => !current)}
+                          disabled={
+                            invoiceActionLoading ||
+                            (!manualInvoiceMode &&
+                              (invoiceDraft.status === "Sent" ||
+                                invoiceDraft.status === "Paid"))
+                          }
+                        >
+                          {invoiceEditorOpen ? "Close Editor" : "Edit Invoice"}
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <CompletedJobInvoicePreview
@@ -1384,8 +1392,12 @@ const CompletedJobs = () => {
                       <strong>Inspection Report</strong>
                       <p>
                         {reviewData?.hasReport
-                          ? "The completed report is ready to be included in the email."
-                          : "The completed report is missing. Sending is blocked until it exists."}
+                          ? isPropertyManager
+                            ? "The completed inspection report is available to view."
+                            : "The completed report is ready to be included in the email."
+                          : isPropertyManager
+                            ? "The completed inspection report is not available yet."
+                            : "The completed report is missing. Sending is blocked until it exists."}
                       </p>
                     </div>
                     {reviewData?.reportFile ? (
@@ -1408,37 +1420,45 @@ const CompletedJobs = () => {
                     <div>
                       <strong>Invoice Review</strong>
                       <p>
-                        {manualInvoiceMode
-                          ? "Create the draft invoice before moving to the email step."
-                          : "Invoice draft is ready for admin review and sending."}
+                        {isPropertyManager
+                          ? "This invoice is available in read-only mode."
+                          : manualInvoiceMode
+                            ? "Create the draft invoice before moving to the email step."
+                            : "Invoice draft is ready for admin review and sending."}
                       </p>
                     </div>
                     <span className="document-tag">
-                      {manualInvoiceMode ? "Draft not created" : "Ready"}
+                      {isPropertyManager
+                        ? "View only"
+                        : manualInvoiceMode
+                          ? "Draft not created"
+                          : "Ready"}
                     </span>
                   </div>
 
-                  <div className="recipients-preview">
-                    <p className="eyebrow">Default Recipients</p>
-                    {reviewData?.recipients.to?.length ? (
-                      reviewData.recipients.to.map((recipient) => (
-                        <div key={recipient.email} className="recipient-pill">
-                          <RiMailSendLine />
-                          <span>
-                            {recipient.name
-                              ? `${recipient.name} <${recipient.email}>`
-                              : recipient.email}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="empty-copy">
-                        Recipients will be reviewed in the compose step.
-                      </p>
-                    )}
-                  </div>
+                  {!isPropertyManager && (
+                    <div className="recipients-preview">
+                      <p className="eyebrow">Default Recipients</p>
+                      {reviewData?.recipients.to?.length ? (
+                        reviewData.recipients.to.map((recipient) => (
+                          <div key={recipient.email} className="recipient-pill">
+                            <RiMailSendLine />
+                            <span>
+                              {recipient.name
+                                ? `${recipient.name} <${recipient.email}>`
+                                : recipient.email}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="empty-copy">
+                          Recipients will be reviewed in the compose step.
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                  {invoiceEditorOpen && (
+                  {!isPropertyManager && invoiceEditorOpen && (
                     <div className="invoice-editor">
                       <label>
                         <span>Description</span>
@@ -1580,27 +1600,29 @@ const CompletedJobs = () => {
                     </div>
                   )}
 
-                  <div className="review-actions">
-                    <Button
-                      variant="primary"
-                      rightIcon={<RiArrowRightSLine />}
-                      onClick={() => setReviewStep("compose")}
-                      disabled={
-                        invoiceActionLoading ||
-                        manualInvoiceMode ||
-                        !invoiceDraft.id ||
-                        invoiceDraft.status === "Sent" ||
-                        invoiceDraft.status === "Paid"
-                      }
-                    >
-                      Continue to Compose
-                    </Button>
-                  </div>
+                  {!isPropertyManager && (
+                    <div className="review-actions">
+                      <Button
+                        variant="primary"
+                        rightIcon={<RiArrowRightSLine />}
+                        onClick={() => setReviewStep("compose")}
+                        disabled={
+                          invoiceActionLoading ||
+                          manualInvoiceMode ||
+                          !invoiceDraft.id ||
+                          invoiceDraft.status === "Sent" ||
+                          invoiceDraft.status === "Paid"
+                        }
+                      >
+                        Continue to Compose
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {reviewStep === "compose" && (
+            {!isPropertyManager && reviewStep === "compose" && (
               <div className="compose-step-layout">
                 <div className="compose-panel">
                   <div className="panel-header">

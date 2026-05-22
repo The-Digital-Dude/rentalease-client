@@ -36,6 +36,7 @@ interface CreateTechnicianFormData {
   lastName: string;
   email: string;
   phone: string;
+  tradeType: string;
   password: string;
   confirmPassword: string;
   experience: string;
@@ -77,6 +78,7 @@ const TechnicianPage = () => {
     lastName: "",
     email: "",
     phone: "",
+    tradeType: "",
     password: "",
     confirmPassword: "",
     experience: "",
@@ -238,6 +240,10 @@ const TechnicianPage = () => {
       errors.phone = "Please enter a valid phone number";
     }
 
+    if (!formData.tradeType.trim()) {
+      errors.tradeType = "Job role is required";
+    }
+
     if (!editingTechnician) {
       if (!formData.password) {
         errors.password = "Password is required";
@@ -310,6 +316,7 @@ const TechnicianPage = () => {
       lastName: "",
       email: "",
       phone: "",
+      tradeType: "",
       password: "",
       confirmPassword: "",
       experience: "",
@@ -334,6 +341,7 @@ const TechnicianPage = () => {
       lastName: technician.lastName,
       email: technician.email,
       phone: technician.phone,
+      tradeType: technician.tradeType || "",
       password: "",
       confirmPassword: "",
       experience: technician.experience.toString(),
@@ -400,6 +408,7 @@ const TechnicianPage = () => {
           lastName: formData.lastName,
           email: formData.email,
           phone: formData.phone,
+          tradeType: formData.tradeType.trim(),
           experience: formData.experience
             ? parseInt(formData.experience)
             : undefined,
@@ -431,6 +440,7 @@ const TechnicianPage = () => {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
+          tradeType: formData.tradeType.trim(),
           experience: formData.experience ? parseInt(formData.experience) : 0,
           availabilityStatus: formData.availabilityStatus,
           status: formData.status,
@@ -879,6 +889,21 @@ const TechnicianPage = () => {
             />
             {formErrors.phone && (
               <span className="error-message">{formErrors.phone}</span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label>Job Role *</label>
+            <input
+              type="text"
+              name="tradeType"
+              value={formData.tradeType}
+              onChange={handleInputChange}
+              placeholder="Enter role like Gas Fitter or Electrician"
+              className={formErrors.tradeType ? "error" : ""}
+            />
+            {formErrors.tradeType && (
+              <span className="error-message">{formErrors.tradeType}</span>
             )}
           </div>
 

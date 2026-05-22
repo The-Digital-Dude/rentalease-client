@@ -3,6 +3,7 @@ import type { Technician as ServiceTechnician } from "../services/technicianServ
 export interface ComponentTechnician {
   id: string;
   name: string;
+  tradeType: string;
   specialties: string[];
   availability: "Available" | "Busy" | "Unavailable" | "On Leave";
   currentJobs: number;
@@ -22,7 +23,8 @@ export const adaptServiceTechnicianToComponentTechnician = (
   return {
     id: serviceTechnician.id,
     name: `${serviceTechnician.firstName} ${serviceTechnician.lastName}`,
-    specialties: [], // Technicians don't have specialties in the current schema, but we can add them later
+    tradeType: serviceTechnician.tradeType || "Technician",
+    specialties: serviceTechnician.tradeType ? [serviceTechnician.tradeType] : ["Technician"],
     availability: serviceTechnician.availabilityStatus,
     currentJobs: serviceTechnician.currentJobs || 0,
     maxJobs: serviceTechnician.maxJobs || 5,

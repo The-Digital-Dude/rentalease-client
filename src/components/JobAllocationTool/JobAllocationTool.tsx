@@ -5,9 +5,7 @@ import {
   RiLoader4Line,
   RiCalendarLine,
   RiMapPinLine,
-  RiStarFill,
   RiToolsLine,
-  RiTimeLine,
   RiCheckboxCircleLine,
   RiGroupLine,
   RiFireLine,
@@ -86,14 +84,6 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
       tech.specialties.includes(skillFilter)
     );
   }, [technicians, skillFilter]);
-
-  const getWorkloadColor = (current: number, max: number) => {
-    const percentage = (current / max) * 100;
-    if (percentage >= 90) return 'critical';
-    if (percentage >= 70) return 'high';
-    if (percentage >= 40) return 'medium';
-    return 'low';
-  };
 
   const getJobTypeIcon = (jobType: string) => {
     switch (jobType.toLowerCase()) {
@@ -297,14 +287,12 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
               </div>
             ) : (
               filteredTechnicians.map((technician) => {
-              const workloadLevel = getWorkloadColor(technician.currentJobs, technician.maxJobs);
-              
               return (
                 <div
                   key={technician.id}
                   className={`modern-tech-card availability-${technician.availability
                     .toLowerCase()
-                    .replace(" ", "-")} workload-${workloadLevel} ${isAssigningJob ? "drop-zone-active" : ""}`}
+                    .replace(" ", "-")} ${isAssigningJob ? "drop-zone-active" : ""}`}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, technician.id)}
                 >
@@ -315,8 +303,7 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                     <div className="tech-info">
                       <h4 className="tech-name">{technician.name}</h4>
                       <div className="tech-contact">
-                        <span className="email">{technician.email}</span>
-                        <span className="phone">{technician.phone}</span>
+                        <span className="email">{technician.tradeType || "Technician"}</span>
                       </div>
                     </div>
                     <div className={`availability-badge ${technician.availability
@@ -327,56 +314,10 @@ const JobAllocationTool: React.FC<JobAllocationToolProps> = ({
                   </div>
 
                   <div className="tech-specialties">
-                    {technician.specialties.length > 0 ? (
-                      technician.specialties.map((specialty) => (
-                        <span key={specialty} className={`specialty-chip specialty-${specialty.toLowerCase()}`}>
-                          <RiToolsLine />
-                          {specialty}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="specialty-chip specialty-general">
-                        <RiToolsLine />
-                        General
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="tech-metrics">
-                    <div className="workload-section">
-                      <div className="workload-header">
-                        <RiGroupLine />
-                        <span>Active Jobs</span>
-                      </div>
-                      <div className="workload-bar">
-                        <div 
-                          className={`workload-fill workload-${workloadLevel}`}
-                          style={{ width: `${(technician.currentJobs / technician.maxJobs) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="workload-text">
-                        {technician.currentJobs} / {technician.maxJobs}
-                      </span>
-                    </div>
-
-                    <div className="performance-metrics">
-                      <div className="metric">
-                        <RiTimeLine />
-                        <span>{technician.experience} years exp</span>
-                      </div>
-                      {technician.completedJobs > 0 && (
-                        <div className="metric">
-                          <RiCheckboxCircleLine />
-                          <span>{technician.completedJobs} completed</span>
-                        </div>
-                      )}
-                      {technician.averageRating > 0 && (
-                        <div className="metric rating-metric">
-                          <RiStarFill />
-                          <span>{technician.averageRating.toFixed(1)} ({technician.totalRatings})</span>
-                        </div>
-                      )}
-                    </div>
+                    <span className={`specialty-chip specialty-${(technician.tradeType || "Technician").toLowerCase().replace(/\s+/g, "-")}`}>
+                      <RiToolsLine />
+                      {technician.tradeType || "Technician"}
+                    </span>
                   </div>
 
                   <div className="drop-zone-indicator">

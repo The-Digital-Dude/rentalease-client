@@ -10,6 +10,7 @@ export interface Technician {
   email: string;
   phone: string;
   experience: number;
+  tradeType: string;
   availabilityStatus: "Available" | "Busy" | "Unavailable" | "On Leave";
   currentJobs: number;
   maxJobs: number;
@@ -59,6 +60,7 @@ export interface CreateTechnicianData {
   email: string;
   phone: string;
   password: string;
+  tradeType: string;
   experience?: number;
   availabilityStatus?: string;
   maxJobs?: number;
@@ -75,6 +77,7 @@ export interface UpdateTechnicianData {
   lastName?: string;
   email?: string;
   phone?: string;
+  tradeType?: string;
   experience?: number;
   availabilityStatus?: string;
   maxJobs?: number;
@@ -111,6 +114,7 @@ export interface TechnicianProfile {
   fullName: string;
   email: string;
   phone?: string;
+  tradeType?: string;
   licenseNumber?: string;
   licenseExpiry?: string;
   experience?: number;
@@ -562,6 +566,7 @@ class TechnicianService {
     firstName?: string;
     lastName?: string;
     phone?: string;
+    tradeType?: string;
     licenseNumber?: string;
     licenseExpiry?: string;
     experience?: number;

@@ -187,9 +187,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
                   })
                   .map((technician) => (
                     <option key={technician.id} value={technician.id}>
-                      {technician.name} - {technician.email} (
-                      {technician.currentJobs}/{technician.maxJobs} jobs,{" "}
-                      {technician.experience}y exp) - {technician.availability}
+                      {technician.name} - {technician.tradeType || "Technician"}
                     </option>
                   ))}
               </select>

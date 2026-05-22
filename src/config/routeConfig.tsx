@@ -100,7 +100,7 @@ export const routeConfig = (userType: UserType) => {
     technician: Technician,
     propertyManagerManagement: PropertyManagerManagement,
     agencies: Agencies,
-    agencyJobs: userType === "property_manager" ? Jobs : AgencyJobs,
+    agencyJobs: AgencyJobs,
     contacts: Contacts,
     "lead-management": LeadManagement,
     reports: userType === "property_manager" ? PropertyManagerReports : Reports,

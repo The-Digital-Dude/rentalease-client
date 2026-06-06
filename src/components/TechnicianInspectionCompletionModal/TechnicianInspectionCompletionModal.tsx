@@ -76,6 +76,9 @@ const evaluateCondition = (
   if (visibleWhen.equals !== undefined) {
     return scopeValues?.[visibleWhen.fieldId] === visibleWhen.equals;
   }
+  if (visibleWhen.notEquals !== undefined) {
+    return scopeValues?.[visibleWhen.fieldId] !== visibleWhen.notEquals;
+  }
   return true;
 };
 

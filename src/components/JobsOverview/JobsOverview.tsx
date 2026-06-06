@@ -74,6 +74,16 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
   const [editFormData, setEditFormData] = useState<JobFormData | null>(null);
   const navigate = useNavigate();
 
+  const isComplianceJobType = (jobType: string) => {
+    const normalized = jobType.toLowerCase();
+    return (
+      normalized.includes("gas") ||
+      normalized.includes("electrical") ||
+      normalized.includes("smoke") ||
+      normalized.includes("minimumsafetystandard")
+    );
+  };
+
   // Helper function to format date for HTML input (YYYY-MM-DD)
   const formatDateForInput = (dateString: string): string => {
     try {
@@ -322,13 +332,23 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                       <button onClick={() => handleEditClick(job)}>
                         Edit Job
                       </button>
-                      <button
-                        onClick={() =>
-                          handleUpdateJobStatus(job.id, "Completed")
-                        }
-                      >
-                        Mark as Completed
-                      </button>
+                      {!isComplianceJobType(job.jobType) ? (
+                        <button
+                          onClick={() =>
+                            handleUpdateJobStatus(job.id, "Completed")
+                          }
+                        >
+                          Mark as Completed
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          title="Use the inspection report completion flow for compliance jobs"
+                        >
+                          Complete via report
+                        </button>
+                      )}
                       <button
                         onClick={() =>
                           handleUpdateJobStatus(job.id, "Scheduled")
@@ -360,6 +380,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
           technicians={technicians}
           properties={properties}
           mode="edit"
+          disableCompletedStatus={isComplianceJobType(editingJob?.jobType || "")}
         />
       )}
     </div>

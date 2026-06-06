@@ -50,6 +50,16 @@ const initialFormData: JobFormData = {
   description: "",
 };
 
+const isComplianceJobType = (jobType?: string) => {
+  const normalized = (jobType || "").toLowerCase();
+  return (
+    normalized.includes("gas") ||
+    normalized.includes("electrical") ||
+    normalized.includes("smoke") ||
+    normalized.includes("minimumsafetystandard")
+  );
+};
+
 const JobManagement = () => {
   // Get user information for role-based access control
   const user = useSelector((state: RootState) => state.user);
@@ -430,6 +440,12 @@ const JobManagement = () => {
       const currentJob = jobs.find((job) => job.id === jobId);
       const wasAssigned = currentJob?.assignedTechnicianId;
 
+      if (newStatus === "Completed" && isComplianceJobType(currentJob?.jobType)) {
+        toast.error("Compliance jobs must be completed from the inspection report flow.");
+        setShowActionMenu(null);
+        return;
+      }
+
       // If marking as Pending or Cancelled and job was assigned, we need to unassign
       if ((newStatus === "Pending" || newStatus === "Cancelled") && wasAssigned) {
         // Update job to unassign technician and change status
@@ -483,6 +499,11 @@ const JobManagement = () => {
       setError(null);
       setIsAssigningJob(true);
       setAssigningJobId(updatedJob.id);
+
+      if (updatedJob.status === "Completed" && isComplianceJobType(updatedJob.jobType)) {
+        toast.error("Compliance jobs must be completed from the inspection report flow.");
+        return;
+      }
 
       const updatePayload: any = {
         jobType: updatedJob.jobType,

@@ -35,6 +35,7 @@ interface JobFormModalProps {
   mode: "create" | "edit";
   isSubmitting?: boolean;
   allowTechnicianAssignment?: boolean;
+  disableCompletedStatus?: boolean;
 }
 
 const JobFormModal: React.FC<JobFormModalProps> = ({
@@ -48,6 +49,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   mode,
   isSubmitting = false,
   allowTechnicianAssignment = true,
+  disableCompletedStatus = false,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +142,11 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
             >
               <option value="Pending">Pending</option>
               <option value="Scheduled">Scheduled</option>
-              <option value="Completed">Completed</option>
+              <option value="Completed" disabled={disableCompletedStatus}>
+                {disableCompletedStatus
+                  ? "Completed (report required)"
+                  : "Completed"}
+              </option>
               <option value="Overdue">Overdue</option>
               <option value="Cancelled">Cancelled</option>
             </select>

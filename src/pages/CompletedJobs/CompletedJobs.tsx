@@ -468,6 +468,7 @@ const CompletedJobs = () => {
           reviewData?.propertyAddress || selectedJob.property.address.fullAddress,
         agencyName: reviewData?.agencyName || selectedJob.agency?.name || "",
         hasReport: reviewData?.hasReport || false,
+        reportSource: reviewData?.reportSource || null,
       });
     } catch (error) {
       console.error("Failed to download invoice PDF:", error);
@@ -478,16 +479,19 @@ const CompletedJobs = () => {
   const buildDefaultEmailBody = (
     job: CompletedJob,
     invoice: Invoice,
-    reportFile: string | null
+    reportFile: string | null,
+    reportSource?: "job" | "latestInspectionReport" | "generated" | null
   ) => `
     <p>Hello,</p>
-    <p>Please review the completed job documents for <strong>${job.property.address.fullAddress}</strong>.</p>
+    <p>Please review the tax invoice and completed job documents for <strong>${job.property.address.fullAddress}</strong>.</p>
     <p>The draft invoice <strong>${invoice.invoiceNumber}</strong> for <strong>${formatCurrency(
       invoice.totalCost
     )}</strong> is ready.</p>
     <p>${
       reportFile
-        ? `The inspection report is available here: <a href="${reportFile}">Open report</a>.`
+        ? reportSource === "latestInspectionReport"
+          ? `The inspection report has been recovered from the latest inspection report and is available here: <a href="${reportFile}">Open report</a>.`
+          : `The inspection report is available here: <a href="${reportFile}">Open report</a>.`
         : "The inspection report is currently missing."
     }</p>
     <p>Regards,<br />Rentalease</p>
@@ -511,15 +515,16 @@ const CompletedJobs = () => {
       nextReviewData?.propertyAddress || job.property.address.fullAddress;
     const jobNumber = nextReviewData?.jobNumber || job.job_id;
 
-    setEmailComposer({
-      to: emailService.formatEmailAddresses(to),
-      cc: emailService.formatEmailAddresses(cc),
-      bcc: emailService.formatEmailAddresses(bcc),
-      subject: `Completed Job Documents - ${job.jobType} - ${propertyLabel} (${jobNumber})`,
+      setEmailComposer({
+        to: emailService.formatEmailAddresses(to),
+        cc: emailService.formatEmailAddresses(cc),
+        bcc: emailService.formatEmailAddresses(bcc),
+      subject: `Tax Invoice - ${job.jobType} - ${propertyLabel} (${jobNumber})`,
       bodyHtml: buildDefaultEmailBody(
         job,
         invoice,
-        nextReviewData?.reportFile || job.reportFile || null
+        nextReviewData?.reportFile || job.reportFile || null,
+        nextReviewData?.reportSource || null
       ),
     });
     setEmailValidationError(null);
@@ -551,8 +556,17 @@ const CompletedJobs = () => {
         previousReviewData?.agencyName ||
         job.agency?.name ||
         "",
+      attentionName:
+        response.data.reviewData?.attentionName ||
+        previousReviewData?.attentionName ||
+        job.agency?.name ||
+        "",
       reportFile: fallbackReportFile,
       hasReport: Boolean(fallbackReportFile),
+      reportSource:
+        response.data.reviewData?.reportSource ||
+        previousReviewData?.reportSource ||
+        (job.reportFile ? "job" : null),
       recipients: {
         to:
           response.data.reviewData?.recipients?.to ||
@@ -743,6 +757,7 @@ const CompletedJobs = () => {
           selectedJob.property.address.fullAddress,
         agencyName: reviewData?.agencyName || selectedJob.agency?.name,
         hasReport: Boolean(reviewData?.hasReport),
+        reportSource: reviewData?.reportSource || null,
       });
       const attachmentFile = new File([blob], fileName, {
         type: "application/pdf",

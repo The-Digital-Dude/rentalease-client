@@ -283,6 +283,7 @@ const JobProfile: React.FC = () => {
           : job.property?.address?.fullAddress || job.property?.fullAddress),
       agencyName: invoiceReviewData?.agencyName,
       hasReport: Boolean(invoiceReviewData?.hasReport),
+      reportSource: invoiceReviewData?.reportSource || null,
     });
   }, [invoiceReviewData, jobData, jobInvoice]);
 

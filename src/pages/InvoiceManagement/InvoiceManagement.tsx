@@ -788,6 +788,7 @@ const InvoiceManagement: React.FC = () => {
         reviewData?.propertyAddress || previewJob.property.address.fullAddress,
       agencyName: reviewData?.agencyName || previewJob.agency?.name || "",
       hasReport: reviewData?.hasReport ?? false,
+      reportSource: reviewData?.reportSource || null,
     });
   };
 

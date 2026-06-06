@@ -75,6 +75,10 @@ export interface InvoiceDocumentReviewData {
   jobType: string;
   jobNumber: string;
   agencyName?: string;
+  attentionName?: string;
+  invoiceDate?: string | null;
+  dueDate?: string | null;
+  reportSource?: "job" | "latestInspectionReport" | "generated" | null;
   reportFile: string | null;
   hasReport: boolean;
   recipients: {

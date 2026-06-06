@@ -1,5 +1,18 @@
 import React from "react";
 import type { Invoice, InvoiceDocumentReviewData } from "../../services/invoiceService";
+import {
+  COMPLETED_JOB_INVOICE_BANK_DETAILS,
+  COMPLETED_JOB_INVOICE_COMPANY,
+  COMPLETED_JOB_INVOICE_TERMS,
+  buildInvoiceDisplayDates,
+  buildInvoiceDocumentTitle,
+  formatAddressLines,
+  formatCurrency,
+  formatInvoiceDate,
+  getAttentionName,
+  getReportStatusLabel,
+  getWorksAuthorisedBy,
+} from "../../utils/completedJobInvoiceContent";
 import "./CompletedJobInvoicePreview.scss";
 
 interface PreviewJob {
@@ -13,6 +26,7 @@ interface PreviewJob {
   agency?: {
     name?: string;
   };
+  reportFile?: string | null;
 }
 
 interface CompletedJobInvoicePreviewProps {
@@ -22,44 +36,8 @@ interface CompletedJobInvoicePreviewProps {
   compact?: boolean;
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: "AUD",
-  }).format(amount || 0);
-
-const formatDate = (value?: string | null) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 const formatQuantity = (quantity: number) =>
   Number.isInteger(quantity) ? quantity.toString() : quantity.toFixed(2);
-
-const getStatusClassName = (status: string) => {
-  const normalizedStatus = status.toLowerCase();
-
-  if (normalizedStatus === "draft" || normalizedStatus === "pending") {
-    return "status-pending";
-  }
-
-  if (normalizedStatus === "sent") {
-    return "status-sent";
-  }
-
-  if (normalizedStatus === "paid") {
-    return "status-paid";
-  }
-
-  return "status-pending";
-};
 
 const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
   invoice,
@@ -69,8 +47,16 @@ const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
 }) => {
   const propertyAddress =
     reviewData?.propertyAddress || job.property.address.fullAddress;
-  const serviceName = reviewData?.jobType || job.jobType;
-  const agencyName = reviewData?.agencyName || job.agency?.name || "-";
+  const serviceAddressLines = formatAddressLines(propertyAddress);
+  const displayDates = buildInvoiceDisplayDates(invoice, reviewData);
+  const attentionName = getAttentionName(reviewData);
+  const reportStatus = getReportStatusLabel(reviewData, job);
+  const authorisedBy = getWorksAuthorisedBy(reviewData);
+  const invoiceNumber = buildInvoiceDocumentTitle(invoice.invoiceNumber);
+  const recipientName = reviewData?.agencyName || job.agency?.name || "-";
+  const description =
+    invoice.description || job.jobType || "Completed job invoice";
+  const secondaryLineItem = invoice.items.length > 1 ? invoice.items : [];
 
   return (
     <div
@@ -78,128 +64,141 @@ const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
         compact ? "compact-preview" : ""
       }`}
     >
-      <div className="brand-banner">
-        <div className="brand-lockup">
+      <div className="invoice-header">
+        <div className="company-block">
           <img
-            src="/rentalease-logo.png"
+            src={COMPLETED_JOB_INVOICE_COMPANY.logoPath}
             alt="RentalEase"
-            className="brand-logo"
+            className="company-logo"
           />
-          <div className="brand-copy">
-            <span className="brand-name">RentalEase</span>
-            <span className="brand-tagline">
-              Property Compliance and Billing
-            </span>
+          <div className="company-copy">
+            <strong>{COMPLETED_JOB_INVOICE_COMPANY.name}</strong>
+            <span>A.B.N : {COMPLETED_JOB_INVOICE_COMPANY.abn}</span>
+            <span>{COMPLETED_JOB_INVOICE_COMPANY.addressLines[0]}</span>
+            <span>{COMPLETED_JOB_INVOICE_COMPANY.addressLines[1]}</span>
+            <span>{COMPLETED_JOB_INVOICE_COMPANY.phone}</span>
+            <span>{COMPLETED_JOB_INVOICE_COMPANY.email}</span>
           </div>
         </div>
-        <div className="brand-meta">
-          <span>Generated Invoice</span>
-          <strong>{reviewData?.jobNumber || job.job_id}</strong>
+
+        <div className="invoice-meta">
+          <span className="invoice-kicker">TAX INVOICE</span>
+          <div className="invoice-number-row">
+            <span>Invoice No:</span>
+            <strong>{invoiceNumber}</strong>
+          </div>
+          <div className="invoice-number-row">
+            <span>Invoice Date:</span>
+            <strong>{displayDates.invoiceDateLabel}</strong>
+          </div>
+          <div className="invoice-number-row">
+            <span>Due Date:</span>
+            <strong>{displayDates.dueDateLabel}</strong>
+          </div>
         </div>
       </div>
 
-      <div className="invoice-header-section">
-        <div className="invoice-number">
-          <p className="preview-kicker">Invoice Number</p>
-          <h3>{invoice.invoiceNumber}</h3>
-          <span className={`status-badge ${getStatusClassName(invoice.status)}`}>
-            {invoice.status}
-          </span>
-        </div>
-        <div className="invoice-amount">
-          <p className="amount-label">Total Amount</p>
-          <p className="amount-value">{formatCurrency(invoice.totalCost)}</p>
-        </div>
-      </div>
-
-      <div className="details-grid">
-        <div className="detail-section">
-          <h4>Property Information</h4>
-          <div className="detail-item">
-            <span className="label">Property Address</span>
-            <span className="value">{propertyAddress}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Agency</span>
-            <span className="value">{agencyName}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Inspection Report</span>
-            <span className="value">
-              {reviewData?.hasReport ? "Available" : "Missing"}
-            </span>
-          </div>
-        </div>
-
-        <div className="detail-section">
-          <h4>Invoice Information</h4>
-          <div className="detail-item">
-            <span className="label">Job Number</span>
-            <span className="value">{reviewData?.jobNumber || job.job_id}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Service</span>
-            <span className="value">{serviceName}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Created</span>
-            <span className="value">{formatDate(invoice.createdAt)}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">Updated</span>
-            <span className="value">{formatDate(invoice.updatedAt)}</span>
-          </div>
-        </div>
-
-        <div className="detail-section full-width">
-          <h4>Invoice Items</h4>
-          <div className="preview-items-table">
-            <div className="preview-items-head">
-              <span>Item</span>
-              <span>Qty</span>
-              <span>Rate</span>
-              <span>Amount</span>
-            </div>
-            {invoice.items.map((item, index) => (
-              <div
-                key={item._id || item.id || index}
-                className="preview-items-row"
-              >
-                <span>{item.name}</span>
-                <span>{formatQuantity(item.quantity)}</span>
-                <span>{formatCurrency(item.rate)}</span>
-                <span>{formatCurrency(item.amount)}</span>
-              </div>
+      <div className="recipient-grid">
+        <div className="recipient-card">
+          <strong>{recipientName}</strong>
+          <span className="section-label">SERVICE ADDRESS</span>
+          <div className="address-lines">
+            {serviceAddressLines.map((line, index) => (
+              <span key={`${line}-${index}`}>{line}</span>
             ))}
           </div>
+          <span className="attention-line">For attention of: {attentionName}</span>
+          <span className="authorised-line">{authorisedBy}</span>
+        </div>
 
-          <div className="preview-totals">
+        <div className="summary-card">
+          <span className="section-label">DESCRIPTION</span>
+          <div className="summary-row">
+            <span>{description}</span>
+            <strong>{formatCurrency(invoice.totalCost)}</strong>
+          </div>
+          {secondaryLineItem.length > 0 && (
+            <div className="line-item-list">
+              {secondaryLineItem.slice(0, 4).map((item, index) => (
+                <div key={item._id || item.id || index} className="line-item">
+                  <span>{item.name}</span>
+                  <span>
+                    {formatQuantity(item.quantity)} x {formatCurrency(item.rate)}
+                  </span>
+                  <strong>{formatCurrency(item.amount)}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="totals-stack">
             <div>
-              <span>Subtotal</span>
+              <span>SUBTOTAL</span>
               <strong>{formatCurrency(invoice.subtotal)}</strong>
             </div>
             <div>
-              <span>Tax</span>
+              <span>GST</span>
               <strong>{formatCurrency(invoice.tax)}</strong>
             </div>
             <div className="total-row">
-              <span>Total</span>
+              <span>TOTAL</span>
               <strong>{formatCurrency(invoice.totalCost)}</strong>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="detail-section full-width">
-          <h4>Description</h4>
-          <p className="description-text">{invoice.description || "-"}</p>
-        </div>
+      <section className="pay-section">
+        <h4>HOW TO PAY</h4>
+        <p>We accept payment by: Bank transfer</p>
 
-        {invoice.notes && (
-          <div className="detail-section full-width">
-            <h4>Notes</h4>
-            <p className="response-notes">{invoice.notes}</p>
+        <div className="bank-details">
+          <div>
+            <span>Bank Details:</span>
+            <strong>Bank transfer</strong>
           </div>
-        )}
+          <div>
+            <span>Name:</span>
+            <strong>{COMPLETED_JOB_INVOICE_BANK_DETAILS.accountName}</strong>
+          </div>
+          <div>
+            <span>Bank:</span>
+            <strong>{COMPLETED_JOB_INVOICE_BANK_DETAILS.bankName}</strong>
+          </div>
+          <div>
+            <span>BSB:</span>
+            <strong>{COMPLETED_JOB_INVOICE_BANK_DETAILS.bsb}</strong>
+          </div>
+          <div>
+            <span>Account Number:</span>
+            <strong>{COMPLETED_JOB_INVOICE_BANK_DETAILS.accountNumber}</strong>
+          </div>
+          <div>
+            <span>Payment Terms:</span>
+            <strong>Payment terms are {COMPLETED_JOB_INVOICE_BANK_DETAILS.paymentTerms}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="terms-section">
+        <h4>Terms and conditions:</h4>
+        {COMPLETED_JOB_INVOICE_TERMS.map((term, index) => (
+          <p key={index}>
+            {`${index + 1}. ${term}`}
+          </p>
+        ))}
+      </section>
+
+      {invoice.notes && (
+        <section className="notes-section">
+          <h4>Notes</h4>
+          <p>{invoice.notes}</p>
+        </section>
+      )}
+
+      <div className="footer-bar">
+        <span>Generated by RentalEase CRM</span>
+        <span>Generated on {formatInvoiceDate(new Date().toISOString())}</span>
+        <span>Inspection report: {reportStatus}</span>
       </div>
     </div>
   );

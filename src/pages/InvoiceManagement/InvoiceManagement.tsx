@@ -29,7 +29,6 @@ import propertyManagerInvoiceService, {
 } from "../../services/propertyManagerInvoiceService";
 import propertyService from "../../services/propertyService";
 import { useAppSelector } from "../../store";
-import { generateCompletedJobInvoicePDF } from "../../utils/completedJobInvoicePdfGenerator";
 import "./InvoiceManagement.scss";
 
 interface PropertyOption {
@@ -135,6 +134,17 @@ type PropertyManagerStatusTab = "pending" | "accepted" | "rejected" | "all";
 type CompletedJobStatusTab = "draft" | "sent" | "paid" | "all";
 type ActiveStatusTab = PropertyManagerStatusTab | CompletedJobStatusTab;
 const INVOICE_STATS_CHANGED_EVENT = "invoice-stats-changed";
+
+const downloadBlobFile = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 const InvoiceManagement: React.FC = () => {
   const { userType } = useAppSelector((state) => state.user);
@@ -778,18 +788,15 @@ const InvoiceManagement: React.FC = () => {
   const handleDownloadCompletedInvoice = async () => {
     if (!selectedCompletedInvoice) return;
 
-    const { invoice, reviewData, previewJob } = selectedCompletedInvoice;
-
-    await generateCompletedJobInvoicePDF({
-      invoice,
-      jobNumber: reviewData?.jobNumber || previewJob.job_id,
-      jobType: reviewData?.jobType || previewJob.jobType,
-      propertyAddress:
-        reviewData?.propertyAddress || previewJob.property.address.fullAddress,
-      agencyName: reviewData?.agencyName || previewJob.agency?.name || "",
-      hasReport: reviewData?.hasReport ?? false,
-      reportSource: reviewData?.reportSource || null,
-    });
+    try {
+      const { invoice } = selectedCompletedInvoice;
+      const { blob, fileName } = await invoiceService.getInvoicePdfById(
+        invoice.id
+      );
+      downloadBlobFile(blob, fileName);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to download invoice PDF");
+    }
   };
 
   const updateCompletedInvoiceDraft = (

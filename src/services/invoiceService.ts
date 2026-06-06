@@ -143,7 +143,11 @@ interface SendInvoicePayload {
   subject: string;
   bodyHtml: string;
   bodyText?: string;
-  attachments?: File[];
+}
+
+export interface InvoicePdfDownloadResult {
+  blob: Blob;
+  fileName: string;
 }
 
 interface UpdateInvoiceStatusPayload {
@@ -154,6 +158,31 @@ interface UpdateInvoiceStatusPayload {
 
 class InvoiceService {
   private baseUrl = "/v1/invoices";
+
+  private getFileNameFromContentDisposition(
+    header: string | undefined,
+    fallback: string
+  ) {
+    if (!header) {
+      return fallback;
+    }
+
+    const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(header);
+    if (utf8Match?.[1]) {
+      try {
+        return decodeURIComponent(utf8Match[1]);
+      } catch {
+        return utf8Match[1];
+      }
+    }
+
+    const basicMatch = /filename="?([^";]+)"?/i.exec(header);
+    if (basicMatch?.[1]) {
+      return basicMatch[1];
+    }
+
+    return fallback;
+  }
 
   async getInvoiceById(id: string): Promise<InvoiceResponse> {
     try {
@@ -245,35 +274,55 @@ class InvoiceService {
     invoiceId: string,
     payload: SendInvoicePayload
   ): Promise<InvoiceResponse> {
-    let response: AxiosResponse<InvoiceResponse>;
-
-    if (payload.attachments && payload.attachments.length > 0) {
-      const formData = new FormData();
-      formData.append("to", JSON.stringify(payload.to || []));
-      formData.append("cc", JSON.stringify(payload.cc || []));
-      formData.append("bcc", JSON.stringify(payload.bcc || []));
-      formData.append("subject", payload.subject);
-      formData.append("bodyHtml", payload.bodyHtml);
-      if (payload.bodyText) {
-        formData.append("bodyText", payload.bodyText);
+    const response: AxiosResponse<InvoiceResponse> = await api.patch(
+      `${this.baseUrl}/${invoiceId}/send`,
+      payload,
+      {
+        timeout: INVOICE_SEND_TIMEOUT_MS,
       }
-      payload.attachments.forEach((file) => {
-        formData.append("attachments", file);
-      });
-
-      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: INVOICE_SEND_TIMEOUT_MS,
-      });
-    } else {
-      response = await api.patch(`${this.baseUrl}/${invoiceId}/send`, payload, {
-        timeout: INVOICE_SEND_TIMEOUT_MS,
-      });
-    }
+    );
 
     return response.data;
+  }
+
+  async getInvoicePdfByJobId(jobId: string): Promise<InvoicePdfDownloadResult> {
+    const response: AxiosResponse<Blob> = await api.get(
+      `${this.baseUrl}/job/${jobId}/pdf`,
+      {
+        responseType: "blob",
+        timeout: INVOICE_SEND_TIMEOUT_MS,
+      }
+    );
+
+    const fileName = this.getFileNameFromContentDisposition(
+      response.headers?.["content-disposition"],
+      `invoice-${jobId}.pdf`
+    );
+
+    return {
+      blob: response.data,
+      fileName,
+    };
+  }
+
+  async getInvoicePdfById(invoiceId: string): Promise<InvoicePdfDownloadResult> {
+    const response: AxiosResponse<Blob> = await api.get(
+      `${this.baseUrl}/${invoiceId}/pdf`,
+      {
+        responseType: "blob",
+        timeout: INVOICE_SEND_TIMEOUT_MS,
+      }
+    );
+
+    const fileName = this.getFileNameFromContentDisposition(
+      response.headers?.["content-disposition"],
+      `invoice-${invoiceId}.pdf`
+    );
+
+    return {
+      blob: response.data,
+      fileName,
+    };
   }
 
   async updateInvoiceStatus(

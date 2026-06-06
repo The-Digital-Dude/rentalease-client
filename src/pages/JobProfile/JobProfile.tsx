@@ -20,7 +20,6 @@ import JobProfileTabs from "../../components/JobProfileTabs";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button/Button";
 import CompletedJobInvoicePreview from "../../components/CompletedJobInvoicePreview/CompletedJobInvoicePreview";
-import { createCompletedJobInvoicePDF } from "../../utils/completedJobInvoicePdfGenerator";
 import TechnicianInspectionCompletionModal from "../../components/TechnicianInspectionCompletionModal/TechnicianInspectionCompletionModal";
 import "./JobProfile.scss";
 
@@ -81,6 +80,17 @@ const COMPLIANCE_JOB_TYPES = new Set([
   "Smoke",
   "MinimumSafetyStandard",
 ]);
+
+const downloadBlobFile = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 const JobProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -271,21 +281,19 @@ const JobProfile: React.FC = () => {
   const handleDownloadInvoice = useCallback(async () => {
     if (!jobData || !jobInvoice) return;
 
-    const { job } = jobData;
-    await createCompletedJobInvoicePDF({
-      invoice: jobInvoice,
-      jobNumber: invoiceReviewData?.jobNumber || job.job_id,
-      jobType: invoiceReviewData?.jobType || job.jobType,
-      propertyAddress:
-        invoiceReviewData?.propertyAddress ||
-        (typeof job.property === "string"
-          ? undefined
-          : job.property?.address?.fullAddress || job.property?.fullAddress),
-      agencyName: invoiceReviewData?.agencyName,
-      hasReport: Boolean(invoiceReviewData?.hasReport),
-      reportSource: invoiceReviewData?.reportSource || null,
-    });
-  }, [invoiceReviewData, jobData, jobInvoice]);
+    try {
+      const { blob, fileName } = await invoiceService.getInvoicePdfById(
+        jobInvoice.id
+      );
+      downloadBlobFile(blob, fileName);
+    } catch (error) {
+      setToast({
+        message: "Failed to download invoice PDF",
+        type: "error",
+        isVisible: true,
+      });
+    }
+  }, [jobData, jobInvoice]);
 
   if (loading) {
     return (

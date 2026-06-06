@@ -39,10 +39,6 @@ import invoiceService, { type Invoice } from "../../services/invoiceService";
 import emailService from "../../services/emailService";
 import ReactQuill from "react-quill";
 import CompletedJobInvoicePreview from "../../components/CompletedJobInvoicePreview/CompletedJobInvoicePreview";
-import {
-  createCompletedJobInvoicePDF,
-  generateCompletedJobInvoicePDF,
-} from "../../utils/completedJobInvoicePdfGenerator";
 import "react-quill/dist/quill.snow.css";
 import "./CompletedJobs.scss";
 
@@ -142,6 +138,17 @@ const buildCompletedJobReviewData = (job: CompletedJob) => ({
     bcc: [],
   },
 });
+
+const downloadBlobFile = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 const CompletedJobs = () => {
   const navigate = useNavigate();
@@ -454,22 +461,52 @@ const CompletedJobs = () => {
     });
   };
 
+  const buildInvoicePayloadFromDraft = (draft: Invoice) => ({
+    description: draft.description,
+    items: draft.items.map((item) => ({
+      name: item.name,
+      quantity: Number(item.quantity),
+      rate: Number(item.rate),
+      amount: Number(item.amount),
+    })),
+    tax: Number(draft.tax || 0),
+    notes: draft.notes || "",
+  });
+
+  const persistInvoiceDraft = async () => {
+    if (!invoiceDraft || !selectedJob) {
+      throw new Error("No invoice draft is available");
+    }
+
+    const payload = buildInvoicePayloadFromDraft(invoiceDraft);
+    const shouldCreateInvoice = !invoiceDraft.id;
+
+    const response = shouldCreateInvoice
+      ? await invoiceService.createInvoice({
+          jobId: selectedJob.id,
+          ...payload,
+        })
+      : await invoiceService.updateInvoice(invoiceDraft.id, payload);
+
+    setInvoiceDraft(response.data.invoice);
+    return response.data.invoice;
+  };
+
   const handleDownloadInvoice = async () => {
     if (!invoiceDraft || !selectedJob) {
       return;
     }
 
     try {
-      await generateCompletedJobInvoicePDF({
-        invoice: invoiceDraft,
-        jobNumber: reviewData?.jobNumber || selectedJob.job_id,
-        jobType: reviewData?.jobType || selectedJob.jobType,
-        propertyAddress:
-          reviewData?.propertyAddress || selectedJob.property.address.fullAddress,
-        agencyName: reviewData?.agencyName || selectedJob.agency?.name || "",
-        hasReport: reviewData?.hasReport || false,
-        reportSource: reviewData?.reportSource || null,
-      });
+      const invoiceToDownload =
+        manualInvoiceMode || !invoiceDraft.id
+          ? await persistInvoiceDraft()
+          : invoiceDraft;
+
+      const { blob, fileName } = await invoiceService.getInvoicePdfById(
+        invoiceToDownload.id
+      );
+      downloadBlobFile(blob, fileName);
     } catch (error) {
       console.error("Failed to download invoice PDF:", error);
       toast.error("Failed to download invoice PDF");
@@ -671,35 +708,19 @@ const CompletedJobs = () => {
     if (!invoiceDraft || !selectedJob) return;
     try {
       setInvoiceActionLoading(true);
-      const payload = {
-        description: invoiceDraft.description,
-        items: invoiceDraft.items.map((item) => ({
-          name: item.name,
-          quantity: Number(item.quantity),
-          rate: Number(item.rate),
-          amount: Number(item.amount),
-        })),
-        tax: Number(invoiceDraft.tax || 0),
-        notes: invoiceDraft.notes || "",
-      };
-      const response = manualInvoiceMode
-        ? await invoiceService.createInvoice({
-            jobId: selectedJob.id,
-            ...payload,
-          })
-        : await invoiceService.updateInvoice(invoiceDraft.id, payload);
-      setInvoiceDraft(response.data.invoice);
+      const isNewManualInvoice = manualInvoiceMode && !invoiceDraft.id;
+      await persistInvoiceDraft();
       await loadInvoiceReview(selectedJob);
       setInvoiceEditorOpen(false);
       setReviewStep("review");
       toast.success(
-        manualInvoiceMode ? "Draft invoice created" : "Invoice updated"
+        isNewManualInvoice ? "Draft invoice created" : "Invoice updated"
       );
       fetchCompletedJobs(pagination.currentPage, true);
     } catch (error: any) {
       toast.error(
         error.message ||
-          (manualInvoiceMode
+          (manualInvoiceMode && !invoiceDraft.id
             ? "Failed to create invoice"
             : "Failed to update invoice")
       );
@@ -748,28 +769,18 @@ const CompletedJobs = () => {
     try {
       setInvoiceActionLoading(true);
       setEmailValidationError(null);
-      const { blob, fileName } = await createCompletedJobInvoicePDF({
-        invoice: invoiceDraft,
-        jobNumber: reviewData?.jobNumber || selectedJob.job_id,
-        jobType: reviewData?.jobType || selectedJob.jobType,
-        propertyAddress:
-          reviewData?.propertyAddress ||
-          selectedJob.property.address.fullAddress,
-        agencyName: reviewData?.agencyName || selectedJob.agency?.name,
-        hasReport: Boolean(reviewData?.hasReport),
-        reportSource: reviewData?.reportSource || null,
-      });
-      const attachmentFile = new File([blob], fileName, {
-        type: "application/pdf",
-      });
-      const response = await invoiceService.sendInvoice(invoiceDraft.id, {
+      const persistedInvoice =
+        manualInvoiceMode || !invoiceDraft.id
+          ? await persistInvoiceDraft()
+          : invoiceDraft;
+
+      const response = await invoiceService.sendInvoice(persistedInvoice.id, {
         to: toRecipients,
         cc: ccRecipients,
         bcc: bccRecipients,
         subject: emailComposer.subject.trim(),
         bodyHtml: emailComposer.bodyHtml,
         bodyText: emailService.stripHtml(emailComposer.bodyHtml),
-        attachments: [attachmentFile],
       });
       setInvoiceDraft(response.data.invoice);
       toast.success("Documents sent");

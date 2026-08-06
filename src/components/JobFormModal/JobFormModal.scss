@@ -672,13 +672,25 @@
   .tcb-option-text {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .tcb-option-name {
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.875rem;
   }
 
   .tcb-option-meta {
     color: #6b7280;
     font-weight: 400;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     .dark-mode & { color: var(--color-text-secondary); }
   }
 

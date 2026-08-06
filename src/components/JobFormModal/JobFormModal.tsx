@@ -450,8 +450,8 @@ const TechnicianCombobox: React.FC<TechnicianComboboxProps> = ({
               >
                 <span className="tcb-option-icon">👤</span>
                 <span className="tcb-option-text">
-                  {result.name}
-                  <span className="tcb-option-meta"> — {result.tradeType}</span>
+                  <span className="tcb-option-name">{result.name}</span>
+                  <span className="tcb-option-meta">{result.tradeType}</span>
                 </span>
                 <span className={`tcb-availability tcb-avail-${result.availabilityStatus.toLowerCase().replace(/\s+/g, "-")}`}>
                   {result.availabilityStatus}

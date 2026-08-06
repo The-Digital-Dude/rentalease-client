@@ -9,6 +9,7 @@ export interface JobFormData {
   propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate: string;
+  scheduledTime?: string;
   assignedTechnician: string;
   status?: "Pending" | "Scheduled" | "Completed" | "Overdue";
   priority: "Low" | "Medium" | "High" | "Urgent";
@@ -162,11 +163,27 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="dueDate"
               value={formData.dueDate}
               onChange={onInputChange}
+              min={new Date().toISOString().split("T")[0]}
               disabled={isSubmitting}
               required
             />
           </div>
 
+          <div className="form-group">
+            <label htmlFor="scheduledTime">Scheduled Time *</label>
+            <input
+              type="time"
+              id="scheduledTime"
+              name="scheduledTime"
+              value={formData.scheduledTime || ""}
+              onChange={onInputChange}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
           {allowTechnicianAssignment && (
             <div className="form-group">
               <label htmlFor="assignedTechnician">Assigned Technician</label>

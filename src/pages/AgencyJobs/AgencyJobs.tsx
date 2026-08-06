@@ -100,6 +100,7 @@ const initialJobFormData: JobFormData = {
   propertyId: "",
   jobType: "Gas",
   dueDate: "",
+  scheduledTime: "",
   assignedTechnician: "null",
   priority: "Medium",
   description: "",
@@ -352,10 +353,14 @@ const AgencyJobs = () => {
       setIsCreatingJob(true);
       setError(null);
 
+      const dueDateTime =
+        formData.dueDate && formData.scheduledTime
+          ? `${formData.dueDate}T${formData.scheduledTime}`
+          : formData.dueDate;
       const response = await jobService.createJob({
         property: formData.propertyId,
         jobType: formData.jobType,
-        dueDate: formData.dueDate,
+        dueDate: dueDateTime,
         assignedTechnician: null,
         priority: formData.priority,
         description: formData.description,

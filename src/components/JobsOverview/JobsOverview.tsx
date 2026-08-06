@@ -112,12 +112,17 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
     };
     setEditingJob(updatedJob);
     // Set the form data separately
+    const dueDateObj = new Date(updatedJob.dueDate);
+    const isValidDueDate = !isNaN(dueDateObj.getTime());
     setEditFormData({
       id: updatedJob.id,
       job_id: updatedJob.job_id,
       propertyId: updatedJob.propertyId,
       jobType: updatedJob.jobType,
       dueDate: formatDateForInput(updatedJob.dueDate),
+      scheduledTime: isValidDueDate
+        ? `${String(dueDateObj.getHours()).padStart(2, "0")}:${String(dueDateObj.getMinutes()).padStart(2, "0")}`
+        : "",
       assignedTechnician: technicianId,
       status: updatedJob.status,
       priority: updatedJob.priority,

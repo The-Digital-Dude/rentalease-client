@@ -36,6 +36,7 @@ interface JobFormData {
   propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "Repairs" | "Routine Inspection";
   dueDate: string;
+  scheduledTime: string;
   assignedTechnician: string;
   priority: "Low" | "Medium" | "High" | "Urgent";
   description: string;
@@ -45,6 +46,7 @@ const initialFormData: JobFormData = {
   propertyId: "",
   jobType: "Gas",
   dueDate: "",
+  scheduledTime: "",
   assignedTechnician: "",
   priority: "Medium",
   description: "",
@@ -300,10 +302,14 @@ const JobManagement = () => {
     try {
       setIsCreatingJob(true);
       setError(null);
+      const dueDateTime =
+        formData.dueDate && formData.scheduledTime
+          ? `${formData.dueDate}T${formData.scheduledTime}`
+          : formData.dueDate;
       const jobData: CreateJobData = {
         property: formData.propertyId,
         jobType: formData.jobType,
-        dueDate: formData.dueDate,
+        dueDate: dueDateTime,
         assignedTechnician: formData.assignedTechnician || null,
         priority: formData.priority,
         description: formData.description,
@@ -420,10 +426,15 @@ const JobManagement = () => {
   };
 
   const handleEditJob = (job: ComponentJob) => {
+    const d = new Date(job.dueDate);
+    const isValidDate = !isNaN(d.getTime());
     setFormData({
       propertyId: job.propertyId,
       jobType: job.jobType,
-      dueDate: job.dueDate,
+      dueDate: isValidDate ? d.toISOString().split("T")[0] : job.dueDate,
+      scheduledTime: isValidDate
+        ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+        : "",
       assignedTechnician: job.assignedTechnicianId,
       priority: job.priority,
       description: job.description || "",

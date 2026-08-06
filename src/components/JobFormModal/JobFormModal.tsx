@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Modal from "../Modal";
 import type { ComponentTechnician } from "../../utils/technicianAdapter";
 import propertyService from "../../services/propertyService";
+import technicianService from "../../services/technicianService";
 import "./JobFormModal.scss";
 
 export interface JobFormData {
@@ -247,6 +248,229 @@ const PropertyCombobox: React.FC<PropertyComboboxProps> = ({
   );
 };
 
+interface TechnicianResult {
+  id: string;
+  name: string;
+  tradeType: string;
+  availabilityStatus: string;
+}
+
+interface TechnicianComboboxProps {
+  value: string;
+  disabled: boolean;
+  onChange: (id: string, label: string) => void;
+  initialLabel?: string;
+  mode: "create" | "edit";
+}
+
+const TechnicianCombobox: React.FC<TechnicianComboboxProps> = ({
+  value,
+  disabled,
+  onChange,
+  initialLabel = "",
+  mode,
+}) => {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<TechnicianResult[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState(initialLabel);
+  const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (initialLabel) setSelectedLabel(initialLabel);
+  }, [initialLabel]);
+
+  const fetchTechnicians = useCallback(async (search: string) => {
+    setIsLoading(true);
+    try {
+      const response = await technicianService.getTechnicians({
+        search: search || undefined,
+        limit: 20,
+      });
+      if (response.status === "success" && response.data?.technicians) {
+        const all = response.data.technicians as any[];
+        const filtered = all.filter((t: any) => {
+          if (mode === "create") return t.availabilityStatus === "Available";
+          return (
+            t.availabilityStatus === "Available" ||
+            t.availabilityStatus === "Busy" ||
+            t._id === value ||
+            t.id === value
+          );
+        });
+        setResults(
+          filtered.map((t: any) => ({
+            id: t._id || t.id,
+            name: t.fullName || `${t.firstName} ${t.lastName}`.trim(),
+            tradeType: t.tradeType || "Technician",
+            availabilityStatus: t.availabilityStatus || "",
+          }))
+        );
+      } else {
+        setResults([]);
+      }
+    } catch {
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mode, value]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void fetchTechnicians(query);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, isOpen, fetchTechnicians]);
+
+  const handleOpen = () => {
+    if (disabled) return;
+    setIsOpen(true);
+    setQuery("");
+    void fetchTechnicians("");
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setIsFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelect = (result: TechnicianResult) => {
+    setSelectedLabel(`${result.name} - ${result.tradeType}`);
+    setIsOpen(false);
+    setQuery("");
+    onChange(result.id, `${result.name} - ${result.tradeType}`);
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedLabel("");
+    setResults([]);
+    onChange("", "");
+  };
+
+  const hasValue = Boolean(value);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`technician-combobox ${isOpen ? "is-open" : ""} ${isFocused ? "is-focused" : ""} ${disabled ? "is-disabled" : ""}`}
+    >
+      {!isOpen ? (
+        <div
+          className={`tcb-trigger ${!hasValue ? "tcb-placeholder" : ""}`}
+          onClick={handleOpen}
+          tabIndex={disabled ? -1 : 0}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleOpen();
+            }
+          }}
+          role="combobox"
+          aria-expanded={false}
+          aria-haspopup="listbox"
+        >
+          <span className="tcb-trigger-text">
+            {hasValue ? selectedLabel || "Selected technician" : "Search and select a technician…"}
+          </span>
+          <span className="tcb-trigger-icons">
+            {hasValue && !disabled && (
+              <button
+                type="button"
+                className="tcb-clear"
+                onClick={handleClear}
+                aria-label="Clear selection"
+                tabIndex={-1}
+              >
+                ✕
+              </button>
+            )}
+            <span className="tcb-chevron">▾</span>
+          </span>
+        </div>
+      ) : (
+        <div className="tcb-search-wrap">
+          <span className="tcb-search-icon">🔍</span>
+          <input
+            ref={inputRef}
+            type="text"
+            className="tcb-search-input"
+            placeholder="Type name, trade, or email…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setIsOpen(false);
+                setQuery("");
+              }
+            }}
+            autoComplete="off"
+          />
+          {isLoading && <span className="tcb-spin" />}
+        </div>
+      )}
+
+      {isOpen && (
+        <ul className="tcb-dropdown" role="listbox">
+          {isLoading && results.length === 0 ? (
+            <li className="tcb-status">Searching…</li>
+          ) : results.length === 0 ? (
+            <li className="tcb-status tcb-empty">
+              {query ? `No technicians found for "${query}"` : "No available technicians"}
+            </li>
+          ) : (
+            results.map((result) => (
+              <li
+                key={result.id}
+                className={`tcb-option ${result.id === value ? "tcb-option-selected" : ""}`}
+                role="option"
+                aria-selected={result.id === value}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSelect(result);
+                }}
+              >
+                <span className="tcb-option-icon">👤</span>
+                <span className="tcb-option-text">
+                  {result.name}
+                  <span className="tcb-option-meta"> — {result.tradeType}</span>
+                </span>
+                <span className={`tcb-availability tcb-avail-${result.availabilityStatus.toLowerCase().replace(/\s+/g, "-")}`}>
+                  {result.availabilityStatus}
+                </span>
+                {result.id === value && <span className="tcb-option-check">✓</span>}
+              </li>
+            ))
+          )}
+          {!isLoading && results.length === 20 && (
+            <li className="tcb-status tcb-hint">
+              Showing first 20 results — type to narrow down
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 interface JobFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -265,6 +489,8 @@ interface JobFormModalProps {
   disableCompletedStatus?: boolean;
   // Optional: pass the current property's address when editing so it shows immediately
   currentPropertyLabel?: string;
+  // Optional: pass the current technician's name when editing so it shows immediately
+  currentTechnicianLabel?: string;
 }
 
 const JobFormModal: React.FC<JobFormModalProps> = ({
@@ -279,6 +505,7 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   allowTechnicianAssignment = true,
   disableCompletedStatus = false,
   currentPropertyLabel = "",
+  currentTechnicianLabel = "",
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -297,6 +524,13 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
   const handlePropertyChange = (id: string) => {
     const syntheticEvent = {
       target: { name: "propertyId", value: id },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(syntheticEvent);
+  };
+
+  const handleTechnicianChange = (id: string) => {
+    const syntheticEvent = {
+      target: { name: "assignedTechnician", value: id === "" ? "null" : id },
     } as React.ChangeEvent<HTMLSelectElement>;
     onInputChange(syntheticEvent);
   };
@@ -410,30 +644,14 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
         <div className="form-row">
           {allowTechnicianAssignment && (
             <div className="form-group">
-              <label htmlFor="assignedTechnician">Assigned Technician</label>
-              <select
-                id="assignedTechnician"
-                name="assignedTechnician"
-                value={formData.assignedTechnician || "null"}
-                onChange={onInputChange}
+              <label>Assigned Technician</label>
+              <TechnicianCombobox
+                value={formData.assignedTechnician && formData.assignedTechnician !== "null" ? formData.assignedTechnician : ""}
                 disabled={isSubmitting}
-              >
-                <option value="null">Select Technician</option>
-                {technicians
-                  .filter((tech) => {
-                    if (mode === "create") return tech.availability === "Available";
-                    return (
-                      tech.availability === "Available" ||
-                      tech.availability === "Busy" ||
-                      tech.id === formData.assignedTechnician
-                    );
-                  })
-                  .map((technician) => (
-                    <option key={technician.id} value={technician.id}>
-                      {technician.name} - {technician.tradeType || "Technician"}
-                    </option>
-                  ))}
-              </select>
+                onChange={handleTechnicianChange}
+                initialLabel={currentTechnicianLabel}
+                mode={mode}
+              />
             </div>
           )}
         </div>

@@ -386,6 +386,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
           properties={properties}
           mode="edit"
           disableCompletedStatus={isComplianceJobType(editingJob?.jobType || "")}
+          currentPropertyLabel={editingJob?.propertyAddress || ""}
         />
       )}
     </div>

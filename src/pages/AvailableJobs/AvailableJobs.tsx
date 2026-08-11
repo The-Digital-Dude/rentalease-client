@@ -99,10 +99,10 @@ const AvailableJobs: React.FC = () => {
     const urgent = filteredJobs.filter(
       (job) => job.priority === "Urgent" || job.urgency === "Urgent"
     ).length;
-    const dueToday = filteredJobs.filter((job) => {
-      const due = new Date(job.dueDate).toDateString();
-      return due === new Date().toDateString();
-    }).length;
+    const toAEST = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+    const dueToday = filteredJobs.filter((job) =>
+      toAEST(new Date(job.dueDate)) === toAEST(new Date())
+    ).length;
     const highPriority = filteredJobs.filter(
       (job) => job.priority === "High"
     ).length;
@@ -174,15 +174,19 @@ const AvailableJobs: React.FC = () => {
     }
   };
 
-  const isDueToday = (date: string) =>
-    new Date(date).toDateString() === new Date().toDateString();
+  const toAESTDateStr = (d: Date) =>
+    d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
 
-  const isOverdue = (date: string) => new Date(date) < new Date();
+  const isDueToday = (date: string) =>
+    toAESTDateStr(new Date(date)) === toAESTDateStr(new Date());
+
+  const isOverdue = (date: string) =>
+    toAESTDateStr(new Date(date)) < toAESTDateStr(new Date());
 
   const getDueLabel = (date: string) => {
     if (isDueToday(date)) return "Due today";
     if (isOverdue(date)) return "Overdue";
-    return `Due ${new Date(date).toLocaleDateString()}`;
+    return `Due ${new Date(date).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}`;
   };
 
   const getPropertySnippet = (job: AvailableJob) => {
@@ -349,7 +353,7 @@ const AvailableJobs: React.FC = () => {
                   </div>
                   <div className="detail-row">
                     <RiCalendarLine />
-                    <span>{new Date(job.dueDate).toLocaleString()}</span>
+                    <span>{new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney", day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
                   <div className="job-description">
                     <h4>Job Details</h4>

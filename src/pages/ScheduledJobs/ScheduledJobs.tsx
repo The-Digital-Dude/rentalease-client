@@ -373,7 +373,7 @@ const ScheduledJobs = () => {
         <div className="job-dates">
           <div className="due-date">
             <RiCalendarLine />
-            <span>Due: {new Date(job.dueDate).toLocaleDateString()}</span>
+            <span>Due: {new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}</span>
           </div>
           {job.assignedDate && (
             <div className="assigned-date">

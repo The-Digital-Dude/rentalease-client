@@ -271,7 +271,7 @@ const OverdueJobs = () => {
         <div className="job-dates">
           <div className="due-date overdue">
             <RiCalendarLine />
-            <span>Was due: {new Date(job.dueDate).toLocaleDateString()}</span>
+            <span>Was due: {new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}</span>
           </div>
           {job.assignedDate && (
             <div className="assigned-date">

@@ -91,7 +91,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
       if (isNaN(date.getTime())) {
         return "";
       }
-      return date.toISOString().split("T")[0];
+      return date.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
     } catch {
       return "";
     }
@@ -279,7 +279,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
                       job.status === "Completed" && job.completedAt
                         ? job.completedAt
                         : job.dueDate
-                    ).toLocaleDateString()}
+                    ).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney", day: "numeric", month: "short", year: "numeric" })}
                   </div>
                 </td>
                 <td className="technician-cell">

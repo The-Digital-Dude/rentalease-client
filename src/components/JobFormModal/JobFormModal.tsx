@@ -12,6 +12,7 @@ export interface JobFormData {
   jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate: string;
   scheduledTime?: string;
+  shift?: "morning" | "afternoon" | "evening";
   assignedTechnician: string;
   status?: "Pending" | "Scheduled" | "Completed" | "Overdue";
   priority: "Low" | "Medium" | "High" | "Urgent";
@@ -621,23 +622,25 @@ const JobFormModal: React.FC<JobFormModalProps> = ({
               name="dueDate"
               value={formData.dueDate}
               onChange={onInputChange}
-              min={new Date().toISOString().split("T")[0]}
+              min={new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" })}
               disabled={isSubmitting}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="scheduledTime">Scheduled Time *</label>
-            <input
-              type="time"
-              id="scheduledTime"
-              name="scheduledTime"
-              value={formData.scheduledTime || ""}
+            <label htmlFor="shift">Shift</label>
+            <select
+              id="shift"
+              name="shift"
+              value={formData.shift || "morning"}
               onChange={onInputChange}
               disabled={isSubmitting}
-              required
-            />
+            >
+              <option value="morning">Morning (8am – 12pm)</option>
+              <option value="afternoon">Afternoon (1pm – 5pm)</option>
+              <option value="evening">Evening (5pm – 9pm)</option>
+            </select>
           </div>
         </div>
 

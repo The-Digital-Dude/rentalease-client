@@ -422,19 +422,22 @@ const JobManagement = () => {
   };
 
   const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
+    const toAEST = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+    return toAEST(new Date(dueDate)) < toAEST(new Date());
   };
 
   const handleEditJob = (job: ComponentJob) => {
     const d = new Date(job.dueDate);
     const isValidDate = !isNaN(d.getTime());
+    // Use AEST date string (en-CA gives YYYY-MM-DD) so the form date matches Sydney calendar day
+    const aestDateStr = isValidDate
+      ? d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" })
+      : job.dueDate;
     setFormData({
       propertyId: job.propertyId,
       jobType: job.jobType,
-      dueDate: isValidDate ? d.toISOString().split("T")[0] : job.dueDate,
-      scheduledTime: isValidDate
-        ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
-        : "",
+      dueDate: aestDateStr,
+      scheduledTime: "",
       assignedTechnician: job.assignedTechnicianId,
       priority: job.priority,
       description: job.description || "",

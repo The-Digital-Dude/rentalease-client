@@ -149,14 +149,14 @@ const MyJobs: React.FC = () => {
     }
   };
 
+  const toAESTDate = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+
   const formatDueLabel = (date: string) => {
-    const due = new Date(date);
-    const today = new Date();
-    due.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    if (due.toDateString() === today.toDateString()) return "Due today";
-    if (due < today) return "Overdue";
-    return `Due ${due.toLocaleDateString()}`;
+    const dueDateStr = toAESTDate(new Date(date));
+    const todayStr = toAESTDate(new Date());
+    if (dueDateStr === todayStr) return "Due today";
+    if (dueDateStr < todayStr) return "Overdue";
+    return `Due ${new Date(date).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}`;
   };
 
   return (
@@ -236,13 +236,10 @@ const MyJobs: React.FC = () => {
             const statusClass = getStatusClass(job.status);
             const propertyAddress = extractAddress(job) || "Address not available";
             const dueLabel = formatDueLabel(job.dueDate);
-            const dueDate = new Date(job.dueDate);
-            const today = new Date();
-            dueDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
+            const toAEST = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
             const canComplete =
               (job.status === "Scheduled" || job.status === "In Progress") &&
-              dueDate <= today;
+              toAEST(new Date(job.dueDate)) <= toAEST(new Date());
 
             return (
               <div key={job.id} className="job-card">
@@ -267,7 +264,7 @@ const MyJobs: React.FC = () => {
                   </div>
                   <div className="detail-row">
                     <RiCalendarLine />
-                    <span>{new Date(job.dueDate).toLocaleString()}</span>
+                    <span>{new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}</span>
                   </div>
                   <div className="detail-row">
                     <RiTimeLine />

@@ -246,7 +246,7 @@ const TechnicianDashboard: React.FC = () => {
           </span>
           <div className="job-due">
             <RiCalendarLine />
-            <span>{new Date(job.dueDate).toLocaleDateString()}</span>
+            <span>{new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}</span>
           </div>
         </div>
       </div>

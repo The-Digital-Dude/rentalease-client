@@ -57,8 +57,8 @@ const JobCompletionModal: React.FC<JobCompletionModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isDueToday =
-    new Date(dueDate).toDateString() === new Date().toDateString();
+  const toAEST = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+  const isDueToday = toAEST(new Date(dueDate)) === toAEST(new Date());
 
   const calculateItemAmount = (quantity: number, rate: number) => {
     return quantity * rate;

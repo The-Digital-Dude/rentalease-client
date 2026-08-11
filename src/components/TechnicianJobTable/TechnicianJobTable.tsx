@@ -140,7 +140,8 @@ const TechnicianJobTable: React.FC<TechnicianJobTableProps> = ({
   };
 
   const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
+    const toAEST = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+    return toAEST(new Date(dueDate)) < toAEST(new Date());
   };
 
   if (loading) {

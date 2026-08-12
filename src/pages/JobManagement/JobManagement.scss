@@ -563,6 +563,12 @@
     border-color: #bbf7d0;
   }
 
+  &.status-due {
+    background: #fef3c7;
+    color: #d97706;
+    border-color: #fde68a;
+  }
+
   &.status-overdue {
     background: #fecaca;
     color: #dc2626;

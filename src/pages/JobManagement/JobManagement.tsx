@@ -263,7 +263,7 @@ const JobManagement = () => {
 
   // Get urgent/overdue jobs
   const urgentJobs = jobs.filter(
-    (job) => job.status === "Overdue" || job.priority === "Urgent"
+    (job) => job.status === "Overdue" || job.status === "Due" || job.priority === "Urgent"
   );
 
   const getStatusColor = (status: string) => {
@@ -274,6 +274,8 @@ const JobManagement = () => {
         return "status-scheduled";
       case "Pending":
         return "status-pending";
+      case "Due":
+        return "status-due";
       case "Overdue":
         return "status-overdue";
       case "Cancelled":

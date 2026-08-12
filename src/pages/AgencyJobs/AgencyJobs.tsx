@@ -306,6 +306,8 @@ const AgencyJobs = () => {
         return "warning";
       case "scheduled":
         return "info";
+      case "due":
+        return "warning";
       case "overdue":
         return "danger";
       case "cancelled":

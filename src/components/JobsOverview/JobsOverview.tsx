@@ -193,6 +193,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
             <option value="all">All Statuses</option>
             <option value="Pending">Pending</option>
             <option value="Scheduled">Scheduled</option>
+            <option value="Due">Due</option>
             <option value="Completed">Completed</option>
             <option value="Overdue">Overdue</option>
             <option value="Cancelled">Cancelled</option>

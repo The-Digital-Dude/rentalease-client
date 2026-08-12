@@ -3,30 +3,24 @@ import { useNavigate } from "react-router-dom";
 import {
   RiBriefcaseLine,
   RiSearchLine,
-  RiFilterLine,
   RiRefreshLine,
   RiEyeLine,
-  RiEditLine,
   RiCalendarLine,
   RiMapPinLine,
   RiUserLine,
   RiTimeLine,
   RiAlertLine,
-  RiPlayLine,
   RiArrowLeftLine,
   RiArrowRightLine,
-  RiDownloadLine,
-  RiMoreLine,
   RiLoaderLine,
   RiErrorWarningLine,
-  RiInformationLine,
+  RiCheckboxCircleLine,
 } from "react-icons/ri";
 import { useAppSelector } from "../../store";
 import { agencyService } from "../../services/agencyService";
 import "./OverdueJobs.scss";
 
-// Types for job data
-interface OverdueJob {
+interface AttentionJob {
   id: string;
   job_id: string;
   jobType: string;
@@ -34,9 +28,7 @@ interface OverdueJob {
   priority: string;
   description?: string;
   dueDate: string;
-  assignedDate?: string;
-  estimatedDuration?: string;
-  daysOverdue: number;
+  daysLate: number;
   property: {
     _id: string;
     address: {
@@ -67,139 +59,84 @@ interface PaginationInfo {
   itemsPerPage: number;
 }
 
+const daysLate = (dueDate: string): number => {
+  const due = new Date(dueDate).toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+  const diffMs = new Date(today).getTime() - new Date(due).getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+};
+
 const OverdueJobs = () => {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.user);
-  const [jobs, setJobs] = useState<OverdueJob[]>([]);
+  const [dueJobs, setDueJobs] = useState<AttentionJob[]>([]);
+  const [overdueJobs, setOverdueJobs] = useState<AttentionJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("daysOverdue");
+  const [sortBy, setSortBy] = useState<string>("dueDate");
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: 12,
+    itemsPerPage: 50,
   });
 
-  // Fetch overdue jobs data
-  const fetchOverdueJobs = async (page: number = 1) => {
+  const fetchJobs = async (page: number = 1) => {
     try {
       setRefreshing(true);
       setError(null);
 
-      // Build query parameters based on user role
-      const params = new URLSearchParams({
-        status: 'overdue',
+      const baseParams = new URLSearchParams({
         page: page.toString(),
         limit: pagination.itemsPerPage.toString(),
         sort: sortBy,
       });
+      if (searchTerm) baseParams.append("search", searchTerm);
+      if (filterPriority) baseParams.append("priority", filterPriority);
+      if (user.userType === "agency") baseParams.append("agencyId", user.id || "");
 
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
+      const dueParams = new URLSearchParams(baseParams);
+      dueParams.set("status", "Due");
 
-      if (filterPriority) {
-        params.append('priority', filterPriority);
-      }
+      const overdueParams = new URLSearchParams(baseParams);
+      overdueParams.set("status", "Overdue");
 
-      // Role-based filtering
-      if (user.userType === 'agency') {
-        // Agency users only see their own jobs
-        params.append('agencyId', user.id || '');
-      }
-      // Super users and team members see all jobs (no additional filter needed)
+      const [dueResult, overdueResult] = await Promise.all([
+        agencyService.getJobs(`?${dueParams.toString()}`),
+        agencyService.getJobs(`?${overdueParams.toString()}`),
+      ]);
 
-      const result = await agencyService.getJobs(`?${params.toString()}`);
+      const mapJob = (job: any): AttentionJob => ({
+        ...job,
+        daysLate: daysLate(job.dueDate),
+      });
 
-      if (result.status === "success") {
-        const overdueJobs = result.data.jobs?.map((job: any) => ({
-          ...job,
-          daysOverdue: calculateDaysOverdue(job.dueDate),
-        })) || [];
-        
-        setJobs(overdueJobs);
-        setPagination({
-          currentPage: result.data.pagination?.currentPage || 1,
-          totalPages: result.data.pagination?.totalPages || 1,
-          totalItems: result.data.pagination?.totalItems || 0,
-          itemsPerPage: result.data.pagination?.itemsPerPage || 12,
-        });
-      } else {
-        throw new Error(result.message || "Failed to fetch overdue jobs");
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch overdue jobs:", error);
-      setError(error.message || "Failed to load overdue jobs");
+      setDueJobs(dueResult.status === "success" ? (dueResult.data.jobs || []).map(mapJob) : []);
+      setOverdueJobs(overdueResult.status === "success" ? (overdueResult.data.jobs || []).map(mapJob) : []);
+
+      const totalItems =
+        (dueResult.data.pagination?.totalItems || 0) +
+        (overdueResult.data.pagination?.totalItems || 0);
+
+      setPagination((p) => ({ ...p, currentPage: page, totalItems }));
+    } catch (err: any) {
+      setError(err.message || "Failed to load jobs");
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  const calculateDaysOverdue = (dueDate: string): number => {
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = today.getTime() - due.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
-  };
-
   useEffect(() => {
-    fetchOverdueJobs();
+    fetchJobs();
   }, [user.id, user.userType, sortBy]);
-
-  const handleRefresh = () => {
-    fetchOverdueJobs(pagination.currentPage);
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchOverdueJobs(1);
-  };
-
-  const handleFilterChange = (priority: string) => {
-    setFilterPriority(priority);
-    fetchOverdueJobs(1);
-  };
-
-  const handleSortChange = (sort: string) => {
-    setSortBy(sort);
-  };
-
-  const handlePageChange = (page: number) => {
-    fetchOverdueJobs(page);
-  };
-
-  const handleViewJob = (jobId: string) => {
-    navigate(`/jobs/${jobId}`);
-  };
-
-  const handleUrgentAction = async (jobId: string) => {
-    try {
-      // Prioritize or escalate the job
-      console.log("Taking urgent action on job:", jobId);
-      // This would typically call an API endpoint
-      handleRefresh();
-    } catch (error) {
-      console.error("Failed to take urgent action:", error);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "overdue":
-        return "danger";
-      case "in progress":
-        return "warning";
-      case "completed":
-        return "success";
-      default:
-        return "secondary";
-    }
+    fetchJobs(1);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -216,97 +153,73 @@ const OverdueJobs = () => {
     }
   };
 
-  const getOverdueSeverity = (daysOverdue: number) => {
-    if (daysOverdue >= 7) return "critical";
-    if (daysOverdue >= 3) return "high";
-    if (daysOverdue >= 1) return "medium";
-    return "low";
-  };
-
-  const renderJobCard = (job: OverdueJob) => (
-    <div key={job.id} className={`job-card overdue-${getOverdueSeverity(job.daysOverdue)}`}>
-      <div className="job-header">
-        <div className="job-type">
+  const renderJobCard = (job: AttentionJob, variant: "due" | "overdue") => (
+    <div key={job.id} className={`job-card job-card--${variant}`}>
+      <div className="job-card__header">
+        <div className="job-card__type">
           <RiBriefcaseLine />
           <span>{job.jobType}</span>
           <span className="job-id">#{job.job_id}</span>
         </div>
-        <div className="job-status">
-          <span className={`status-badge ${getStatusColor(job.status)}`}>
-            {job.status}
+        <div className="job-card__indicators">
+          <span className={`status-pill status-pill--${variant}`}>
+            {variant === "due" ? "Due" : "Overdue"}
           </span>
-          <div className="overdue-indicator">
-            <RiAlertLine />
-            <span>{job.daysOverdue} days overdue</span>
-          </div>
+          <span className={`days-pill days-pill--${variant}`}>
+            <RiTimeLine />
+            {job.daysLate === 0
+              ? "Due today"
+              : job.daysLate === 1
+              ? "1 day late"
+              : `${job.daysLate} days late`}
+          </span>
         </div>
       </div>
 
-      <div className="job-details">
-        <div className="job-property">
+      <div className="job-card__body">
+        <div className="job-card__address">
           <RiMapPinLine />
-          <span>{job.property.address.fullAddress}</span>
+          <span>{job.property?.address?.fullAddress || "Address unavailable"}</span>
         </div>
-        
+
         {job.description && (
-          <div className="job-description">
-            <p>{job.description}</p>
-          </div>
+          <p className="job-card__description">{job.description}</p>
         )}
 
-        <div className="job-meta">
-          <div className="job-priority">
-            <span className={`priority-badge ${getPriorityColor(job.priority)}`}>
-              {job.priority} Priority
+        <div className="job-card__meta">
+          <span className={`priority-badge ${getPriorityColor(job.priority)}`}>
+            {job.priority} Priority
+          </span>
+          <div className="job-card__due">
+            <RiCalendarLine />
+            <span>
+              Due:{" "}
+              {new Date(job.dueDate).toLocaleDateString("en-AU", {
+                timeZone: "Australia/Sydney",
+              })}
             </span>
           </div>
-          {job.estimatedDuration && (
-            <div className="job-duration">
-              <RiTimeLine />
-              <span>{job.estimatedDuration}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="job-dates">
-          <div className="due-date overdue">
-            <RiCalendarLine />
-            <span>Was due: {new Date(job.dueDate).toLocaleDateString("en-AU", { timeZone: "Australia/Sydney" })}</span>
-          </div>
-          {job.assignedDate && (
-            <div className="assigned-date">
-              <RiCalendarLine />
-              <span>Assigned: {new Date(job.assignedDate).toLocaleDateString()}</span>
-            </div>
-          )}
         </div>
 
         {job.assignedTo && (
-          <div className="job-assignee">
+          <div className="job-card__assignee">
             <RiUserLine />
-            <span>Assigned to: {job.assignedTo.name}</span>
+            <span>{job.assignedTo.name}</span>
           </div>
         )}
 
-        {user.userType !== 'agency' && job.agency && (
-          <div className="job-agency">
+        {user.userType !== "agency" && job.agency && (
+          <div className="job-card__agency">
             <RiBriefcaseLine />
-            <span>Agency: {job.agency.name}</span>
+            <span>{job.agency.name}</span>
           </div>
         )}
       </div>
 
-      <div className="job-actions">
-        <button
-          className="btn btn-danger"
-          onClick={() => handleUrgentAction(job.id)}
-        >
-          <RiAlertLine />
-          Urgent Action
-        </button>
+      <div className="job-card__actions">
         <button
           className="btn btn-secondary"
-          onClick={() => handleViewJob(job.id)}
+          onClick={() => navigate(`/jobs/${job.id}`)}
         >
           <RiEyeLine />
           View Details
@@ -320,7 +233,7 @@ const OverdueJobs = () => {
       <div className="overdue-jobs">
         <div className="loading-container">
           <RiLoaderLine className="loading-spinner" />
-          <p>Loading overdue jobs...</p>
+          <p>Loading jobs...</p>
         </div>
       </div>
     );
@@ -331,9 +244,9 @@ const OverdueJobs = () => {
       <div className="overdue-jobs">
         <div className="error-container">
           <RiErrorWarningLine className="error-icon" />
-          <h3>Error Loading Overdue Jobs</h3>
+          <h3>Error Loading Jobs</h3>
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={handleRefresh}>
+          <button className="btn btn-primary" onClick={() => fetchJobs()}>
             <RiRefreshLine />
             Try Again
           </button>
@@ -341,6 +254,8 @@ const OverdueJobs = () => {
       </div>
     );
   }
+
+  const totalCount = dueJobs.length + overdueJobs.length;
 
   return (
     <div className="overdue-jobs">
@@ -351,27 +266,26 @@ const OverdueJobs = () => {
             Overdue Jobs
           </h1>
           <p>
-            {user.userType === 'agency' 
-              ? `Overdue jobs requiring immediate attention from your agency` 
-              : `All overdue jobs across the system requiring urgent action`
-            }
+            {user.userType === "agency"
+              ? "Jobs from your agency requiring attention"
+              : "All jobs across the system requiring attention"}
           </p>
           <div className="header-stats">
-            <span className="stat critical">
-              <strong>{jobs.filter(j => j.daysOverdue >= 7).length}</strong> critical (7+ days)
+            <span className="stat stat--due">
+              <strong>{dueJobs.length}</strong> Due (1–2 days)
             </span>
-            <span className="stat high">
-              <strong>{jobs.filter(j => j.daysOverdue >= 3 && j.daysOverdue < 7).length}</strong> high (3-6 days)
+            <span className="stat stat--overdue">
+              <strong>{overdueJobs.length}</strong> Overdue (3+ days)
             </span>
-            <span className="stat total">
-              <strong>{pagination.totalItems}</strong> total overdue
+            <span className="stat stat--total">
+              <strong>{totalCount}</strong> total
             </span>
           </div>
         </div>
         <div className="header-actions">
           <button
             className="btn btn-secondary"
-            onClick={handleRefresh}
+            onClick={() => fetchJobs(pagination.currentPage)}
             disabled={refreshing}
           >
             <RiRefreshLine className={refreshing ? "spinning" : ""} />
@@ -386,7 +300,7 @@ const OverdueJobs = () => {
             <RiSearchLine />
             <input
               type="text"
-              placeholder="Search overdue jobs by type, property, or description..."
+              placeholder="Search by job type, property or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -401,7 +315,10 @@ const OverdueJobs = () => {
             <label>Priority:</label>
             <select
               value={filterPriority}
-              onChange={(e) => handleFilterChange(e.target.value)}
+              onChange={(e) => {
+                setFilterPriority(e.target.value);
+                fetchJobs(1);
+              }}
             >
               <option value="">All Priorities</option>
               <option value="urgent">Urgent</option>
@@ -412,13 +329,9 @@ const OverdueJobs = () => {
           </div>
           <div className="filter-group">
             <label>Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-            >
-              <option value="daysOverdue">Days Overdue</option>
-              <option value="priority">Priority</option>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="dueDate">Due Date</option>
+              <option value="priority">Priority</option>
               <option value="jobType">Job Type</option>
             </select>
           </div>
@@ -426,14 +339,14 @@ const OverdueJobs = () => {
       </div>
 
       <div className="jobs-content">
-        {jobs.length === 0 ? (
+        {totalCount === 0 ? (
           <div className="empty-state">
-            <RiAlertLine />
-            <h3>No Overdue Jobs</h3>
+            <RiCheckboxCircleLine className="empty-icon empty-icon--success" />
+            <h3>All Clear</h3>
             <p>
               {searchTerm || filterPriority
-                ? "No overdue jobs match your current filters."
-                : "Great! There are no overdue jobs at the moment."}
+                ? "No jobs match your current filters."
+                : "No jobs require attention right now."}
             </p>
             {(searchTerm || filterPriority) && (
               <button
@@ -441,7 +354,7 @@ const OverdueJobs = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setFilterPriority("");
-                  fetchOverdueJobs(1);
+                  fetchJobs(1);
                 }}
               >
                 Clear Filters
@@ -450,39 +363,30 @@ const OverdueJobs = () => {
           </div>
         ) : (
           <>
-            <div className="jobs-grid">
-              {jobs.map(renderJobCard)}
-            </div>
-
-            {pagination.totalPages > 1 && (
-              <div className="pagination">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1}
-                >
-                  <RiArrowLeftLine />
-                  Previous
-                </button>
-                
-                <div className="page-info">
-                  <span>
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </span>
-                  <span>
-                    ({pagination.totalItems} total overdue jobs)
-                  </span>
+            {dueJobs.length > 0 && (
+              <section className="jobs-section jobs-section--due">
+                <div className="section-heading section-heading--due">
+                  <RiTimeLine />
+                  <span>Due — Not Yet Completed ({dueJobs.length})</span>
+                  <span className="section-sub">Day 1–2 past due date · technician can still complete</span>
                 </div>
+                <div className="jobs-grid">
+                  {dueJobs.map((j) => renderJobCard(j, "due"))}
+                </div>
+              </section>
+            )}
 
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                >
-                  Next
-                  <RiArrowRightLine />
-                </button>
-              </div>
+            {overdueJobs.length > 0 && (
+              <section className="jobs-section jobs-section--overdue">
+                <div className="section-heading section-heading--overdue">
+                  <RiAlertLine />
+                  <span>Overdue — Immediate Attention Required ({overdueJobs.length})</span>
+                  <span className="section-sub">3+ days past due date · requires rescheduling or urgent completion</span>
+                </div>
+                <div className="jobs-grid">
+                  {overdueJobs.map((j) => renderJobCard(j, "overdue"))}
+                </div>
+              </section>
             )}
           </>
         )}

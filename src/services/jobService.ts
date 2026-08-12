@@ -100,6 +100,7 @@ export interface CreateJobData {
     | "Repairs"
     | "Routine Inspection";
   dueDate: string;
+  shift?: "morning" | "afternoon" | "evening";
   assignedTechnician: string | null;
   description?: string;
   priority?: "Low" | "Medium" | "High" | "Urgent";

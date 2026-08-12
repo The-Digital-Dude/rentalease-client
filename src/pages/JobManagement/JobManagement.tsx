@@ -302,14 +302,11 @@ const JobManagement = () => {
     try {
       setIsCreatingJob(true);
       setError(null);
-      const dueDateTime =
-        formData.dueDate && formData.scheduledTime
-          ? `${formData.dueDate}T${formData.scheduledTime}`
-          : formData.dueDate;
       const jobData: CreateJobData = {
         property: formData.propertyId,
         jobType: formData.jobType,
-        dueDate: dueDateTime,
+        dueDate: formData.dueDate,
+        shift: formData.shift || "morning",
         assignedTechnician: formData.assignedTechnician || null,
         priority: formData.priority,
         description: formData.description,

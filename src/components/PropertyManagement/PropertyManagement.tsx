@@ -15,6 +15,8 @@ interface PropertyManagementProps {
   searchPlaceholder?: string;
   enableFilters?: boolean;
   className?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 const PropertyManagement: React.FC<PropertyManagementProps> = ({
@@ -28,8 +30,13 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
   searchPlaceholder = "Search properties...",
   enableFilters = true,
   className = "",
+  searchValue: externalSearchValue,
+  onSearchChange: externalOnSearchChange,
 }) => {
+  const isControlledSearch = externalSearchValue !== undefined && externalOnSearchChange !== undefined;
   const [searchTerm, setSearchTerm] = useState("");
+  const effectiveSearchTerm = isControlledSearch ? externalSearchValue : searchTerm;
+  const handleSearchChange = isControlledSearch ? externalOnSearchChange : setSearchTerm;
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -186,7 +193,7 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
 
   // Clear all filters function
   const handleClearAllFilters = () => {
-    setSearchTerm("");
+    handleSearchChange("");
     setRegionFilter("all");
     setTypeFilter("all");
     setStatusFilter("all");
@@ -202,22 +209,24 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
   // Filter properties based on search and filters
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
-      const matchesSearch =
-        property.address.fullAddress
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (property.propertyManager || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        property.currentTenant?.name
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        property.currentLandlord?.name
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        property.agency?.companyName
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
+      const matchesSearch = isControlledSearch
+        ? true
+        : effectiveSearchTerm === "" ||
+          property.address.fullAddress
+            .toLowerCase()
+            .includes(effectiveSearchTerm.toLowerCase()) ||
+          (property.propertyManager || "")
+            .toLowerCase()
+            .includes(effectiveSearchTerm.toLowerCase()) ||
+          property.currentTenant?.name
+            ?.toLowerCase()
+            .includes(effectiveSearchTerm.toLowerCase()) ||
+          property.currentLandlord?.name
+            ?.toLowerCase()
+            .includes(effectiveSearchTerm.toLowerCase()) ||
+          property.agency?.companyName
+            ?.toLowerCase()
+            .includes(effectiveSearchTerm.toLowerCase());
 
       const matchesRegion =
         regionFilter === "all" || property.region === regionFilter;
@@ -276,7 +285,8 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
     });
   }, [
     properties,
-    searchTerm,
+    isControlledSearch,
+    effectiveSearchTerm,
     regionFilter,
     typeFilter,
     statusFilter,
@@ -344,8 +354,8 @@ const PropertyManagement: React.FC<PropertyManagementProps> = ({
 
       <PropertyGrid
         properties={filteredProperties}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        searchValue={effectiveSearchTerm}
+        onSearchChange={handleSearchChange}
         searchPlaceholder={searchPlaceholder}
         filters={filters}
         onPropertyEdit={onPropertyEdit}

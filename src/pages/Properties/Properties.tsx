@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../store";
 import { defaultRoutes } from "../../config/roleBasedRoutes";
@@ -23,6 +23,7 @@ const Properties = () => {
   const currentPath = userType ? defaultRoutes[userType as UserType] : "/";
 
   const PAGE_SIZE = 25;
+  const SEARCH_DEBOUNCE_MS = 400;
 
   // State management
   const [properties, setProperties] = useState<Property[]>([]);
@@ -35,6 +36,8 @@ const Properties = () => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -42,9 +45,18 @@ const Properties = () => {
     hasNext: false,
     hasPrev: false,
   });
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setAppliedSearch(value);
+    }, SEARCH_DEBOUNCE_MS);
+  };
 
   // Load properties
-  const loadProperties = async (page = 1) => {
+  const loadProperties = async (page = 1, search = appliedSearch) => {
     try {
       setLoading(true);
       setError(null);
@@ -52,6 +64,7 @@ const Properties = () => {
       const response = await propertyService.getProperties({
         page,
         limit: PAGE_SIZE,
+        search: search || undefined,
       });
 
       if (response.status === "success") {
@@ -69,14 +82,14 @@ const Properties = () => {
   };
 
   const handlePageChange = (newPage: number) => {
-    loadProperties(newPage);
+    loadProperties(newPage, appliedSearch);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Effects
   useEffect(() => {
-    loadProperties();
-  }, []);
+    loadProperties(1, appliedSearch);
+  }, [appliedSearch]);
 
   // Event handlers
   const handleAddProperty = () => {
@@ -116,14 +129,16 @@ const Properties = () => {
         );
         if (response.status === "success") {
           setIsFormModalOpen(false);
-          await loadProperties(pagination.currentPage);
+          await loadProperties(pagination.currentPage, appliedSearch);
           toast.success("Property updated successfully!");
         }
       } else {
         const response = await propertyService.createProperty(propertyData);
         if (response.status === "success") {
           setIsFormModalOpen(false);
-          await loadProperties(1);
+          setSearchInput("");
+          setAppliedSearch("");
+          await loadProperties(1, "");
           toast.success("Property created successfully!");
         }
       }
@@ -164,7 +179,7 @@ const Properties = () => {
       if (response.status === "success") {
         setIsDeleteModalOpen(false);
         setDeletingProperty(null);
-        await loadProperties(pagination.currentPage);
+        await loadProperties(pagination.currentPage, appliedSearch);
         toast.success("Property deleted successfully!");
       }
     } catch (error: any) {
@@ -235,7 +250,7 @@ const Properties = () => {
   return (
     <div className="page-container properties-page">
       <PropertiesHeader
-        onRefresh={() => loadProperties(pagination.currentPage)}
+        onRefresh={() => loadProperties(pagination.currentPage, appliedSearch)}
         onAddProperty={handleAddProperty}
         loading={loading}
       />
@@ -252,6 +267,8 @@ const Properties = () => {
         searchPlaceholder="Search properties by address, tenant, landlord, or agency..."
         enableFilters={true}
         showActions={true}
+        searchValue={searchInput}
+        onSearchChange={handleSearchChange}
       />
 
       {pagination.totalPages > 1 && (

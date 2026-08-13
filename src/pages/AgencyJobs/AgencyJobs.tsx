@@ -148,6 +148,7 @@ const AgencyJobs = () => {
   // Fetch jobs with filters and pagination
   const fetchJobs = async (page = 1, newFilters?: Partial<JobFilters>) => {
     try {
+      setLoading(true);
       setRefreshing(true);
       setError(null);
 

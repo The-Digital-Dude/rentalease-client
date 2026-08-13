@@ -95,7 +95,7 @@ type DashboardData = {
 type TechnicianTab = "overview" | "active" | "completed" | "overdue";
 
 const TechnicianDashboard: React.FC = () => {
-  const { user } = useAppSelector((state) => state.user);
+  const { name } = useAppSelector((state) => state.user);
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
 
@@ -311,7 +311,7 @@ const TechnicianDashboard: React.FC = () => {
         <div className="welcome-section">
           <div className="welcome-content">
             <span className="eyebrow">Technician command centre</span>
-            <h1>Welcome back, {user?.name || "Technician"}!</h1>
+            <h1>Welcome back, {name || "Technician"}!</h1>
             <p>
               Plan your day, monitor performance, and action jobs from here.
             </p>

@@ -25,7 +25,7 @@ interface StaffJob {
 }
 
 const StaffDashboard = () => {
-  const { user } = useAppSelector((state) => state.user);
+  const { name } = useAppSelector((state) => state.user);
   const { isDarkMode } = useTheme();
   const [jobs, setJobs] = useState<StaffJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +170,7 @@ const StaffDashboard = () => {
     <div className="staff-dashboard">
       <div className="dashboard-header">
         <div className="welcome-section">
-          <h1>Welcome back, {user?.name || "Staff Member"}!</h1>
+          <h1>Welcome back, {name || "Staff Member"}!</h1>
           <p>Manage job assignments and track technician progress</p>
         </div>
         <div className="stats-overview">

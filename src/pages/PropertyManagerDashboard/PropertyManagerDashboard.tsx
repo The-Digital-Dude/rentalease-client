@@ -20,7 +20,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import "./PropertyManagerDashboard.scss";
 
 const PropertyManagerDashboard: React.FC = () => {
-  const { user } = useAppSelector((state) => state.user);
+  const { id: userId } = useAppSelector((state) => state.user);
   const { isDarkMode } = useTheme();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ const PropertyManagerDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching properties for property manager:", user?.id);
+      console.log("Fetching properties for property manager:", userId);
       const response = await propertyService.getProperties(filters);
 
       if (response.status === "success") {

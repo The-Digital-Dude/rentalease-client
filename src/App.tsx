@@ -52,7 +52,7 @@ const LoadingSpinner = () => (
 const App = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { userType } = useAppSelector((state) => state.user);
+  const { userType, authResolved } = useAppSelector((state) => state.user);
   const location = useLocation();
 
   useEffect(() => {
@@ -198,20 +198,22 @@ const App = () => {
                   {/* Property Manager Profile Route */}
                   <Route path="/property-managers/:id" element={<PropertyManagerProfile />} />
 
-                  {/* Default Route */}
-                  <Route
-                    path="/"
-                    element={
-                      <Navigate
-                        to={
-                          userType
-                            ? defaultRoutes[userType as UserType]
-                            : "/login"
-                        }
-                        replace
-                      />
-                    }
-                  />
+                  {/* Default Route — only redirect after auth state is resolved */}
+                  {authResolved && (
+                    <Route
+                      path="/"
+                      element={
+                        <Navigate
+                          to={
+                            userType
+                              ? defaultRoutes[userType as UserType]
+                              : "/login"
+                          }
+                          replace
+                        />
+                      }
+                    />
+                  )}
                 </Routes>
               </Suspense>
             </AppLayout>

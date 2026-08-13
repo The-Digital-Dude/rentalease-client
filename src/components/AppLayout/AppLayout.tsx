@@ -52,9 +52,14 @@ const AppLayoutContent = ({ children }: AppLayoutProps) => {
 };
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const { userType } = useAppSelector((state) => state.user);
+  const { userType, authResolved } = useAppSelector((state) => state.user);
 
-  // Don't show layout for login pages
+  // Hold render until localStorage auth has been read — prevents layout pop-in
+  if (!authResolved) {
+    return null;
+  }
+
+  // No authenticated user — render children bare (login pages)
   if (!userType) {
     return <>{children}</>;
   }

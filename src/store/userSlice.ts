@@ -19,6 +19,7 @@ export type UserType =
 // Define the user state interface
 export interface UserState {
   isLoggedIn: boolean;
+  authResolved: boolean;
   email: string | null;
   userType: UserType | null;
   name: string | null;
@@ -32,6 +33,7 @@ export interface UserState {
 // Define the initial state
 const initialState: UserState = {
   isLoggedIn: false,
+  authResolved: false,
   email: null,
   userType: null,
   name: null,
@@ -70,6 +72,7 @@ const userSlice = createSlice({
     // Action to log in a user
     login: (state, action: PayloadAction<LoginPayload>) => {
       state.isLoggedIn = true;
+      state.authResolved = true;
       state.email = action.payload.email;
       state.userType = action.payload.userType;
       state.name = action.payload.name;
@@ -141,6 +144,7 @@ const userSlice = createSlice({
       } else {
         console.log("No token or userData found in localStorage");
       }
+      state.authResolved = true;
     },
     // Action to update user info
     updateUser: (state, action: PayloadAction<Partial<LoginPayload>>) => {

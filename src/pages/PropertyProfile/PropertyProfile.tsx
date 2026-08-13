@@ -1154,6 +1154,7 @@ const PropertyProfile: React.FC = () => {
             ) : (
               <p className="no-data">No agency assigned</p>
             )}
+          </div>
         </div>
 
         {/* Property Manager */}

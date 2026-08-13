@@ -80,17 +80,25 @@ const MyPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchPayments = useCallback(async () => {
+  const fetchPayments = useCallback(async (status: string, page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
       const response: TechnicianPaymentsResponse =
-        await technicianService.getMyPayments({ limit: 100 });
+        await technicianService.getMyPayments({
+          status: status === "all" ? undefined : status,
+          limit: 20,
+          page,
+        });
 
       if (response.status === "success" && response.data) {
         setPayments(response.data.payments ?? []);
+        setCurrentPage(response.data.pagination?.currentPage ?? page);
+        setTotalPages(response.data.pagination?.totalPages ?? 1);
         setLastUpdated(new Date().toISOString());
       } else {
         throw new Error(response.message || "Failed to fetch payments");
@@ -105,19 +113,15 @@ const MyPayments: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchPayments();
-  }, [fetchPayments]);
+    fetchPayments(statusFilter, 1);
+    setCurrentPage(1);
+  }, [fetchPayments, statusFilter]);
 
   const filteredPayments = useMemo(() => {
-    const statusFiltered = payments.filter((payment) => {
-      if (statusFilter === "all") return true;
-      return payment.status === statusFilter;
-    });
-
-    if (!searchTerm) return statusFiltered;
+    if (!searchTerm) return payments;
 
     const term = searchTerm.toLowerCase();
-    return statusFiltered.filter((payment) => {
+    return payments.filter((payment) => {
       const paymentNumber = payment.paymentNumber?.toLowerCase() ?? "";
       const jobType = payment.jobType?.toLowerCase() ?? "";
       const jobId = payment.jobId?.job_id?.toLowerCase() ?? "";
@@ -129,7 +133,7 @@ const MyPayments: React.FC = () => {
         property.includes(term)
       );
     });
-  }, [payments, statusFilter, searchTerm]);
+  }, [payments, searchTerm]);
 
   const summary: PaymentSummary = useMemo(() => {
     return filteredPayments.reduce<PaymentSummary>(
@@ -197,7 +201,7 @@ const MyPayments: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    fetchPayments();
+    fetchPayments(statusFilter, currentPage);
   };
 
   const handleViewPaymentJob = (payment: TechnicianPayment) => {
@@ -377,6 +381,28 @@ const MyPayments: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", padding: "1.5rem 0" }}>
+          <button
+            className="btn btn-outline"
+            disabled={currentPage <= 1 || loading}
+            onClick={() => fetchPayments(statusFilter, currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="btn btn-outline"
+            disabled={currentPage >= totalPages || loading}
+            onClick={() => fetchPayments(statusFilter, currentPage + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

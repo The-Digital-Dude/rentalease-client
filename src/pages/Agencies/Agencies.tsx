@@ -32,6 +32,13 @@ const Agencies = () => {
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
 
   // Get current user info for role-based access
   const { userType } = useAppSelector((state) => state.user);
@@ -57,7 +64,7 @@ const Agencies = () => {
   }, [successMessage]);
 
   // Fetch agencies from API
-  const fetchAgencies = async () => {
+  const fetchAgencies = async (page = 1) => {
     try {
       setLoading(true);
       setError("");
@@ -66,26 +73,29 @@ const Agencies = () => {
       const response = await agencyService.getAllAgencies({
         includeArchived,
         onlyArchived,
-        limit: 1000,
+        limit: 20,
+        page,
       });
 
       if (response.success) {
-        // Ensure we always have an array
         setAgencies(Array.isArray(response.data) ? response.data : []);
+        if (response.pagination) {
+          setPagination(response.pagination);
+        }
       } else {
         toast.error(response.message || "Failed to fetch agencies");
-        setAgencies([]); // Set empty array on error
+        setAgencies([]);
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch agencies");
-      setAgencies([]); // Set empty array on error
+      setAgencies([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAgencies();
+    fetchAgencies(1);
   }, [archiveFilter]);
 
   const filteredAgencies = (Array.isArray(agencies) ? agencies : []).filter(
@@ -172,7 +182,7 @@ const Agencies = () => {
         if (response.success) {
           toast.success("Agency updated successfully!");
           // Refetch agencies from server to ensure list is synchronized
-          await fetchAgencies();
+          await fetchAgencies(pagination.currentPage);
         } else {
           toast.error(response.message || "Failed to update agency");
           return;
@@ -214,7 +224,7 @@ const Agencies = () => {
         if (response.success) {
           toast.success(response.message || "Agency created successfully!");
           // Refetch agencies from server to ensure list is synchronized
-          await fetchAgencies();
+          await fetchAgencies(pagination.currentPage);
         } else {
           toast.error(response.message || "Failed to create agency");
           return;
@@ -526,6 +536,30 @@ const Agencies = () => {
           ))
         )}
       </div>
+
+      {pagination.totalPages > 1 && (
+        <div className="pagination" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", padding: "1.5rem 0" }}>
+          <button
+            className="btn-secondary"
+            disabled={!pagination.hasPrev || loading}
+            onClick={() => fetchAgencies(pagination.currentPage - 1)}
+            style={{ padding: "0.5rem 1rem", cursor: pagination.hasPrev ? "pointer" : "not-allowed" }}
+          >
+            Previous
+          </button>
+          <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalCount} agencies)
+          </span>
+          <button
+            className="btn-secondary"
+            disabled={!pagination.hasNext || loading}
+            onClick={() => fetchAgencies(pagination.currentPage + 1)}
+            style={{ padding: "0.5rem 1rem", cursor: pagination.hasNext ? "pointer" : "not-allowed" }}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <AgencyFormModal
         isOpen={showForm}

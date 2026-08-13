@@ -81,7 +81,7 @@ const OverdueJobs = () => {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: 50,
+    itemsPerPage: 20,
   });
 
   const fetchJobs = async (page: number = 1) => {
@@ -121,7 +121,12 @@ const OverdueJobs = () => {
         (dueResult.data.pagination?.totalItems || 0) +
         (overdueResult.data.pagination?.totalItems || 0);
 
-      setPagination((p) => ({ ...p, currentPage: page, totalItems }));
+      const totalPages = Math.max(
+        dueResult.data.pagination?.totalPages || 1,
+        overdueResult.data.pagination?.totalPages || 1
+      );
+
+      setPagination((p) => ({ ...p, currentPage: page, totalItems, totalPages }));
     } catch (err: any) {
       setError(err.message || "Failed to load jobs");
     } finally {
@@ -391,6 +396,28 @@ const OverdueJobs = () => {
           </>
         )}
       </div>
+
+      {pagination.totalPages > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", padding: "1.5rem 0" }}>
+          <button
+            className="btn btn-secondary"
+            disabled={pagination.currentPage <= 1 || refreshing}
+            onClick={() => fetchJobs(pagination.currentPage - 1)}
+          >
+            <RiArrowLeftLine /> Previous
+          </button>
+          <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalItems} total)
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={pagination.currentPage >= pagination.totalPages || refreshing}
+            onClick={() => fetchJobs(pagination.currentPage + 1)}
+          >
+            Next <RiArrowRightLine />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

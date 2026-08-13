@@ -254,6 +254,13 @@ export interface AgencyResponse {
   success: boolean;
   data: Agency[];
   message?: string;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 const normalizeAgencyComplianceType = (value?: string | null): string => {
@@ -361,6 +368,7 @@ export const agencyService = {
     includeArchived?: boolean;
     onlyArchived?: boolean;
     limit?: number;
+    page?: number;
   }): Promise<AgencyResponse> => {
     try {
       const params = new URLSearchParams();
@@ -370,8 +378,11 @@ export const agencyService = {
       if (options?.onlyArchived) {
         params.append("onlyArchived", "true");
       }
-      params.append("limit", (options?.limit || 100).toString());
-      
+      params.append("limit", (options?.limit || 20).toString());
+      if (options?.page) {
+        params.append("page", options.page.toString());
+      }
+
       const queryString = params.toString();
       const response = await api.get<ServerResponse>(
         `/v1/agency/auth/all${queryString ? `?${queryString}` : ""}`
@@ -382,6 +393,7 @@ export const agencyService = {
         return {
           success: true,
           data: mappedData,
+          pagination: response.data.data.pagination,
         };
       } else {
         return {

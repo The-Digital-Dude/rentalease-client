@@ -36,6 +36,11 @@ type JobsResponse = {
       statusCounts?: Record<string, number>;
       totalJobs?: number;
     };
+    pagination?: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+    };
   };
 };
 
@@ -52,16 +57,19 @@ const MyJobs: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [jobToComplete, setJobToComplete] = useState<Job | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchJobs = useCallback(
-    async (currentStatus: TechnicianTab) => {
+    async (currentStatus: TechnicianTab, page = 1) => {
       setLoading(true);
       setError(null);
 
       try {
         const response: JobsResponse = await technicianService.getMyJobs({
           status: currentStatus === "all" ? undefined : currentStatus,
-          limit: 100,
+          limit: 20,
+          page,
         });
 
         if (response.status === "success" && response.data) {
@@ -70,6 +78,8 @@ const MyJobs: React.FC = () => {
             statusCounts: response.data.statistics?.statusCounts ?? {},
             totalJobs: response.data.statistics?.totalJobs ?? 0,
           });
+          setCurrentPage(response.data.pagination?.currentPage ?? page);
+          setTotalPages(response.data.pagination?.totalPages ?? 1);
         } else {
           throw new Error(response.message || "Failed to fetch jobs");
         }
@@ -83,7 +93,8 @@ const MyJobs: React.FC = () => {
   );
 
   useEffect(() => {
-    fetchJobs(statusFilter);
+    fetchJobs(statusFilter, 1);
+    setCurrentPage(1);
   }, [fetchJobs, statusFilter]);
 
   const filteredJobs = useMemo(() => {
@@ -172,7 +183,7 @@ const MyJobs: React.FC = () => {
           </div>
         </div>
         <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => fetchJobs(statusFilter)}>
+          <button className="btn btn-outline" onClick={() => fetchJobs(statusFilter, currentPage)}>
             <RiRefreshLine /> Refresh
           </button>
         </div>
@@ -295,6 +306,28 @@ const MyJobs: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", padding: "1.5rem 0" }}>
+          <button
+            className="btn btn-outline"
+            disabled={currentPage <= 1 || loading}
+            onClick={() => fetchJobs(statusFilter, currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="btn btn-outline"
+            disabled={currentPage >= totalPages || loading}
+            onClick={() => fetchJobs(statusFilter, currentPage + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
 

@@ -22,6 +22,8 @@ const Properties = () => {
   const navigate = useNavigate();
   const currentPath = userType ? defaultRoutes[userType as UserType] : "/";
 
+  const PAGE_SIZE = 25;
+
   // State management
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,20 +35,28 @@ const Properties = () => {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
 
   // Load properties
-  const loadProperties = async () => {
+  const loadProperties = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await propertyService.getProperties({
-        page: 1,
-        limit: 1000, // Load all properties for comprehensive management
+        page,
+        limit: PAGE_SIZE,
       });
 
       if (response.status === "success") {
         setProperties(response.data.properties);
+        setPagination(response.data.pagination);
       }
     } catch (error: any) {
       console.error("Error loading properties:", error);
@@ -56,6 +66,11 @@ const Properties = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    loadProperties(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Effects
@@ -101,14 +116,14 @@ const Properties = () => {
         );
         if (response.status === "success") {
           setIsFormModalOpen(false);
-          await loadProperties();
+          await loadProperties(pagination.currentPage);
           toast.success("Property updated successfully!");
         }
       } else {
         const response = await propertyService.createProperty(propertyData);
         if (response.status === "success") {
           setIsFormModalOpen(false);
-          await loadProperties();
+          await loadProperties(1);
           toast.success("Property created successfully!");
         }
       }
@@ -149,7 +164,7 @@ const Properties = () => {
       if (response.status === "success") {
         setIsDeleteModalOpen(false);
         setDeletingProperty(null);
-        await loadProperties();
+        await loadProperties(pagination.currentPage);
         toast.success("Property deleted successfully!");
       }
     } catch (error: any) {
@@ -220,7 +235,7 @@ const Properties = () => {
   return (
     <div className="page-container properties-page">
       <PropertiesHeader
-        onRefresh={loadProperties}
+        onRefresh={() => loadProperties(pagination.currentPage)}
         onAddProperty={handleAddProperty}
         loading={loading}
       />
@@ -238,6 +253,29 @@ const Properties = () => {
         enableFilters={true}
         showActions={true}
       />
+
+      {pagination.totalPages > 1 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            disabled={!pagination.hasPrev || loading}
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span className="pagination-info">
+            Page {pagination.currentPage} of {pagination.totalPages}
+            {" "}({pagination.totalCount} properties)
+          </span>
+          <button
+            className="pagination-btn"
+            disabled={!pagination.hasNext || loading}
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <PropertyModals
         isFormModalOpen={isFormModalOpen}

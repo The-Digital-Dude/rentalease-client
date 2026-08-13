@@ -1118,37 +1118,42 @@ const PropertyProfile: React.FC = () => {
             Agency
           </h2>
           <div className="contact-card">
-            <div className="contact-info">
-              <h3>{property.agency.companyName}</h3>
-              <p className="contact-person">{property.agency.contactPerson}</p>
-              <div className="contact-details">
-                <div className="contact-item">
-                  <RiMailLine />
-                  <span>{property.agency.email}</span>
+            {property.agency ? (
+              <>
+                <div className="contact-info">
+                  <h3>{property.agency.companyName}</h3>
+                  <p className="contact-person">{property.agency.contactPerson}</p>
+                  <div className="contact-details">
+                    <div className="contact-item">
+                      <RiMailLine />
+                      <span>{property.agency.email}</span>
+                    </div>
+                    <div className="contact-item">
+                      <RiPhoneLine />
+                      <span>{property.agency.phone}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="contact-item">
-                  <RiPhoneLine />
-                  <span>{property.agency.phone}</span>
-                </div>
-              </div>
-            </div>
-            {canSendEmail && (
-              <button
-                className="btn-email"
-                onClick={() =>
-                  handleOpenEmailModal(
-                    property.agency.email,
-                    property.agency.companyName,
-                    "agency"
-                  )
-                }
-                title="Send Email to Agency"
-              >
-                <RiMailLine />
-                Email
-              </button>
+                {canSendEmail && (
+                  <button
+                    className="btn-email"
+                    onClick={() =>
+                      handleOpenEmailModal(
+                        property.agency!.email,
+                        property.agency!.companyName,
+                        "agency"
+                      )
+                    }
+                    title="Send Email to Agency"
+                  >
+                    <RiMailLine />
+                    Email
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="no-data">No agency assigned</p>
             )}
-          </div>
         </div>
 
         {/* Tenant Information */}

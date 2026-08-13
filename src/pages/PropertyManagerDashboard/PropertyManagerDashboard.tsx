@@ -281,7 +281,7 @@ const PropertyManagerDashboard: React.FC = () => {
                         <RiMapPinLine />
                         <div>
                           <label>Agency</label>
-                          <span>{property.agency.companyName}</span>
+                          <span>{property.agency?.companyName || "Not assigned"}</span>
                         </div>
                       </div>
                     </div>

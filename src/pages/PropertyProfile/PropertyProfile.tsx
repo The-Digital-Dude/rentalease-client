@@ -80,7 +80,7 @@ const PropertyProfile: React.FC = () => {
   const [emailRecipient, setEmailRecipient] = useState<{
     email: string;
     name: string;
-    type: "agency" | "tenant" | "landlord";
+    type: "agency" | "tenant" | "landlord" | "propertyManager";
   } | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -1154,6 +1154,54 @@ const PropertyProfile: React.FC = () => {
             ) : (
               <p className="no-data">No agency assigned</p>
             )}
+        </div>
+
+        {/* Property Manager */}
+        <div className="profile-section">
+          <h2>
+            <RiUser3Line />
+            Property Manager
+          </h2>
+          <div className="contact-card">
+            {property.assignedPropertyManager ? (
+              <>
+                <div className="contact-info">
+                  <h3>
+                    {property.assignedPropertyManager.firstName}{" "}
+                    {property.assignedPropertyManager.lastName}
+                  </h3>
+                  <div className="contact-details">
+                    <div className="contact-item">
+                      <RiMailLine />
+                      <span>{property.assignedPropertyManager.email}</span>
+                    </div>
+                    <div className="contact-item">
+                      <RiPhoneLine />
+                      <span>{property.assignedPropertyManager.phone}</span>
+                    </div>
+                  </div>
+                </div>
+                {canSendEmail && (
+                  <button
+                    className="btn-email"
+                    onClick={() =>
+                      handleOpenEmailModal(
+                        property.assignedPropertyManager!.email,
+                        `${property.assignedPropertyManager!.firstName} ${property.assignedPropertyManager!.lastName}`,
+                        "propertyManager"
+                      )
+                    }
+                    title="Send Email to Property Manager"
+                  >
+                    <RiMailLine />
+                    Email
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="no-data">No property manager assigned</p>
+            )}
+          </div>
         </div>
 
         {/* Tenant Information */}

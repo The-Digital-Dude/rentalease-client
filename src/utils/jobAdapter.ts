@@ -8,6 +8,7 @@ export interface ComponentJob {
   propertyId: string;
   jobType: "Gas" | "Electrical" | "Smoke" | "MinimumSafetyStandard" | "Repairs" | "Routine Inspection";
   dueDate: string;
+  shift?: "morning" | "afternoon" | "evening";
   assignedTechnician: string; // Display name for table
   assignedTechnicianId: string; // ID for form submission
   status: "Pending" | "Scheduled" | "Completed" | "Overdue" | "Cancelled";
@@ -96,6 +97,7 @@ export const adaptServiceJobToComponentJob = (
     propertyId,
     jobType: serviceJob.jobType,
     dueDate: serviceJob.dueDate,
+    shift: serviceJob.shift,
     assignedTechnician: assignedTechnicianName,
     assignedTechnicianId: assignedTechnicianId,
     status: serviceJob.status,

@@ -437,6 +437,7 @@ const JobManagement = () => {
       jobType: job.jobType,
       dueDate: aestDateStr,
       scheduledTime: "",
+      shift: job.shift || "morning",
       assignedTechnician: job.assignedTechnicianId,
       priority: job.priority,
       description: job.description || "",

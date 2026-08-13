@@ -327,7 +327,8 @@ const JobManagement = () => {
         setError(response.message);
       }
     } catch (err) {
-      const errorMessage = "Failed to create job";
+      console.error("handleCreateJob caught:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to create job";
       toast.error(`❌ ${errorMessage}`);
       setError(errorMessage);
     } finally {

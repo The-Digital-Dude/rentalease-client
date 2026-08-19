@@ -523,6 +523,7 @@ const JobManagement = () => {
       const updatePayload: any = {
         jobType: updatedJob.jobType,
         dueDate: updatedJob.dueDate,
+        shift: updatedJob.shift || "morning",
         assignedTechnician: updatedJob.assignedTechnicianId || null,
         status: updatedJob.status,
         priority: updatedJob.priority,

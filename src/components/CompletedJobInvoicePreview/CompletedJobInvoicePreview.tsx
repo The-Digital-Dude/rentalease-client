@@ -111,7 +111,6 @@ const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
               <span key={`${line}-${index}`}>{line}</span>
             ))}
           </div>
-          <span className="attention-line">For attention of: {attentionName}</span>
           <span className="authorised-line">{authorisedBy}</span>
         </div>
 
@@ -140,7 +139,7 @@ const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
               <strong>{formatCurrency(invoice.subtotal)}</strong>
             </div>
             <div>
-              <span>GST</span>
+              <span>GST (10%)</span>
               <strong>{formatCurrency(invoice.tax)}</strong>
             </div>
             <div className="total-row">

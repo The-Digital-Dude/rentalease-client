@@ -247,25 +247,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                 <span className="label">Property Address:</span>
                 <span className="value">{getPropertyAddress()}</span>
               </div>
-              {(getPropertyManagerName() || getAgencyContactName()) && (
-                <div className="detail-item">
-                  <span className="label">
-                    {getPropertyManagerName()
-                      ? "Property Manager:"
-                      : "Agency Contact:"}
-                  </span>
-                  <span className="value">
-                    {getPropertyManagerName() || getAgencyContactName()}
-                  </span>
-                </div>
-              )}
-              {getPropertyManagerEmail() && (
-                <div className="detail-item">
-                  <span className="label">Manager Email:</span>
-                  <span className="value">{getPropertyManagerEmail()}</span>
-                </div>
-              )}
-              {!getPropertyManagerEmail() && getAgencyEmail() && (
+              {getAgencyEmail() && (
                 <div className="detail-item">
                   <span className="label">Agency Email:</span>
                   <span className="value">{getAgencyEmail()}</span>

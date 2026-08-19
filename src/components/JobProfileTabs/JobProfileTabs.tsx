@@ -471,6 +471,24 @@ const JobProfileTabs: React.FC<JobProfileTabsProps> = ({
                         <span>{technician.phone}</span>
                       </div>
                     </div>
+                    {technician.licenseNumber && (
+                      <div className="technician-item">
+                        <RiShieldCheckLine />
+                        <div>
+                          <label>License Number</label>
+                          <span>{technician.licenseNumber}</span>
+                        </div>
+                      </div>
+                    )}
+                    {technician.licenseExpiry && (
+                      <div className="technician-item">
+                        <RiShieldCheckLine />
+                        <div>
+                          <label>License Expiry</label>
+                          <span>{new Date(technician.licenseExpiry).toLocaleDateString("en-AU")}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

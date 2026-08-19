@@ -88,6 +88,10 @@ const CompletedJobInvoicePreview: React.FC<CompletedJobInvoicePreviewProps> = ({
             <strong>{invoiceNumber}</strong>
           </div>
           <div className="invoice-number-row">
+            <span>Job ID:</span>
+            <strong>{job.job_id}</strong>
+          </div>
+          <div className="invoice-number-row">
             <span>Invoice Date:</span>
             <strong>{displayDates.invoiceDateLabel}</strong>
           </div>

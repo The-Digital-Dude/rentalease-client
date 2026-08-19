@@ -56,6 +56,8 @@ interface JobProfileData {
     availabilityStatus: string;
     currentJobs: number;
     hourlyRate: number;
+    licenseNumber?: string;
+    licenseExpiry?: string;
   };
   statistics: {
     totalCost: number;
@@ -202,6 +204,8 @@ const JobProfile: React.FC = () => {
                     job.assignedTechnician.availabilityStatus || "Unknown",
                   currentJobs: job.assignedTechnician.currentJobs || 0,
                   hourlyRate: job.assignedTechnician.hourlyRate || 0,
+                  licenseNumber: job.assignedTechnician.licenseNumber,
+                  licenseExpiry: job.assignedTechnician.licenseExpiry,
                 }
               : undefined,
             statistics: {

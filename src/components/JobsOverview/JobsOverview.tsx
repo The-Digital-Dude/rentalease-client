@@ -120,6 +120,7 @@ const JobsOverview: React.FC<JobsOverviewProps> = ({
       propertyId: updatedJob.propertyId,
       jobType: updatedJob.jobType,
       dueDate: formatDateForInput(updatedJob.dueDate),
+      shift: updatedJob.shift || "morning",
       scheduledTime: isValidDueDate
         ? `${String(dueDateObj.getHours()).padStart(2, "0")}:${String(dueDateObj.getMinutes()).padStart(2, "0")}`
         : "",

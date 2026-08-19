@@ -42,6 +42,10 @@ const TechnicianProfile: React.FC = () => {
   const [payments, setPayments] = useState<TechnicianPayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "jobs" | "performance" | "payments">("overview");
+  const [editingLicense, setEditingLicense] = useState(false);
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [licenseExpiry, setLicenseExpiry] = useState("");
+  const [savingLicense, setSavingLicense] = useState(false);
 
   useEffect(() => {
     const loadTechnician = async () => {
@@ -54,6 +58,8 @@ const TechnicianProfile: React.FC = () => {
         const response = await technicianService.getTechnicianById(id);
         if (response.status === "success" && response.data.technician) {
           setTechnician(response.data.technician);
+          setLicenseNumber(response.data.technician.licenseNumber || "");
+          setLicenseExpiry(response.data.technician.licenseExpiry ? String(response.data.technician.licenseExpiry).split("T")[0] : "");
         } else {
           setError(response.message || "Failed to load technician");
         }
@@ -134,6 +140,20 @@ const TechnicianProfile: React.FC = () => {
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const handleSaveLicense = async () => {
+    if (!id || !technician) return;
+    setSavingLicense(true);
+    const response = await technicianService.updateTechnician(id, {
+      licenseNumber: licenseNumber.trim() || undefined,
+      licenseExpiry: licenseExpiry || undefined,
+    });
+    setSavingLicense(false);
+    if (response.status === "success") {
+      setTechnician((prev) => prev ? { ...prev, licenseNumber: licenseNumber.trim(), licenseExpiry: licenseExpiry } : prev);
+      setEditingLicense(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -403,6 +423,65 @@ const TechnicianProfile: React.FC = () => {
                       <span className="label">Last Login</span>
                       <span className="value">{formatDateTime(technician.lastLogin)}</span>
                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* License Details */}
+              <div className="info-card account-card">
+                <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h3>
+                    <RiShieldCheckLine />
+                    License Details
+                  </h3>
+                  {!editingLicense && (
+                    <button className="action-button" style={{ fontSize: 13, padding: "4px 12px" }} onClick={() => setEditingLicense(true)}>
+                      Edit
+                    </button>
+                  )}
+                </div>
+                <div className="card-content">
+                  {editingLicense ? (
+                    <>
+                      <div className="detail-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                        <span className="label">License Number</span>
+                        <input
+                          type="text"
+                          value={licenseNumber}
+                          onChange={(e) => setLicenseNumber(e.target.value)}
+                          placeholder="e.g. LIC123456"
+                          style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", fontSize: 14 }}
+                        />
+                      </div>
+                      <div className="detail-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: 4, marginTop: 8 }}>
+                        <span className="label">License Expiry</span>
+                        <input
+                          type="date"
+                          value={licenseExpiry}
+                          onChange={(e) => setLicenseExpiry(e.target.value)}
+                          style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", fontSize: 14 }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                        <button className="action-button phone" style={{ fontSize: 13, padding: "6px 16px" }} onClick={handleSaveLicense} disabled={savingLicense}>
+                          {savingLicense ? "Saving..." : "Save"}
+                        </button>
+                        <button className="action-button" style={{ fontSize: 13, padding: "6px 16px" }} onClick={() => { setEditingLicense(false); setLicenseNumber(technician.licenseNumber || ""); setLicenseExpiry(technician.licenseExpiry ? String(technician.licenseExpiry).split("T")[0] : ""); }}>
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="detail-item">
+                        <span className="label">License Number</span>
+                        <span className="value">{technician.licenseNumber || "—"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">License Expiry</span>
+                        <span className="value">{technician.licenseExpiry ? new Date(technician.licenseExpiry).toLocaleDateString("en-AU") : "—"}</span>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

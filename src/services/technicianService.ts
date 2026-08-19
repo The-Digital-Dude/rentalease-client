@@ -78,6 +78,8 @@ export interface UpdateTechnicianData {
   email?: string;
   phone?: string;
   tradeType?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
   experience?: number;
   availabilityStatus?: string;
   maxJobs?: number;

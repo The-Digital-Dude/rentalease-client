@@ -40,6 +40,8 @@ interface CreateTechnicianFormData {
   password: string;
   confirmPassword: string;
   experience: string;
+  licenseNumber: string;
+  licenseExpiry: string;
   availabilityStatus: string;
   status: string;
   maxJobs: string;
@@ -82,6 +84,8 @@ const TechnicianPage = () => {
     password: "",
     confirmPassword: "",
     experience: "",
+    licenseNumber: "",
+    licenseExpiry: "",
     availabilityStatus: "Available",
     status: "Active",
     maxJobs: "4",
@@ -320,6 +324,8 @@ const TechnicianPage = () => {
       password: "",
       confirmPassword: "",
       experience: "",
+      licenseNumber: "",
+      licenseExpiry: "",
       availabilityStatus: "Available",
       status: "Active",
       maxJobs: "4",
@@ -345,6 +351,8 @@ const TechnicianPage = () => {
       password: "",
       confirmPassword: "",
       experience: technician.experience.toString(),
+      licenseNumber: technician.licenseNumber || "",
+      licenseExpiry: technician.licenseExpiry ? String(technician.licenseExpiry).split("T")[0] : "",
       availabilityStatus: technician.availabilityStatus,
       status: technician.status,
       maxJobs: technician.maxJobs.toString(),
@@ -412,6 +420,8 @@ const TechnicianPage = () => {
           experience: formData.experience
             ? parseInt(formData.experience)
             : undefined,
+          licenseNumber: formData.licenseNumber.trim() || undefined,
+          licenseExpiry: formData.licenseExpiry || undefined,
           availabilityStatus: formData.availabilityStatus,
           status: formData.status,
           maxJobs: parseInt(formData.maxJobs),
@@ -442,6 +452,8 @@ const TechnicianPage = () => {
           password: formData.password,
           tradeType: formData.tradeType.trim(),
           experience: formData.experience ? parseInt(formData.experience) : 0,
+          licenseNumber: formData.licenseNumber.trim() || undefined,
+          licenseExpiry: formData.licenseExpiry || undefined,
           availabilityStatus: formData.availabilityStatus,
           status: formData.status,
           maxJobs: parseInt(formData.maxJobs),
@@ -957,6 +969,27 @@ const TechnicianPage = () => {
             {formErrors.experience && (
               <span className="error-message">{formErrors.experience}</span>
             )}
+          </div>
+
+          <div className="form-group">
+            <label>License Number</label>
+            <input
+              type="text"
+              name="licenseNumber"
+              value={formData.licenseNumber}
+              onChange={handleInputChange}
+              placeholder="e.g. LIC123456"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>License Expiry</label>
+            <input
+              type="date"
+              name="licenseExpiry"
+              value={formData.licenseExpiry}
+              onChange={handleInputChange}
+            />
           </div>
 
           <div className="form-group">

@@ -218,21 +218,6 @@ const TechnicianProfileSelf: React.FC = () => {
           <h2>Licensing & Rates</h2>
           <div className="field-grid">
             <label>
-              License Number
-              <input
-                value={form.licenseNumber}
-                onChange={(event) => updateField("licenseNumber", event.target.value)}
-              />
-            </label>
-            <label>
-              License Expiry
-              <input
-                type="date"
-                value={form.licenseExpiry}
-                onChange={(event) => updateField("licenseExpiry", event.target.value)}
-              />
-            </label>
-            <label>
               Hourly Rate
               <input
                 type="number"

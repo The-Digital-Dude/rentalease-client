@@ -1,11 +1,18 @@
 import React from "react";
-import { RiCheckboxCircleLine, RiStarLine } from "react-icons/ri";
+import { RiCheckboxCircleLine, RiStarLine, RiTimeLine } from "react-icons/ri";
 import "./JobProfileStats.scss";
+
+const SHIFT_LABELS: Record<string, string> = {
+  morning: "Morning (8am – 12pm)",
+  afternoon: "Afternoon (1pm – 5pm)",
+  evening: "Evening (5pm – 9pm)",
+};
 
 interface JobProfileStatsProps {
   job: {
     status: string;
     priority: string;
+    shift?: "morning" | "afternoon" | "evening";
   };
   statistics: {
     isOverdue: boolean;
@@ -44,6 +51,14 @@ const JobProfileStats: React.FC<JobProfileStatsProps> = ({
           : job.priority === "High"
           ? "orange"
           : "green",
+    },
+    {
+      title: "Shift",
+      value: job.shift ? SHIFT_LABELS[job.shift] ?? job.shift : "Not set",
+      change: "Scheduled shift window",
+      changeType: "neutral",
+      icon: RiTimeLine,
+      color: "blue",
     },
   ];
 

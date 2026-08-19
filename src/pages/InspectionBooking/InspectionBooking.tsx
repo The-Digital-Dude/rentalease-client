@@ -575,7 +575,7 @@ const InspectionBooking: React.FC = () => {
                   <span className="shift-badge">
                     {bookedJobDetails.scheduledShift === 'morning' ? 'Morning (9:00 AM - 12:00 PM)' : 
                      bookedJobDetails.scheduledShift === 'afternoon' ? 'Afternoon (2:00 PM - 5:00 PM)' : 
-                     bookedJobDetails.scheduledShift === 'evening' ? 'Evening (5:00 PM - 8:00 PM)' : 
+                     bookedJobDetails.scheduledShift === 'evening' ? 'Evening (5:00 PM - 9:00 PM)' :
                      'Full Day'}
                   </span>
                 </div>
